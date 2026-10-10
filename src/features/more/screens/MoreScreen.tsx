@@ -29,9 +29,8 @@ export function MoreScreen() {
         <ListRow
           icon="download-outline"
           title="Import từ Ivy Wallet"
-          subtitle="Giai đoạn 1"
-          disabled
-          onPress={() => {}}
+          subtitle="Chuyển ví, giao dịch, lịch định kỳ từ file backup"
+          onPress={() => router.push('/import/ivy')}
         />
         <ListRow
           icon="cloud-upload-outline"

@@ -149,6 +149,8 @@ export const transactions = sqliteTable(
     }),
     /** Giao dịch điều chỉnh số dư: tính vào số dư nhưng không tính vào thống kê thu/chi */
     isAdjustment: integer('is_adjustment', { mode: 'boolean' }).notNull().default(false),
+    /** Giao dịch tiền ra/vào ví do cho vay / đi vay / trả nợ: tính vào số dư, không tính vào thống kê */
+    debtId: text('debt_id').references((): AnySQLiteColumn => debts.id, { onDelete: 'set null' }),
     ...timestamps,
   },
   (t) => [
@@ -210,6 +212,96 @@ export const scheduleOccurrences = sqliteTable(
   (t) => [primaryKey({ columns: [t.scheduleId, t.dueDate] })],
 );
 
+// ─── Sổ nợ ──────────────────────────────────────────────────────────────────
+
+export const people = sqliteTable('people', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  nameKey: text('name_key').notNull().default(''),
+  phone: text('phone'),
+  note: text('note'),
+  ...timestamps,
+});
+
+/** lent: tôi cho vay (họ nợ tôi) · borrowed: tôi đi vay (tôi nợ họ) */
+export const DEBT_DIRECTIONS = ['lent', 'borrowed'] as const;
+export type DebtDirection = (typeof DEBT_DIRECTIONS)[number];
+
+export const debts = sqliteTable(
+  'debts',
+  {
+    id: text('id').primaryKey(),
+    personId: text('person_id')
+      .notNull()
+      .references(() => people.id, { onDelete: 'cascade' }),
+    direction: text('direction', { enum: DEBT_DIRECTIONS }).notNull(),
+    /** Số tiền gốc ban đầu */
+    amount: integer('amount').notNull(),
+    title: text('title').notNull().default(''),
+    date: integer('date').notNull(),
+    dueDate: text('due_date'),
+    note: text('note'),
+    /** Ví liên kết: tiền cho vay đi ra / tiền vay về vào ví này. Trống = không động vào ví */
+    accountId: text('account_id').references(() => accounts.id, { onDelete: 'set null' }),
+    /** Giao dịch ví tạo ra lúc ghi khoản nợ */
+    transactionId: text('transaction_id').references((): AnySQLiteColumn => transactions.id, {
+      onDelete: 'set null',
+    }),
+    closedAt: integer('closed_at'),
+    ...timestamps,
+  },
+  (t) => [
+    index('debts_person_idx').on(t.personId),
+    check('debts_amount_non_negative', sql`${t.amount} >= 0`),
+  ],
+);
+
+/** repay: trả bớt · increase: vay thêm / cho vay thêm · interest: tiền lãi (cộng vào nợ) */
+export const DEBT_RECORD_TYPES = ['repay', 'increase', 'interest'] as const;
+export type DebtRecordType = (typeof DEBT_RECORD_TYPES)[number];
+
+export const debtRecords = sqliteTable(
+  'debt_records',
+  {
+    id: text('id').primaryKey(),
+    debtId: text('debt_id')
+      .notNull()
+      .references(() => debts.id, { onDelete: 'cascade' }),
+    type: text('type', { enum: DEBT_RECORD_TYPES }).notNull(),
+    amount: integer('amount').notNull(),
+    date: integer('date').notNull(),
+    note: text('note'),
+    accountId: text('account_id').references(() => accounts.id, { onDelete: 'set null' }),
+    transactionId: text('transaction_id').references(() => transactions.id, {
+      onDelete: 'set null',
+    }),
+    ...timestamps,
+  },
+  (t) => [
+    index('debt_records_debt_idx').on(t.debtId),
+    check('debt_records_amount_non_negative', sql`${t.amount} >= 0`),
+  ],
+);
+
+// ─── Ngân sách ──────────────────────────────────────────────────────────────
+
+export const budgets = sqliteTable(
+  'budgets',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    /** Hạn mức mỗi kỳ (tháng) */
+    amount: integer('amount').notNull(),
+    /** Danh sách id danh mục, cách nhau bởi dấu phẩy. Trống = mọi khoản chi */
+    categoryIds: text('category_ids'),
+    /** Danh sách id ví. Trống = mọi ví */
+    accountIds: text('account_ids'),
+    orderNum: real('order_num').notNull().default(0),
+    ...timestamps,
+  },
+  (t) => [check('budgets_amount_non_negative', sql`${t.amount} >= 0`)],
+);
+
 // ─── Kiểu dữ liệu suy ra từ bảng ────────────────────────────────────────────
 
 export type Account = typeof accounts.$inferSelect;
@@ -223,3 +315,13 @@ export type NewTransaction = typeof transactions.$inferInsert;
 export type Schedule = typeof schedules.$inferSelect;
 export type NewSchedule = typeof schedules.$inferInsert;
 export type ScheduleOccurrence = typeof scheduleOccurrences.$inferSelect;
+export type NewScheduleOccurrence = typeof scheduleOccurrences.$inferInsert;
+export type TransactionTag = typeof transactionTags.$inferSelect;
+export type Person = typeof people.$inferSelect;
+export type NewPerson = typeof people.$inferInsert;
+export type Debt = typeof debts.$inferSelect;
+export type NewDebt = typeof debts.$inferInsert;
+export type DebtRecord = typeof debtRecords.$inferSelect;
+export type NewDebtRecord = typeof debtRecords.$inferInsert;
+export type Budget = typeof budgets.$inferSelect;
+export type NewBudget = typeof budgets.$inferInsert;

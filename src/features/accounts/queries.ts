@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 
-import type { Database } from '@/db';
+import type { AppDatabase } from '@/db/types';
 import { accounts, transactions } from '@/db/schema';
 
 export type AccountBalance = {
@@ -16,7 +16,7 @@ export type AccountBalance = {
  * Số dư từng ví = Σ thu − Σ chi − Σ chuyển đi + Σ nhận chuyển đến (giống cách Ivy Wallet tính).
  * Ví không có "số dư ban đầu": muốn đặt số dư thì tạo giao dịch điều chỉnh.
  */
-export async function getAccountBalances(db: Database): Promise<AccountBalance[]> {
+export async function getAccountBalances(db: AppDatabase): Promise<AccountBalance[]> {
   const rows = await db.all<{
     id: string;
     name: string;

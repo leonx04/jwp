@@ -88,6 +88,7 @@ function RootNavigator() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="settings/appearance" options={{ title: 'Giao diện' }} />
         <Stack.Screen name="settings/notifications" options={{ title: 'Kiểm tra thông báo' }} />
+        <Stack.Screen name="import/ivy" options={{ title: 'Import Ivy Wallet' }} />
         <Stack.Screen
           name="transaction/new"
           options={{ title: 'Thêm giao dịch', presentation: 'modal' }}

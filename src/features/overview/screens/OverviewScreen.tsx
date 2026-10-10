@@ -69,10 +69,9 @@ export function OverviewScreen() {
             description="Giai đoạn 1 sẽ có Import từ Ivy Wallet để đưa 7 ví và 495 giao dịch của bạn vào JWP."
             action={
               <Button
-                title="Xem màn kiểm tra thông báo"
-                variant="secondary"
-                icon="notifications-outline"
-                onPress={() => router.push('/settings/notifications')}
+                title="Import từ Ivy Wallet"
+                icon="download-outline"
+                onPress={() => router.push('/import/ivy')}
               />
             }
           />

@@ -9,3 +9,4 @@ export { Screen } from './Screen';
 export { SectionTitle } from './SectionTitle';
 export { SegmentedControl } from './SegmentedControl';
 export { SwitchRow } from './SwitchRow';
+export { StatGrid } from './StatGrid';
