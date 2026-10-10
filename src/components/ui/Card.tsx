@@ -1,25 +1,28 @@
-import { View, type ViewProps } from 'react-native';
+import type { ReactNode } from 'react';
+import type { StyleProp, ViewStyle } from 'react-native';
 
-import { createStyles } from '@/theme';
+import { GlassSurface } from '@/components/glass/GlassSurface';
+import { useTheme } from '@/theme';
 
-export function Card({ style, ...rest }: ViewProps) {
-  const styles = useStyles();
-  return <View style={[styles.card, style]} {...rest} />;
+type CardProps = {
+  children?: ReactNode;
+  /** Kiểu bố cục cho phần nội dung bên trong (gap, alignItems...) */
+  style?: StyleProp<ViewStyle>;
+  /** false: không có padding (vd danh sách sát mép thẻ) */
+  padded?: boolean;
+  /** Kiểu cho khung ngoài (margin, width...) */
+  containerStyle?: StyleProp<ViewStyle>;
+};
+
+/** Thẻ kính chứa nội dung */
+export function Card({ children, style, padded = true, containerStyle }: CardProps) {
+  const { spacing } = useTheme();
+  return (
+    <GlassSurface
+      style={containerStyle}
+      contentStyle={[padded && { padding: spacing.lg, gap: spacing.md }, style]}
+    >
+      {children}
+    </GlassSurface>
+  );
 }
-
-const useStyles = createStyles((t) => ({
-  card: {
-    backgroundColor: t.colors.surface,
-    borderRadius: t.radius.lg,
-    padding: t.spacing.lg,
-    gap: t.spacing.md,
-    // Nền tối: dùng viền thay bóng đổ (bóng không thấy trên nền tối)
-    borderWidth: t.dark ? 1 : 0,
-    borderColor: t.colors.border,
-    shadowColor: '#000',
-    shadowOpacity: t.dark ? 0 : 0.06,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: t.dark ? 0 : 1,
-  },
-}));

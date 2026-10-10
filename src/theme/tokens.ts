@@ -9,11 +9,16 @@ export const spacing = {
   xxl: 32,
 } as const;
 
+/**
+ * Bo góc theo nguyên tắc "đồng tâm" của Liquid Glass: góc bên trong = góc bên ngoài − khoảng đệm.
+ * Thẻ (xl = 28) chứa phần tử cách mép 16 → phần tử bên trong bo 12 (md).
+ */
 export const radius = {
-  sm: 8,
-  md: 12,
-  lg: 18,
-  xl: 24,
+  sm: 10,
+  md: 14,
+  lg: 20,
+  xl: 28,
+  xxl: 34,
   full: 999,
 } as const;
 
@@ -27,13 +32,16 @@ export const fonts = {
 
 // Với font tuỳ chỉnh trên Android: chọn độ đậm bằng fontFamily, KHÔNG dùng fontWeight.
 export const typography = {
-  display: { fontFamily: fonts.bold, fontSize: 34, lineHeight: 44 },
-  title: { fontFamily: fonts.bold, fontSize: 24, lineHeight: 32 },
-  heading: { fontFamily: fonts.semibold, fontSize: 17, lineHeight: 24 },
+  /** Số tiền lớn nhất màn hình (tổng số dư, ô nhập tiền) */
+  hero: { fontFamily: fonts.bold, fontSize: 40, lineHeight: 50, letterSpacing: -1 },
+  display: { fontFamily: fonts.bold, fontSize: 32, lineHeight: 42, letterSpacing: -0.8 },
+  title: { fontFamily: fonts.bold, fontSize: 26, lineHeight: 34, letterSpacing: -0.5 },
+  heading: { fontFamily: fonts.semibold, fontSize: 17, lineHeight: 24, letterSpacing: -0.2 },
   body: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 22 },
   bodyMedium: { fontFamily: fonts.medium, fontSize: 15, lineHeight: 22 },
   caption: { fontFamily: fonts.regular, fontSize: 13, lineHeight: 18 },
-  label: { fontFamily: fonts.medium, fontSize: 12, lineHeight: 16, letterSpacing: 0.2 },
+  // Không dùng letterSpacing dương: Android đo thiếu chiều rộng → mất ký tự cuối (vd "Ví" → "V")
+  label: { fontFamily: fonts.medium, fontSize: 12, lineHeight: 16 },
 } as const;
 
 export type TypographyVariant = keyof typeof typography;

@@ -1,13 +1,13 @@
 import * as Haptics from 'expo-haptics';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, View, type LayoutChangeEvent } from 'react-native';
-import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
-import { createStyles, mix } from '@/theme';
+import { createStyles } from '@/theme';
 
-import { AppText } from './AppText';
+import { AppText, type TextColor } from './AppText';
 
-type Option<T extends string> = { value: T; label: string };
+type Option<T extends string> = { value: T; label: string; color?: TextColor };
 
 type SegmentedControlProps<T extends string> = {
   options: readonly Option<T>[];
@@ -15,7 +15,7 @@ type SegmentedControlProps<T extends string> = {
   onChange: (value: T) => void;
 };
 
-/** Nhóm nút chọn một, ô được chọn trượt mượt bằng Reanimated (chạy trên luồng UI). */
+/** Rãnh kính dạng viên thuốc, "giọt" chỉ báo trượt mượt (Reanimated, luồng UI) */
 export function SegmentedControl<T extends string>({
   options,
   value,
@@ -29,18 +29,19 @@ export function SegmentedControl<T extends string>({
     options.findIndex((option) => option.value === value),
   );
 
-  const indicatorStyle = useAnimatedStyle(() => ({
-    width: segmentWidth,
-    transform: [
-      { translateX: withSpring(selectedIndex * segmentWidth, { damping: 18, stiffness: 180 }) },
-    ],
-  }));
+  const x = useSharedValue(0);
+  useEffect(() => {
+    x.value = withSpring(selectedIndex * segmentWidth, { damping: 20, stiffness: 220 });
+  }, [selectedIndex, segmentWidth, x]);
+  const indicatorStyle = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
 
   const onLayout = (event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width - 8);
 
   return (
     <View style={styles.container} onLayout={onLayout} accessibilityRole="tablist">
-      {width > 0 && <Animated.View style={[styles.indicator, indicatorStyle]} />}
+      {width > 0 && (
+        <Animated.View style={[styles.indicator, { width: segmentWidth }, indicatorStyle]} />
+      )}
       {options.map((option) => {
         const selected = option.value === value;
         return (
@@ -55,7 +56,11 @@ export function SegmentedControl<T extends string>({
               onChange(option.value);
             }}
           >
-            <AppText variant="label" color={selected ? 'text' : 'textMuted'}>
+            <AppText
+              variant="label"
+              color={selected ? (option.color ?? 'text') : 'textMuted'}
+              style={{ fontSize: 13 }}
+            >
               {option.label}
             </AppText>
           </Pressable>
@@ -69,29 +74,24 @@ const useStyles = createStyles((t) => ({
   container: {
     flexDirection: 'row',
     padding: 4,
-    borderRadius: t.radius.md,
-    backgroundColor: t.colors.surfaceAlt,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors.glassFill,
+    borderWidth: 1,
+    borderColor: t.colors.glassBorder,
   },
   indicator: {
     position: 'absolute',
     top: 4,
     bottom: 4,
     left: 4,
-    borderRadius: t.radius.sm,
-    // Ô được chọn phải nổi rõ trên nền rãnh: sáng → trắng có viền + bóng; tối → sáng hơn rãnh
-    backgroundColor: t.dark ? mix(t.colors.surfaceAlt, '#FFFFFF', 0.1) : '#FFFFFF',
-    borderWidth: t.dark ? 0 : 1,
-    borderColor: t.colors.border,
-    shadowColor: '#000',
-    shadowOpacity: t.dark ? 0 : 0.12,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: t.dark ? 0 : 2,
+    borderRadius: t.radius.full,
+    backgroundColor: t.colors.glassActive,
+    boxShadow: t.dark ? 'none' : `0 2px 8px ${t.colors.shadow}`,
   },
   segment: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: t.spacing.sm,
+    paddingVertical: 9,
   },
 }));

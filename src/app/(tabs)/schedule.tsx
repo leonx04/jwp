@@ -1,14 +1,13 @@
-import { AppText, Card, EmptyState, Screen } from '@/components/ui';
+import { Card, EmptyState, Screen } from '@/components/ui';
 
 export default function ScheduleTab() {
   return (
-    <Screen safeTop>
-      <AppText variant="title">Lịch thu chi</AppText>
+    <Screen tabBar largeTitle title="Lịch thu chi">
       <Card>
         <EmptyState
           icon="calendar-outline"
           title="Dự trù & lịch thu chi"
-          description="Giai đoạn 3: lịch nhận lương, khoản phải trả định kỳ, dòng tiền dự kiến và mức chi an toàn mỗi ngày."
+          description="Lịch nhận lương, khoản phải trả định kỳ, dòng tiền dự kiến và mức chi an toàn mỗi ngày."
         />
       </Card>
     </Screen>

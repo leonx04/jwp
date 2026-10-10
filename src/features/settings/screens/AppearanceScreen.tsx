@@ -34,7 +34,7 @@ export function AppearanceScreen() {
     (settings.themePreference === 'system' && systemScheme === 'dark');
 
   return (
-    <Screen>
+    <Screen title="Giao diện">
       <SectionTitle>Chế độ</SectionTitle>
       <Card>
         <SegmentedControl

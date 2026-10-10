@@ -1,0 +1,570 @@
+// Thêm / sửa giao dịch: chi, thu, chuyển tiền giữa ví (có phí), tag, gợi ý theo lịch sử & số tiền.
+import * as Haptics from 'expo-haptics';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Alert, Keyboard, ScrollView, View } from 'react-native';
+
+import { showSnackbar } from '@/components/feedback/snackbarStore';
+import { IconButton } from '@/components/glass/IconButton';
+import {
+  AmountKeypad,
+  AppText,
+  Button,
+  Chip,
+  Screen,
+  SectionTitle,
+  SegmentedControl,
+  TextField,
+} from '@/components/ui';
+import { pickDateTime } from '@/components/ui/pickDateTime';
+import { db } from '@/db';
+import type { TransactionType } from '@/db/schema';
+import { useLiveData } from '@/db/useLiveData';
+import { listAccounts } from '@/features/accounts/repository';
+import { listCategories } from '@/features/categories/repository';
+import { useMoneyFormat, useSettings } from '@/features/settings';
+import {
+  frequentTransferPairs,
+  priceHistory,
+  suggestTags,
+  suggestTitles,
+  type TitleSuggestion,
+} from '@/features/suggestions/engine';
+import { ensureTag, listTags } from '@/features/tags/repository';
+import { addDays, formatAgo, formatDate, toVnDate, toVnTime, todayVn } from '@/lib/date';
+import type { IconName } from '@/lib/icons';
+import { parseMoney } from '@/lib/money';
+import { createStyles, useTheme } from '@/theme';
+
+import {
+  deleteTransaction,
+  getTransaction,
+  restoreSnapshot,
+  saveTransaction,
+  TransactionValidationError,
+} from '../repository';
+
+type Draft = {
+  type: TransactionType;
+  amount: number;
+  accountId: string | null;
+  toAccountId: string | null;
+  categoryId: string | null;
+  title: string;
+  note: string;
+  date: number;
+  tagIds: string[];
+  feeText: string;
+  scheduleId: string | null;
+  scheduleDueDate: string | null;
+  debtId: string | null;
+  isAdjustment: boolean;
+};
+
+const TYPE_OPTIONS = [
+  { value: 'expense', label: 'Chi', color: 'expense' },
+  { value: 'income', label: 'Thu', color: 'income' },
+  { value: 'transfer', label: 'Chuyển tiền', color: 'primary' },
+] as const;
+
+type Params = {
+  id?: string;
+  type?: TransactionType;
+  accountId?: string;
+  toAccountId?: string;
+  amount?: string;
+  title?: string;
+  categoryId?: string;
+  scheduleId?: string;
+  scheduleDueDate?: string;
+  date?: string;
+};
+
+export function TransactionEditorScreen() {
+  const params = useLocalSearchParams<Params>();
+  const editingId = params.id && params.id !== 'new' ? params.id : undefined;
+  const styles = useStyles();
+  const { colors } = useTheme();
+  const format = useMoneyFormat();
+  const suggestionsEnabled = useSettings((s) => s.suggestionsEnabled);
+
+  const { data: accounts = [] } = useLiveData(['accounts'], () => listAccounts(db));
+  const { data: categories = [] } = useLiveData(['categories'], () => listCategories(db));
+  const { data: allTags = [] } = useLiveData(['tags', 'transaction_tags'], () => listTags(db));
+
+  const [draft, setDraft] = useState<Draft>(() => {
+    const existing = editingId ? getTransaction(db, editingId) : null;
+    if (existing) {
+      return {
+        type: existing.type,
+        amount: existing.amount,
+        accountId: existing.accountId,
+        toAccountId: existing.toAccountId,
+        categoryId: existing.categoryId,
+        title: existing.title,
+        note: existing.note ?? '',
+        date: existing.date,
+        tagIds: existing.tagIds,
+        feeText: existing.fee ? String(existing.fee) : '',
+        scheduleId: existing.scheduleId,
+        scheduleDueDate: existing.scheduleDueDate,
+        debtId: existing.debtId,
+        isAdjustment: existing.isAdjustment,
+      };
+    }
+    return {
+      type: params.type ?? 'expense',
+      amount: params.amount ? Number(params.amount) || 0 : 0,
+      accountId: params.accountId ?? null,
+      toAccountId: params.toAccountId ?? null,
+      categoryId: params.categoryId ?? null,
+      title: params.title ?? '',
+      note: '',
+      date: params.date ? Number(params.date) : Date.now(),
+      tagIds: [],
+      feeText: '',
+      scheduleId: params.scheduleId ?? null,
+      scheduleDueDate: params.scheduleDueDate ?? null,
+      debtId: null,
+      isAdjustment: false,
+    };
+  });
+  const [newTag, setNewTag] = useState('');
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+  const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
+
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardOpen(true));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardOpen(false));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
+  const isTransfer = draft.type === 'transfer';
+  // Chưa chọn ví → mặc định ví đầu tiên
+  const accountId = draft.accountId ?? accounts[0]?.id ?? null;
+
+  const suggestions: TitleSuggestion[] = useMemo(() => {
+    if (!suggestionsEnabled || isTransfer) return [];
+    if (!draft.title && !draft.amount) {
+      return suggestTitles(db, { type: draft.type as 'expense' | 'income', limit: 6 });
+    }
+    return suggestTitles(db, {
+      type: draft.type as 'expense' | 'income',
+      query: draft.title,
+      amount: draft.amount,
+      limit: 6,
+    }).filter((s) => s.title !== draft.title.trim());
+  }, [suggestionsEnabled, isTransfer, draft.type, draft.title, draft.amount]);
+
+  const history = useMemo(
+    () => (draft.title.trim() && !isTransfer ? priceHistory(db, draft.title, draft.type) : null),
+    [draft.title, draft.type, isTransfer],
+  );
+  const tagSuggestions = useMemo(
+    () =>
+      suggestTags(
+        db,
+        { categoryId: draft.categoryId, title: draft.title, exclude: draft.tagIds },
+        6,
+      ),
+    [draft.categoryId, draft.title, draft.tagIds],
+  );
+  const pairs = useMemo(() => (isTransfer ? frequentTransferPairs(db) : []), [isTransfer]);
+
+  const applySuggestion = (s: TitleSuggestion) => {
+    Haptics.selectionAsync().catch(() => {});
+    set({
+      title: s.title,
+      categoryId: s.categoryId,
+      accountId: s.accountId,
+      tagIds: [...new Set([...draft.tagIds, ...s.tagIds])],
+      amount: draft.amount || s.lastAmount,
+    });
+  };
+
+  const addTag = () => {
+    if (!newTag.trim()) return;
+    const id = ensureTag(db, newTag);
+    set({ tagIds: [...new Set([...draft.tagIds, id])] });
+    setNewTag('');
+  };
+
+  const save = () => {
+    const fee = draft.feeText ? (parseMoney(draft.feeText) ?? NaN) : 0;
+    if (Number.isNaN(fee)) {
+      Alert.alert('Phí không hợp lệ', 'Nhập số tiền phí, vd 3.300 hoặc 3,3k.');
+      return;
+    }
+    try {
+      saveTransaction(db, {
+        id: editingId,
+        type: draft.type,
+        amount: draft.amount,
+        accountId: accountId ?? '',
+        toAccountId: draft.toAccountId,
+        categoryId: draft.categoryId,
+        title: draft.title,
+        note: draft.note,
+        date: draft.date,
+        tagIds: draft.tagIds,
+        fee: isTransfer ? Math.abs(fee) : 0,
+        scheduleId: draft.scheduleId,
+        scheduleDueDate: draft.scheduleDueDate,
+        debtId: draft.debtId,
+        isAdjustment: draft.isAdjustment,
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      showSnackbar({ text: editingId ? 'Đã lưu thay đổi' : 'Đã thêm giao dịch', tone: 'success' });
+      router.back();
+    } catch (error) {
+      const message =
+        error instanceof TransactionValidationError
+          ? error.message
+          : `Không lưu được: ${error instanceof Error ? error.message : String(error)}`;
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      Alert.alert('Chưa lưu được', message);
+    }
+  };
+
+  const remove = () => {
+    if (!editingId) return;
+    Alert.alert('Xoá giao dịch?', 'Có thể hoàn tác ngay sau khi xoá.', [
+      { text: 'Huỷ', style: 'cancel' },
+      {
+        text: 'Xoá',
+        style: 'destructive',
+        onPress: () => {
+          const snapshot = deleteTransaction(db, editingId);
+          showSnackbar({
+            text: 'Đã xoá giao dịch',
+            actionLabel: 'Hoàn tác',
+            onAction: () => restoreSnapshot(db, snapshot),
+          });
+          router.back();
+        },
+      },
+    ]);
+  };
+
+  const pickDate = async (mode: 'date' | 'time') => {
+    const value = await pickDateTime(draft.date, mode);
+    if (value) set({ date: value });
+  };
+
+  const amountColor = isTransfer ? 'text' : draft.type === 'income' ? 'income' : 'expense';
+  const day = toVnDate(draft.date);
+  const today = todayVn();
+  const accountById = new Map(accounts.map((a) => [a.id, a]));
+
+  return (
+    <Screen
+      title={editingId ? 'Sửa giao dịch' : 'Thêm giao dịch'}
+      leading="close"
+      headerRight={
+        editingId ? (
+          <IconButton
+            icon="trash-outline"
+            accessibilityLabel="Xoá"
+            color={colors.expense}
+            onPress={remove}
+          />
+        ) : null
+      }
+      footer={
+        keyboardOpen ? null : (
+          <View style={styles.footer}>
+            <AmountKeypad value={draft.amount} onChange={(amount) => set({ amount })} />
+            <Button
+              title={editingId ? 'Lưu thay đổi' : 'Lưu'}
+              icon="checkmark"
+              disabled={!draft.amount}
+              onPress={save}
+            />
+          </View>
+        )
+      }
+    >
+      {draft.debtId ? (
+        <AppText variant="caption" color="warning">
+          Giao dịch này thuộc Sổ nợ — nên sửa trong màn Sổ nợ để số nợ còn lại luôn đúng.
+        </AppText>
+      ) : null}
+
+      <SegmentedControl
+        options={TYPE_OPTIONS}
+        value={draft.type}
+        onChange={(type) =>
+          set({ type, categoryId: type === 'transfer' ? null : draft.categoryId })
+        }
+      />
+
+      {/* Số tiền */}
+      <View style={styles.amountBox}>
+        <AppText
+          variant="hero"
+          color={draft.amount ? amountColor : 'textMuted'}
+          style={styles.amount}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
+          {format.money(draft.amount)}
+        </AppText>
+        {history ? (
+          <AppText variant="caption" color="textMuted" style={styles.center}>
+            Lần trước {format.money(history.lastAmount)} · {formatAgo(history.lastDate)}
+            {history.count > 1 ? ` · TB ${format.compact(history.avgAmount)}` : ''}
+            {history.count > 2 && history.minAmount !== history.maxAmount
+              ? ` · ${format.compact(history.minAmount)}–${format.compact(history.maxAmount)}`
+              : ''}
+          </AppText>
+        ) : null}
+      </View>
+
+      {/* Gợi ý từ lịch sử */}
+      {suggestions.length > 0 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.bleed}
+          contentContainerStyle={styles.chipsRow}
+        >
+          {suggestions.map((s) => (
+            <Chip
+              key={s.titleKey}
+              icon="sparkles-outline"
+              label={`${s.title} · ${format.compact(s.lastAmount)}`}
+              onPress={() => applySuggestion(s)}
+            />
+          ))}
+        </ScrollView>
+      ) : null}
+
+      {!isTransfer ? (
+        <TextField
+          icon="create-outline"
+          placeholder="Tiêu đề (vd: Cà phê sáng)"
+          value={draft.title}
+          onChangeText={(title) => set({ title })}
+          returnKeyType="done"
+        />
+      ) : null}
+
+      {/* Ví */}
+      {isTransfer ? (
+        <>
+          <SectionTitle>Từ ví</SectionTitle>
+          <AccountChips
+            accounts={accounts}
+            value={accountId}
+            onChange={(id) => set({ accountId: id })}
+          />
+          <View style={styles.swapRow}>
+            <IconButton
+              icon="swap-vertical"
+              accessibilityLabel="Đảo chiều"
+              onPress={() => set({ accountId: draft.toAccountId, toAccountId: accountId })}
+            />
+            <AppText variant="caption" color="textMuted">
+              Đảo chiều
+            </AppText>
+          </View>
+          <SectionTitle>Đến ví</SectionTitle>
+          <AccountChips
+            accounts={accounts.filter((a) => a.id !== accountId)}
+            value={draft.toAccountId}
+            onChange={(toAccountId) => set({ toAccountId })}
+          />
+          {pairs.length > 0 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.bleed}
+              contentContainerStyle={styles.chipsRow}
+            >
+              {pairs.map((p) => (
+                <Chip
+                  key={`${p.accountId}-${p.toAccountId}`}
+                  icon="repeat-outline"
+                  label={`${accountById.get(p.accountId)?.name ?? '?'} → ${accountById.get(p.toAccountId)?.name ?? '?'}`}
+                  onPress={() => set({ accountId: p.accountId, toAccountId: p.toAccountId })}
+                />
+              ))}
+            </ScrollView>
+          ) : null}
+          <TextField
+            icon="receipt-outline"
+            placeholder="Phí chuyển khoản (nếu có), vd 3.300"
+            keyboardType="numeric"
+            value={draft.feeText}
+            onChangeText={(feeText) => set({ feeText })}
+          />
+        </>
+      ) : (
+        <>
+          <SectionTitle>{draft.type === 'income' ? 'Nhận vào ví' : 'Chi từ ví'}</SectionTitle>
+          <AccountChips
+            accounts={accounts}
+            value={accountId}
+            onChange={(accountId) => set({ accountId })}
+          />
+          <SectionTitle>Danh mục</SectionTitle>
+          <View style={styles.wrap}>
+            {categories.map((c) => (
+              <Chip
+                key={c.id}
+                label={c.name}
+                icon={(c.icon as IconName) ?? undefined}
+                color={c.color}
+                selected={draft.categoryId === c.id}
+                onPress={() => set({ categoryId: draft.categoryId === c.id ? null : c.id })}
+              />
+            ))}
+            <Chip
+              label="Sửa danh mục"
+              icon="settings-outline"
+              onPress={() => router.push('/categories')}
+            />
+          </View>
+        </>
+      )}
+
+      {/* Tag */}
+      <SectionTitle>Tag</SectionTitle>
+      <View style={styles.wrap}>
+        {draft.tagIds.map((id) => {
+          const tag = allTags.find((t) => t.id === id);
+          return tag ? (
+            <Chip
+              key={id}
+              label={`#${tag.name}`}
+              color={tag.color}
+              selected
+              removable
+              onPress={() => set({ tagIds: draft.tagIds.filter((t) => t !== id) })}
+            />
+          ) : null;
+        })}
+        {tagSuggestions.map((t) => (
+          <Chip
+            key={t.id}
+            label={`#${t.name}`}
+            color={t.color}
+            onPress={() => set({ tagIds: [...draft.tagIds, t.id] })}
+          />
+        ))}
+      </View>
+      <TextField
+        icon="pricetag-outline"
+        placeholder="Thêm tag mới rồi bấm Enter"
+        value={newTag}
+        onChangeText={setNewTag}
+        onSubmitEditing={addTag}
+        returnKeyType="done"
+        submitBehavior="submit"
+      />
+
+      {/* Thời gian */}
+      <SectionTitle>Thời gian</SectionTitle>
+      <View style={styles.wrap}>
+        <Chip
+          label="Hôm nay"
+          selected={day === today}
+          onPress={() => set({ date: draft.date + (Date.parse(today) - Date.parse(day)) })}
+        />
+        <Chip
+          label="Hôm qua"
+          selected={day === addDays(today, -1)}
+          onPress={() =>
+            set({ date: draft.date + (Date.parse(addDays(today, -1)) - Date.parse(day)) })
+          }
+        />
+        <Chip icon="calendar-outline" label={formatDate(day)} onPress={() => pickDate('date')} />
+        <Chip icon="time-outline" label={toVnTime(draft.date)} onPress={() => pickDate('time')} />
+      </View>
+
+      <TextField
+        icon="document-text-outline"
+        placeholder="Ghi chú"
+        value={draft.note}
+        onChangeText={(note) => set({ note })}
+        multiline
+      />
+    </Screen>
+  );
+}
+
+function AccountChips({
+  accounts,
+  value,
+  onChange,
+}: {
+  accounts: { id: string; name: string; color: string; icon: string | null }[];
+  value: string | null;
+  onChange: (id: string) => void;
+}) {
+  const styles = useStyles();
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.bleed}
+      contentContainerStyle={styles.chipsRow}
+    >
+      {accounts.map((a) => (
+        <Chip
+          key={a.id}
+          label={a.name}
+          icon={(a.icon as IconName) ?? 'wallet-outline'}
+          color={a.color}
+          selected={value === a.id}
+          onPress={() => onChange(a.id)}
+        />
+      ))}
+    </ScrollView>
+  );
+}
+
+const useStyles = createStyles((t) => ({
+  footer: {
+    paddingHorizontal: t.spacing.lg,
+    paddingTop: t.spacing.md,
+    gap: t.spacing.md,
+  },
+  amountBox: {
+    alignItems: 'center',
+    paddingVertical: t.spacing.sm,
+    gap: 4,
+  },
+  amount: {
+    fontSize: 44,
+    lineHeight: 54,
+    fontVariant: ['tabular-nums'],
+    textAlign: 'center',
+  },
+  center: {
+    textAlign: 'center',
+  },
+  bleed: {
+    marginHorizontal: -t.spacing.lg,
+    flexGrow: 0,
+  },
+  chipsRow: {
+    paddingHorizontal: t.spacing.lg,
+    gap: t.spacing.sm,
+  },
+  wrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: t.spacing.sm,
+  },
+  swapRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: t.spacing.sm,
+    marginVertical: -t.spacing.sm,
+  },
+}));
