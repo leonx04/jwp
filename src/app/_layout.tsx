@@ -19,6 +19,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { Snackbar } from '@/components/feedback/Snackbar';
 import { DatabaseProvider } from '@/db';
 import { useNotificationResponses } from '@/features/notifications';
 import { AppThemeProvider } from '@/features/settings';
@@ -76,24 +77,25 @@ function RootNavigator() {
 
   return (
     <NavigationThemeProvider value={navigationTheme}>
+      {/* Mỗi màn tự vẽ header kính (components/ui/Screen) → tắt header mặc định */}
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: theme.colors.background },
-          headerTintColor: theme.colors.text,
-          headerTitleStyle: { fontFamily: theme.fonts.semibold },
-          headerShadowVisible: false,
+          headerShown: false,
+          animation: 'slide_from_right',
           contentStyle: { backgroundColor: theme.colors.background },
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="settings/appearance" options={{ title: 'Giao diện' }} />
-        <Stack.Screen name="settings/notifications" options={{ title: 'Kiểm tra thông báo' }} />
-        <Stack.Screen name="import/ivy" options={{ title: 'Import Ivy Wallet' }} />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="transaction/new"
-          options={{ title: 'Thêm giao dịch', presentation: 'modal' }}
+          options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+        />
+        <Stack.Screen
+          name="transaction/[id]"
+          options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
         />
       </Stack>
+      <Snackbar />
       <StatusBar style={theme.dark ? 'light' : 'dark'} />
     </NavigationThemeProvider>
   );

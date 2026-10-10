@@ -48,7 +48,7 @@ export function NotificationTestScreen() {
 /** Expo Go Android không chạy được expo-notifications (SDK 53+) */
 function UnsupportedNotice() {
   return (
-    <Screen>
+    <Screen title="Kiểm tra thông báo">
       <Card>
         <EmptyState
           icon="notifications-off-outline"
@@ -104,7 +104,7 @@ function NotificationTester() {
   };
 
   return (
-    <Screen>
+    <Screen title="Kiểm tra thông báo">
       <Card>
         <ListRow
           icon="notifications-outline"

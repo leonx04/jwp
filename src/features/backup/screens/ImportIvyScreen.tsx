@@ -97,7 +97,10 @@ export function ImportIvyScreen() {
 
   if (step.kind === 'reading' || step.kind === 'importing') {
     return (
-      <Screen contentStyle={{ justifyContent: 'center', alignItems: 'center' }}>
+      <Screen
+        title="Import Ivy Wallet"
+        contentStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}
+      >
         <ActivityIndicator color={colors.primary} size="large" />
         <AppText color="textMuted">
           {step.kind === 'reading' ? 'Đang đọc file…' : 'Đang ghi dữ liệu…'}
@@ -118,7 +121,7 @@ export function ImportIvyScreen() {
       .filter(Boolean)
       .join(', ');
     return (
-      <Screen>
+      <Screen title="Import Ivy Wallet">
         <Card>
           <ListRow
             icon="document-outline"
@@ -203,7 +206,7 @@ export function ImportIvyScreen() {
     const { verify, counts } = step;
     const skipped = counts.transactions.skipped;
     return (
-      <Screen>
+      <Screen title="Import Ivy Wallet">
         <Card style={{ alignItems: 'center' }}>
           <Ionicons
             name={verify.ok ? 'checkmark-circle' : 'alert-circle'}
@@ -250,7 +253,7 @@ export function ImportIvyScreen() {
   }
 
   return (
-    <Screen>
+    <Screen title="Import Ivy Wallet">
       <Card>
         <AppText variant="heading">Chuyển dữ liệu từ Ivy Wallet</AppText>
         <AppText color="textMuted">

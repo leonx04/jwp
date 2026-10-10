@@ -1,97 +1,62 @@
-// Nhóm "(tabs)": không xuất hiện trong URL, chỉ gom các màn dùng chung thanh tab dưới đáy.
-import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+// Nhóm "(tabs)": không xuất hiện trong URL, gom các màn dùng chung thanh tab.
+// Thanh tab mặc định bị ẩn; thanh tab kính nổi (GlassTabBar) vẽ BÊN NGOÀI vùng nội dung
+// để làm mờ được nội dung đang cuộn phía sau nó (BlurTargetView).
+import { BlurTargetView } from 'expo-blur';
 import { router } from 'expo-router';
 import { Tabs } from 'expo-router/js-tabs';
-import type { ComponentProps } from 'react';
-import { Pressable, View, type ColorValue } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRef } from 'react';
+import { StyleSheet, View, type View as RNView } from 'react-native';
 
-import { useTheme } from '@/theme';
+import { GlassTabBar, type TabItem } from '@/components/glass/GlassTabBar';
 
-type IconName = ComponentProps<typeof Ionicons>['name'];
-
-function tabIcon(active: IconName, inactive: IconName) {
-  return function TabIcon({ color, focused }: { color: ColorValue; focused: boolean }) {
-    return <Ionicons name={focused ? active : inactive} size={24} color={color} />;
-  };
-}
-
-/** Nút ＋ tròn ở giữa thanh tab: mở màn thêm giao dịch thay vì chuyển tab */
-function AddButton() {
-  const { colors } = useTheme();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel="Thêm giao dịch"
-      onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-        router.push('/transaction/new');
-      }}
-      style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-    >
-      {({ pressed }) => (
-        <View
-          style={{
-            width: 52,
-            height: 52,
-            borderRadius: 26,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: colors.primary,
-            transform: [{ scale: pressed ? 0.92 : 1 }],
-            shadowColor: colors.primary,
-            shadowOpacity: 0.35,
-            shadowRadius: 8,
-            shadowOffset: { width: 0, height: 4 },
-            elevation: 4,
-          }}
-        >
-          <Ionicons name="add" size={30} color={colors.onPrimary} />
-        </View>
-      )}
-    </Pressable>
-  );
-}
+const TABS: TabItem[] = [
+  { href: '/', path: '/', label: 'Tổng quan', icon: 'home-outline', iconActive: 'home' },
+  {
+    href: '/transactions',
+    path: '/transactions',
+    label: 'Giao dịch',
+    icon: 'receipt-outline',
+    iconActive: 'receipt',
+  },
+  {
+    href: '/schedule',
+    path: '/schedule',
+    label: 'Lịch',
+    icon: 'calendar-outline',
+    iconActive: 'calendar',
+  },
+  { href: '/more', path: '/more', label: 'Thêm', icon: 'grid-outline', iconActive: 'grid' },
+];
 
 export default function TabsLayout() {
-  const { colors, fonts } = useTheme();
-  // Android vẽ tràn viền (edge-to-edge): phải chừa chỗ cho thanh điều hướng cử chỉ phía dưới
-  const { bottom } = useSafeAreaInsets();
+  const blurTarget = useRef<RNView>(null);
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          height: 64 + bottom,
-          paddingBottom: bottom,
-        },
-        tabBarItemStyle: { paddingTop: 6 },
-        tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 11 },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{ title: 'Tổng quan', tabBarIcon: tabIcon('home', 'home-outline') }}
+    <View style={styles.root}>
+      <BlurTargetView ref={blurTarget} style={styles.root}>
+        <Tabs
+          tabBar={() => null}
+          screenOptions={{
+            headerShown: false,
+            animation: 'fade',
+            sceneStyle: { backgroundColor: 'transparent' },
+          }}
+        >
+          <Tabs.Screen name="index" />
+          <Tabs.Screen name="transactions" />
+          <Tabs.Screen name="schedule" />
+          <Tabs.Screen name="more" />
+        </Tabs>
+      </BlurTargetView>
+      <GlassTabBar
+        items={TABS}
+        blurTarget={blurTarget}
+        onAdd={() => router.push('/transaction/new')}
       />
-      <Tabs.Screen
-        name="transactions"
-        options={{ title: 'Giao dịch', tabBarIcon: tabIcon('receipt', 'receipt-outline') }}
-      />
-      <Tabs.Screen name="add" options={{ title: 'Thêm', tabBarButton: () => <AddButton /> }} />
-      <Tabs.Screen
-        name="schedule"
-        options={{ title: 'Lịch', tabBarIcon: tabIcon('calendar', 'calendar-outline') }}
-      />
-      <Tabs.Screen
-        name="more"
-        options={{ title: 'Thêm', tabBarIcon: tabIcon('grid', 'grid-outline') }}
-      />
-    </Tabs>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+});

@@ -1,93 +1,362 @@
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import { View } from 'react-native';
+import { router, type Href } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { AmountText, AppText, Button, Card, EmptyState, ListRow, Screen } from '@/components/ui';
+import { GlassSurface } from '@/components/glass/GlassSurface';
+import { IconButton } from '@/components/glass/IconButton';
+import {
+  AppText,
+  Button,
+  Card,
+  EmptyState,
+  IconBadge,
+  Screen,
+  SectionTitle,
+} from '@/components/ui';
+import { db } from '@/db';
 import { totalBalance, useAccountBalances } from '@/features/accounts';
-import { createStyles, useTheme } from '@/theme';
+import { createDefaultData } from '@/features/onboarding/defaults';
+import { useMoneyFormat, useSettings } from '@/features/settings';
+import { TransactionRow } from '@/features/transactions/components/TransactionRow';
+import { usePeriodSummary, useTransactions } from '@/features/transactions/hooks';
+import {
+  WEEKDAY_NAMES,
+  addDays,
+  formatDate,
+  periodContaining,
+  todayVn,
+  vnDateToMs,
+  weekdayOf,
+} from '@/lib/date';
+import type { IconName } from '@/lib/icons';
+import { createStyles, rgba, useTheme } from '@/theme';
+
+const QUICK_ACTIONS: {
+  label: string;
+  icon: IconName;
+  href: Href;
+  tone: 'expense' | 'income' | 'primary';
+}[] = [
+  { label: 'Chi tiêu', icon: 'arrow-up', href: '/transaction/new?type=expense', tone: 'expense' },
+  { label: 'Thu nhập', icon: 'arrow-down', href: '/transaction/new?type=income', tone: 'income' },
+  {
+    label: 'Chuyển tiền',
+    icon: 'swap-horizontal',
+    href: '/transaction/new?type=transfer',
+    tone: 'primary',
+  },
+  { label: 'Ví', icon: 'wallet', href: '/accounts', tone: 'primary' },
+];
+
+function greeting(now = new Date()): string {
+  const hour = (now.getUTCHours() + 7) % 24;
+  if (hour < 11) return 'Chào buổi sáng';
+  if (hour < 14) return 'Chào buổi trưa';
+  if (hour < 18) return 'Chào buổi chiều';
+  return 'Chào buổi tối';
+}
 
 export function OverviewScreen() {
   const styles = useStyles();
   const { colors } = useTheme();
-  const { data: balances, error } = useAccountBalances();
-  const today = format(new Date(), "EEEE, d 'tháng' M", { locale: vi });
+  const format = useMoneyFormat();
+  const { userName, hideBalance, startDayOfMonth, transfersAsIncomeExpense, update } =
+    useSettings();
+  const { data: balances } = useAccountBalances();
+
+  const period = periodContaining(todayVn(), startDayOfMonth);
+  const { data: summary } = usePeriodSummary({
+    from: vnDateToMs(period.start),
+    to: vnDateToMs(addDays(period.end, 1)),
+    transfersAsIncomeExpense,
+  });
+  const { data: recent } = useTransactions({ limit: 6 });
+
+  const total = balances ? totalBalance(balances) : 0;
+  const hasAccounts = (balances?.length ?? 0) > 0;
+  const mask = (text: string) => (hideBalance ? '••••••' : text);
 
   return (
-    <Screen safeTop>
-      <View>
-        <AppText variant="caption" color="textMuted" style={styles.capitalize}>
-          {today}
-        </AppText>
-        <AppText variant="title">Tổng quan</AppText>
-      </View>
-
-      <LinearGradient
-        colors={colors.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.balanceCard}
-      >
-        <AppText variant="label" style={{ color: colors.onGradient, opacity: 0.85 }}>
+    <Screen
+      tabBar
+      largeTitle
+      title={userName ? `Chào ${userName}` : 'Tổng quan'}
+      subtitle={`${greeting()} · ${WEEKDAY_NAMES[weekdayOf(todayVn()) - 1]}, ${formatDate(todayVn(), false)}`}
+      headerRight={
+        <IconButton
+          icon={hideBalance ? 'eye-off-outline' : 'eye-outline'}
+          accessibilityLabel={hideBalance ? 'Hiện số dư' : 'Ẩn số dư'}
+          onPress={() => update({ hideBalance: !hideBalance })}
+        />
+      }
+    >
+      {/* Thẻ số dư */}
+      <GlassSurface contentStyle={styles.hero}>
+        <LinearGradient
+          colors={[rgba(colors.primary, colors.dark ? 0.32 : 0.22), 'transparent']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+          pointerEvents="none"
+        />
+        <AppText variant="label" color="textMuted">
           TỔNG SỐ DƯ
         </AppText>
-        <AmountText
-          amount={balances ? totalBalance(balances) : 0}
-          variant="display"
-          color="onGradient"
-        />
-        <AppText variant="caption" style={{ color: colors.onGradient, opacity: 0.85 }}>
-          {balances ? `${balances.length} ví` : 'Đang tải…'}
+        <AppText
+          variant="hero"
+          style={{ fontVariant: ['tabular-nums'] }}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
+          {mask(format.money(total))}
         </AppText>
-      </LinearGradient>
+        <View style={styles.heroStats}>
+          <HeroStat
+            icon="arrow-down"
+            tone={colors.income}
+            label="Thu tháng này"
+            value={mask(format.compact(summary?.income ?? 0))}
+          />
+          <HeroStat
+            icon="arrow-up"
+            tone={colors.expense}
+            label="Chi tháng này"
+            value={mask(format.compact(summary?.expense ?? 0))}
+          />
+        </View>
+      </GlassSurface>
 
-      {error && (
-        <AppText color="expense" variant="caption">
-          {error.message}
-        </AppText>
-      )}
-
-      {balances && balances.length > 0 ? (
-        <Card>
-          {balances.map((account) => (
-            <ListRow
-              key={account.id}
-              icon="wallet-outline"
-              iconColor={account.color}
-              title={account.name}
-              subtitle={account.includeInBalance ? undefined : 'Không tính vào tổng'}
-              right={<AmountText amount={account.balance} />}
-            />
-          ))}
-        </Card>
-      ) : (
+      {!hasAccounts && balances ? (
         <Card>
           <EmptyState
-            icon="download-outline"
-            title="Chưa có dữ liệu"
-            description="Giai đoạn 1 sẽ có Import từ Ivy Wallet để đưa 7 ví và 495 giao dịch của bạn vào JWP."
+            icon="sparkles-outline"
+            title="Bắt đầu với JWP"
+            description="Chuyển toàn bộ dữ liệu từ Ivy Wallet, hoặc bắt đầu mới với ví Tiền mặt và 18 danh mục có sẵn."
             action={
-              <Button
-                title="Import từ Ivy Wallet"
-                icon="download-outline"
-                onPress={() => router.push('/import/ivy')}
-              />
+              <View style={{ gap: 10, alignSelf: 'stretch' }}>
+                <Button
+                  icon="download-outline"
+                  title="Import từ Ivy Wallet"
+                  onPress={() => router.push('/import/ivy')}
+                />
+                <Button
+                  variant="secondary"
+                  icon="add-circle-outline"
+                  title="Bắt đầu mới"
+                  onPress={() => {
+                    createDefaultData(db);
+                    useSettings.getState().update({ onboarded: true });
+                  }}
+                />
+              </View>
             }
           />
         </Card>
-      )}
+      ) : null}
+
+      {/* Thao tác nhanh */}
+      <View style={styles.actions}>
+        {QUICK_ACTIONS.map((action) => {
+          const tone = colors[action.tone];
+          return (
+            <Pressable
+              key={action.label}
+              accessibilityRole="button"
+              onPress={() => router.push(action.href)}
+              style={({ pressed }) => [styles.action, pressed && { transform: [{ scale: 0.94 }] }]}
+            >
+              <GlassSurface
+                radius={22}
+                shadow={false}
+                style={styles.actionIcon}
+                contentStyle={styles.center}
+              >
+                <View
+                  style={[
+                    styles.actionDot,
+                    { backgroundColor: rgba(tone, colors.dark ? 0.25 : 0.14) },
+                  ]}
+                >
+                  <Ionicons name={action.icon} size={20} color={tone} />
+                </View>
+              </GlassSurface>
+              <AppText variant="label" color="textMuted">
+                {action.label}
+              </AppText>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {/* Ví */}
+      {hasAccounts ? (
+        <>
+          <View style={styles.sectionRow}>
+            <SectionTitle>Ví của bạn</SectionTitle>
+            <Pressable onPress={() => router.push('/accounts')} hitSlop={8}>
+              <AppText variant="label" color="primary">
+                Quản lý
+              </AppText>
+            </Pressable>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.accounts}
+            style={styles.bleed}
+          >
+            {balances!.map((account) => (
+              <Pressable key={account.id} onPress={() => router.push(`/account/${account.id}`)}>
+                {({ pressed }) => (
+                  <GlassSurface
+                    style={[styles.accountCard, pressed && { transform: [{ scale: 0.97 }] }]}
+                    contentStyle={styles.accountContent}
+                    radius={24}
+                  >
+                    <IconBadge
+                      icon={(account.icon as IconName) ?? 'wallet-outline'}
+                      color={account.color}
+                      size={36}
+                    />
+                    <AppText variant="caption" color="textMuted" numberOfLines={1}>
+                      {account.name}
+                    </AppText>
+                    <AppText
+                      variant="heading"
+                      numberOfLines={1}
+                      color={account.balance < 0 ? 'expense' : 'text'}
+                      style={{ fontVariant: ['tabular-nums'] }}
+                    >
+                      {mask(format.money(account.balance))}
+                    </AppText>
+                  </GlassSurface>
+                )}
+              </Pressable>
+            ))}
+          </ScrollView>
+        </>
+      ) : null}
+
+      {/* Giao dịch gần đây */}
+      {recent && recent.length > 0 ? (
+        <>
+          <View style={styles.sectionRow}>
+            <SectionTitle>Gần đây</SectionTitle>
+            <Pressable onPress={() => router.navigate('/transactions')} hitSlop={8}>
+              <AppText variant="label" color="primary">
+                Xem tất cả
+              </AppText>
+            </Pressable>
+          </View>
+          <Card style={{ gap: 0, paddingVertical: 6 }}>
+            {recent.map((item) => (
+              <TransactionRow key={item.id} item={item} />
+            ))}
+          </Card>
+        </>
+      ) : null}
     </Screen>
   );
 }
 
+function HeroStat({
+  icon,
+  tone,
+  label,
+  value,
+}: {
+  icon: IconName;
+  tone: string;
+  label: string;
+  value: string;
+}) {
+  const styles = useStyles();
+  const { colors } = useTheme();
+  return (
+    <View style={styles.heroStat}>
+      <View style={[styles.statIcon, { backgroundColor: rgba(tone, colors.dark ? 0.22 : 0.14) }]}>
+        <Ionicons name={icon} size={14} color={tone} />
+      </View>
+      <View>
+        <AppText variant="label" color="textMuted">
+          {label}
+        </AppText>
+        <AppText variant="bodyMedium" style={{ fontVariant: ['tabular-nums'] }}>
+          {value}
+        </AppText>
+      </View>
+    </View>
+  );
+}
+
 const useStyles = createStyles((t) => ({
-  capitalize: {
-    textTransform: 'capitalize',
-  },
-  balanceCard: {
-    borderRadius: t.radius.xl,
+  hero: {
     padding: t.spacing.xl,
     gap: t.spacing.xs,
+  },
+  heroStats: {
+    flexDirection: 'row',
+    gap: t.spacing.lg,
+    marginTop: t.spacing.md,
+  },
+  heroStat: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: t.spacing.sm,
+  },
+  statIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  action: {
+    alignItems: 'center',
+    gap: 6,
+    width: '23%',
+  },
+  actionIcon: {
+    width: 62,
+    height: 62,
+  },
+  actionDot: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: -t.spacing.sm,
+  },
+  bleed: {
+    marginHorizontal: -t.spacing.lg,
+  },
+  accounts: {
+    paddingHorizontal: t.spacing.lg,
+    gap: t.spacing.md,
+    paddingVertical: 4,
+  },
+  accountCard: {
+    width: 156,
+  },
+  accountContent: {
+    padding: t.spacing.lg,
+    gap: 6,
   },
 }));

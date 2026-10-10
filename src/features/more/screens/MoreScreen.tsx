@@ -1,46 +1,89 @@
 import Constants from 'expo-constants';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 
 import { AppText, Card, ListRow, Screen, SectionTitle } from '@/components/ui';
+import type { IconName } from '@/lib/icons';
+
+type Item = { icon: IconName; title: string; subtitle: string; href: Href; color?: string };
+
+const SECTIONS: { title: string; items: Item[] }[] = [
+  {
+    title: 'Quản lý',
+    items: [
+      {
+        icon: 'wallet-outline',
+        title: 'Ví',
+        subtitle: 'Thêm, sửa, lưu trữ, điều chỉnh số dư',
+        href: '/accounts',
+        color: '#16A34A',
+      },
+      {
+        icon: 'pricetags-outline',
+        title: 'Danh mục',
+        subtitle: 'Màu, biểu tượng, thứ tự',
+        href: '/categories',
+        color: '#F97316',
+      },
+      {
+        icon: 'pricetag-outline',
+        title: 'Tag',
+        subtitle: 'Gom giao dịch theo chủ đề',
+        href: '/tags',
+        color: '#DB2777',
+      },
+    ],
+  },
+  {
+    title: 'Dữ liệu',
+    items: [
+      {
+        icon: 'download-outline',
+        title: 'Import từ Ivy Wallet',
+        subtitle: 'Ví, giao dịch, lịch định kỳ, khoản vay',
+        href: '/import/ivy',
+        color: '#2563EB',
+      },
+    ],
+  },
+  {
+    title: 'Cài đặt',
+    items: [
+      {
+        icon: 'color-palette-outline',
+        title: 'Giao diện',
+        subtitle: 'Sáng / Tối / AMOLED, màu chủ đạo, ký hiệu tiền',
+        href: '/settings/appearance',
+        color: '#7C3AED',
+      },
+      {
+        icon: 'notifications-outline',
+        title: 'Kiểm tra thông báo',
+        subtitle: 'Thử popup, nút hành động, hướng dẫn Huawei',
+        href: '/settings/notifications',
+        color: '#0D9488',
+      },
+    ],
+  },
+];
 
 export function MoreScreen() {
   return (
-    <Screen safeTop>
-      <AppText variant="title">Thêm</AppText>
-
-      <SectionTitle>Cài đặt</SectionTitle>
-      <Card>
-        <ListRow
-          icon="color-palette-outline"
-          title="Giao diện"
-          subtitle="Sáng / Tối / AMOLED, màu chủ đạo, ký hiệu tiền"
-          onPress={() => router.push('/settings/appearance')}
-        />
-        <ListRow
-          icon="notifications-outline"
-          title="Kiểm tra thông báo"
-          subtitle="Thử popup, nút hành động, hướng dẫn cho Huawei"
-          onPress={() => router.push('/settings/notifications')}
-        />
-      </Card>
-
-      <SectionTitle>Dữ liệu</SectionTitle>
-      <Card>
-        <ListRow
-          icon="download-outline"
-          title="Import từ Ivy Wallet"
-          subtitle="Chuyển ví, giao dịch, lịch định kỳ từ file backup"
-          onPress={() => router.push('/import/ivy')}
-        />
-        <ListRow
-          icon="cloud-upload-outline"
-          title="Sao lưu & xuất file"
-          subtitle="Giai đoạn 6"
-          disabled
-          onPress={() => {}}
-        />
-      </Card>
-
+    <Screen tabBar largeTitle title="Thêm">
+      {SECTIONS.map((section) => (
+        <Card key={section.title} style={{ gap: 0, paddingVertical: 8 }}>
+          <SectionTitle>{section.title}</SectionTitle>
+          {section.items.map((item) => (
+            <ListRow
+              key={item.title}
+              icon={item.icon}
+              iconColor={item.color}
+              title={item.title}
+              subtitle={item.subtitle}
+              onPress={() => router.push(item.href)}
+            />
+          ))}
+        </Card>
+      ))}
       <AppText variant="caption" color="textMuted" style={{ textAlign: 'center' }}>
         JWP {Constants.expoConfig?.version ?? ''} · dữ liệu lưu trên máy, không cần internet
       </AppText>

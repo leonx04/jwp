@@ -2,8 +2,9 @@
 
 export type NeutralPalette = {
   background: string;
+  /** Màu đặc gần đúng của một thẻ kính phủ trên nền (dùng tính độ tương phản chữ) */
   surface: string;
-  /** Nền phụ: ô nhập, chip, hàng được chọn */
+  /** Nền phụ: ô nhập, chip, phím số */
   surfaceAlt: string;
   text: string;
   textMuted: string;
@@ -13,25 +14,43 @@ export type NeutralPalette = {
   warning: string;
 };
 
+/** Lớp kính (Liquid Glass) — màu có độ trong suốt */
+export type GlassPalette = {
+  /** Nền thẻ nội dung (kính mỏng) */
+  glassFill: string;
+  /** Nền lớp điều hướng nổi: thanh tab, header, bảng trượt (kính dày hơn) */
+  glassChrome: string;
+  /** Viền sáng quanh mép kính */
+  glassBorder: string;
+  /** Vệt sáng phía trên (phản chiếu) */
+  glassSheen: string;
+  /** Viên thuốc đánh dấu mục đang chọn trên kính */
+  glassActive: string;
+  shadow: string;
+  /** Độ đậm của các khối màu nhoè phía sau (0–1) */
+  blobOpacity: number;
+  blurTint: 'light' | 'dark';
+};
+
 export const lightPalette: NeutralPalette = {
-  background: '#F4F5F9',
-  surface: '#FFFFFF',
-  surfaceAlt: '#ECEEF4',
-  text: '#14151A',
-  textMuted: '#626777',
-  border: '#E1E3EA',
+  background: '#EEF0F7',
+  surface: '#F8F9FC',
+  surfaceAlt: '#E6E9F2',
+  text: '#11131A',
+  textMuted: '#5D6272',
+  border: '#DADEEA',
   income: '#15803D',
   expense: '#D92D3A',
   warning: '#B45309',
 };
 
 export const darkPalette: NeutralPalette = {
-  background: '#0E0F14',
-  surface: '#181A21',
-  surfaceAlt: '#22252E',
-  text: '#EDEFF5',
-  textMuted: '#9AA0AE',
-  border: '#2A2D37',
+  background: '#07080D',
+  surface: '#14161E',
+  surfaceAlt: '#1E212B',
+  text: '#F1F3F9',
+  textMuted: '#9BA1B0',
+  border: '#272A35',
   income: '#4ADE80',
   expense: '#FF6B6B',
   warning: '#FBBF24',
@@ -41,9 +60,39 @@ export const darkPalette: NeutralPalette = {
 export const amoledPalette: NeutralPalette = {
   ...darkPalette,
   background: '#000000',
-  surface: '#0C0C0F',
-  surfaceAlt: '#18191D',
+  surface: '#0D0E12',
+  surfaceAlt: '#17181D',
   border: '#1F2026',
+};
+
+export const lightGlass: GlassPalette = {
+  glassFill: 'rgba(255,255,255,0.58)',
+  glassChrome: 'rgba(255,255,255,0.55)',
+  glassBorder: 'rgba(255,255,255,0.85)',
+  glassSheen: 'rgba(255,255,255,0.55)',
+  glassActive: 'rgba(255,255,255,0.9)',
+  shadow: 'rgba(40,48,90,0.14)',
+  blobOpacity: 0.55,
+  blurTint: 'light',
+};
+
+export const darkGlass: GlassPalette = {
+  glassFill: 'rgba(255,255,255,0.055)',
+  glassChrome: 'rgba(22,24,32,0.55)',
+  glassBorder: 'rgba(255,255,255,0.10)',
+  glassSheen: 'rgba(255,255,255,0.07)',
+  glassActive: 'rgba(255,255,255,0.14)',
+  shadow: 'rgba(0,0,0,0.55)',
+  blobOpacity: 0.42,
+  blurTint: 'dark',
+};
+
+export const amoledGlass: GlassPalette = {
+  ...darkGlass,
+  glassFill: 'rgba(255,255,255,0.045)',
+  glassChrome: 'rgba(10,10,12,0.6)',
+  // Giữ nền gần như đen để tiết kiệm pin, chỉ còn chút ánh màu
+  blobOpacity: 0.18,
 };
 
 export type Accent = {
