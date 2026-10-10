@@ -1,0 +1,203 @@
+// Màn "Kiểm tra thông báo" (spike Giai đoạn 0): thử popup, nút hành động, hẹn giờ khi app đã tắt.
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { Alert, Linking, View } from 'react-native';
+
+import { AppText, Button, Card, EmptyState, ListRow, Screen, SectionTitle } from '@/components/ui';
+
+import { notificationsSupported } from '../module';
+import { useResponseLog } from '../responseLog';
+import {
+  cancelAllScheduled,
+  getScheduledCount,
+  samplePaymentReminder,
+  scheduleAt,
+  scheduleIn,
+} from '../scheduling';
+import { getPermissionState, requestPermission, type PermissionState } from '../setup';
+
+const PERMISSION_TEXT: Record<PermissionState, string> = {
+  granted: 'Đã cho phép',
+  denied: 'Đã bị chặn — mở Cài đặt để bật lại',
+  undetermined: 'Chưa cho phép — bấm Cấp quyền',
+  unsupported: 'Không hỗ trợ trong Expo Go',
+};
+
+const scheduleQuickTest = () => scheduleIn(5, samplePaymentReminder(30));
+
+const scheduleExactTest = () =>
+  scheduleAt(new Date(Date.now() + 120_000), {
+    title: '💰 Hôm nay nhận lương 15.000.000 ₫',
+    body: 'Thử thông báo hẹn giờ khi app đã tắt hẳn',
+    channel: 'income',
+    data: { url: '/settings/notifications' },
+  });
+
+function formatTime(ms: number) {
+  const d = new Date(ms);
+  return [d.getHours(), d.getMinutes(), d.getSeconds()]
+    .map((n) => n.toString().padStart(2, '0'))
+    .join(':');
+}
+
+export function NotificationTestScreen() {
+  if (!notificationsSupported) return <UnsupportedNotice />;
+  return <NotificationTester />;
+}
+
+/** Expo Go Android không chạy được expo-notifications (SDK 53+) */
+function UnsupportedNotice() {
+  return (
+    <Screen>
+      <Card>
+        <EmptyState
+          icon="notifications-off-outline"
+          title="Cần bản cài riêng (dev build)"
+          description={
+            'Từ SDK 53, Expo Go trên Android không chạy được thư viện thông báo.\n' +
+            'Các phần khác của JWP vẫn dùng bình thường trong Expo Go. ' +
+            'Để thử thông báo, cài bản JWP riêng: npx expo run:android'
+          }
+        />
+      </Card>
+    </Screen>
+  );
+}
+
+function NotificationTester() {
+  const [permission, setPermission] = useState<PermissionState>('undetermined');
+  const [scheduled, setScheduled] = useState(0);
+  const entries = useResponseLog((s) => s.entries);
+
+  const refresh = useCallback(() => {
+    getPermissionState()
+      .then(setPermission)
+      .catch(() => {});
+    getScheduledCount()
+      .then(setScheduled)
+      .catch(() => {});
+  }, []);
+
+  useFocusEffect(refresh);
+
+  const ensurePermission = async () => {
+    const state = await requestPermission();
+    setPermission(state);
+    if (state !== 'granted') {
+      Alert.alert('Chưa có quyền thông báo', 'Mở Cài đặt → Thông báo → bật cho Expo Go / JWP.', [
+        { text: 'Để sau', style: 'cancel' },
+        { text: 'Mở Cài đặt', onPress: () => Linking.openSettings() },
+      ]);
+    }
+    return state === 'granted';
+  };
+
+  const run = (task: () => Promise<unknown>, message: string) => async () => {
+    if (!(await ensurePermission())) return;
+    try {
+      await task();
+      refresh();
+      Alert.alert('Đã hẹn', message);
+    } catch (error) {
+      Alert.alert('Lỗi', error instanceof Error ? error.message : String(error));
+    }
+  };
+
+  return (
+    <Screen>
+      <Card>
+        <ListRow
+          icon="notifications-outline"
+          title="Quyền thông báo"
+          subtitle={PERMISSION_TEXT[permission]}
+          right={
+            permission === 'granted' ? null : (
+              <Button title="Cấp quyền" onPress={ensurePermission} style={{ minHeight: 36 }} />
+            )
+          }
+        />
+        <ListRow
+          icon="time-outline"
+          title="Đang chờ gửi"
+          subtitle={`${scheduled} thông báo đã hẹn`}
+          right={
+            scheduled > 0 ? (
+              <Button
+                title="Huỷ hết"
+                variant="secondary"
+                style={{ minHeight: 36 }}
+                onPress={async () => {
+                  await cancelAllScheduled();
+                  refresh();
+                }}
+              />
+            ) : null
+          }
+        />
+      </Card>
+
+      <SectionTitle>Thử nghiệm</SectionTitle>
+      <Card>
+        <AppText color="textMuted">
+          Bấm nút rồi về màn hình chính (hoặc khoá máy) để xem popup. Kéo thông báo xuống để thấy
+          các nút: Đã thanh toán · Nhắc lại sau · Mở.
+        </AppText>
+        <Button
+          icon="flash-outline"
+          title="Gửi sau 5 giây (có nút hành động)"
+          onPress={run(
+            scheduleQuickTest,
+            'Thông báo sẽ đến sau 5 giây. "Nhắc lại sau" sẽ hẹn lại sau 30 giây.',
+          )}
+        />
+        <Button
+          icon="alarm-outline"
+          variant="secondary"
+          title="Hẹn đúng giờ sau 2 phút"
+          onPress={run(
+            scheduleExactTest,
+            'Hãy vuốt tắt hẳn app (xoá khỏi đa nhiệm) rồi chờ 2 phút.',
+          )}
+        />
+      </Card>
+
+      <SectionTitle>Phản hồi đã nhận</SectionTitle>
+      <Card>
+        {entries.length === 0 ? (
+          <AppText color="textMuted">
+            Chưa có. Bấm vào thông báo hoặc một nút trên thông báo.
+          </AppText>
+        ) : (
+          entries.map((entry) => (
+            <View key={`${entry.at}-${entry.action}`}>
+              <AppText variant="bodyMedium">
+                {formatTime(entry.at)} · {entry.action}
+              </AppText>
+              <AppText variant="caption" color="textMuted" numberOfLines={1}>
+                {entry.source === 'cold-start' ? 'Mở app từ trạng thái tắt · ' : ''}
+                {entry.title}
+              </AppText>
+            </View>
+          ))
+        )}
+      </Card>
+
+      <SectionTitle>Máy Huawei (EMUI)</SectionTitle>
+      <Card>
+        <AppText color="textMuted">
+          1. Cài đặt → Thông báo → Expo Go/JWP → bật Cho phép, Biểu ngữ, Màn hình khoá.{'\n'}
+          2. Cài đặt → Pin → Khởi chạy ứng dụng → Expo Go/JWP → Quản lý thủ công, bật cả 3 mục.
+          {'\n'}
+          3. Nếu thông báo đến trễ vài phút: bình thường với Expo Go; bản cài riêng (dev build) sẽ
+          báo đúng giờ.
+        </AppText>
+        <Button
+          icon="settings-outline"
+          variant="secondary"
+          title="Mở cài đặt của app"
+          onPress={() => Linking.openSettings()}
+        />
+      </Card>
+    </Screen>
+  );
+}
