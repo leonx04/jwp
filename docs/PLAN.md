@@ -4,7 +4,7 @@
 > Dự án: `E:\Co-pro\App\JWP` — `Base` chỉ dùng để ghi chú / học.
 > **Local-first**: mọi dữ liệu nằm trên máy (SQLite), không cần backend. Sao lưu bằng file JSON/CSV. Firebase để sau nếu cần đồng bộ nhiều máy.
 > Test: máy ảo Android (Pixel_API36) + Huawei P40 Pro (không có Google Play Services).
-> Trạng thái: ✅ Giai đoạn 0 xong (11/10/2026) · ⏭ tiếp theo: Giai đoạn 1 — Import Ivy Wallet
+> Trạng thái: ✅ Giai đoạn 0, 1 xong · ⏭ đang làm: Giai đoạn 2
 
 ---
 
@@ -24,7 +24,7 @@
 | **Import Ivy Wallet** | Đọc đúng file backup Ivy (UTF-16BE), dữ liệu khớp 100% |
 | **Giao diện** | Sáng / Tối / Hệ thống / AMOLED, chọn màu chủ đạo, animation mượt |
 | **Tiền Việt** | `1.500.000 ₫`, rút gọn `1,5 Tr`, không thừa / thiếu đơn vị |
-| Riêng tư | Khoá app bằng vân tay / mã PIN, ẩn số dư, ẩn thu nhập |
+| Riêng tư | Ẩn số dư (chạm để hiện) |
 
 ---
 
@@ -48,7 +48,8 @@ JWP **viết lại từ đầu bằng TypeScript**, chỉ tham khảo tính năn
 | Reports có bộ lọc, Pie chart, tìm kiếm | Có | 7 |
 | Ngày bắt đầu tháng (`start_date_of_month`) | Có — vd tháng tính từ ngày nhận lương | 7 |
 | Chuyển khoản tính như thu/chi trong thống kê (`transfers_as_inc_exp`) | Có, tuỳ chọn (Ivy của bạn đang bật) | 7 |
-| Ẩn số dư / ẩn thu nhập, khoá app | Có | 8 |
+| Ẩn số dư | Có | 8 |
+| Khoá app bằng vân tay | **Không** (đã bỏ theo yêu cầu) | — |
 | AMOLED, sáng/tối/tự động | Có | 0 · 8 |
 | Bàn phím số tuỳ chọn (`standardKeypadLayout`) | Có — bàn phím riêng có phím `000` | 2 |
 | Thẻ ví / danh mục dạng gọn (compact) | Có, tuỳ chọn | 8 |
@@ -107,7 +108,7 @@ File: `IvyWalletBackup_*/data*.json` (đã thêm vào `.gitignore` — **không 
 | Chuyển khoản có `toAccountId`, `toAmount` | Trừ ví nguồn, cộng ví đích |
 | Màu ARGB số nguyên có dấu (`-49056`) | → hex `#FF4060` |
 | Icon tên Ivy (`fooddrink`, `ic_vue_*`…), có icon rỗng | Bảng ánh xạ + icon mặc định |
-| 67 giao dịch không danh mục, 138 không tiêu đề, 1 ví thiếu `orderNum` | "Chưa phân loại", tiêu đề rỗng, xếp cuối |
+| Giao dịch không danh mục / không tiêu đề; ví "Tiền mặt" thiếu `orderNum` | "Chưa phân loại", tiêu đề rỗng. **Ivy không ghi giá trị mặc định** vào file → thiếu `orderNum` = 0 (xếp đầu), thiếu `includeInBalance` = true |
 | Thời gian UTC (ms) | Hiển thị giờ Việt Nam |
 | `settings.bufferAmount = 4.000.000` | → "Ngưỡng an toàn" trong dự trù |
 | `settings.theme = DARK` | → theme Tối |
@@ -244,7 +245,6 @@ Tất cả chạy trong Expo Go **trừ thông báo** (cần dev build: `npx exp
 | Bottom sheet | @gorhom/bottom-sheet | 2 |
 | Chọn ngày | @react-native-community/datetimepicker | 2 |
 | Biểu đồ | victory-native + @shopify/react-native-skia | 3 · 7 |
-| Khoá app | expo-local-authentication | 8 |
 
 Không dùng MMKV / module native ngoài Expo Go. Khi cần → dev build `npx expo run:android`.
 
@@ -276,14 +276,14 @@ drizzle/                 # migration SQL do drizzle-kit sinh ra (không sửa ta
 | # | Giai đoạn | Kết quả kiểm chứng |
 |---|---|---|
 | 0 ✅ | Nền tảng + **spike thông báo** | Expo Router, DB + migration, money lib + test, mã hoá + test, theme động (sáng/tối/AMOLED + màu), font, khung 5 tab, màn kiểm tra thông báo. Chạy được trên máy ảo (Expo Go + dev build), 143 test pass |
-| 1 | **Import Ivy** | Số dư 7 ví khớp bảng mục 5 (test tự động) · kỳ sinh ra khớp 143 kỳ của Ivy |
+| 1 ✅ | **Import Ivy** | Số dư 7 ví khớp bảng mục 5 (test tự động) · kỳ sinh ra khớp 143 kỳ của Ivy |
 | 2 | Ví, danh mục, giao dịch, **chuyển tiền, tag, gợi ý** | Tổng quan, danh sách theo ngày, thêm/sửa bằng bottom sheet, chuyển khoản + phí, điều chỉnh số dư, vuốt xoá, gợi ý theo số tiền |
 | 3 | **Lịch thu chi & dự trù** | Engine lặp lại (test ngày cuối tháng, cuối tuần), dòng tiền dự kiến, chi tiêu an toàn |
 | 4 | **Nhắc nhở** | Popup + nút hành động, cửa sổ trượt, màn kiểm tra thông báo hoàn chỉnh |
 | 5 | **Sổ nợ** | Đầy đủ mục 8, có nhắc nợ |
 | 6 | **Sao lưu** | Xuất → khôi phục ra dữ liệu y hệt (test), CSV mở đúng trong Excel |
 | 7 | Thống kê, tìm kiếm, **ngân sách** | Biểu đồ, báo cáo lọc, ngày bắt đầu tháng, ngân sách + cảnh báo |
-| 8 | Hoàn thiện | Khoá app, ẩn số dư, animation, haptics, màn trống, thử 5.000 giao dịch |
+| 8 | Hoàn thiện | Ẩn số dư, animation, haptics, màn trống, thử 5.000 giao dịch |
 
 **Test tự động:** tiền, mã hoá, bỏ dấu tiếng Việt, gợi ý, mapper Ivy (fixture ẩn danh), số dư, engine lặp lại, dự trù, sổ nợ, CSV, backup round-trip.
 
