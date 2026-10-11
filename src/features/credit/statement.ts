@@ -145,3 +145,22 @@ export function installmentAmounts(price: number, months: number, monthlyFee: nu
   const total = price + monthlyFee * months;
   return { total, perMonth: Math.ceil(total / months), fee: monthlyFee * months };
 }
+
+/** Ngày chốt của kỳ chứa `date` (ngày chốt đầu tiên ≥ date) */
+export function closeDateOnOrAfter(date: DateString, statementDay: number): DateString {
+  const thisMonth = dayOfMonth(date, statementDay);
+  return thisMonth >= date ? thisMonth : dayOfMonth(addMonths(dayOfMonth(date, 1), 1), statementDay);
+}
+
+/**
+ * Hạn trả kỳ góp đầu tiên của khoản mua ngày `purchaseDate`: hạn thanh toán của kỳ sao kê chứa
+ * ngày mua. Ví chưa cài ngày chốt / hạn → một tháng sau ngày mua.
+ */
+export function firstInstallmentDue(
+  purchaseDate: DateString,
+  statementDay?: number | null,
+  dueDay?: number | null,
+): DateString {
+  if (!statementDay || !dueDay) return addMonths(purchaseDate, 1);
+  return dueDateAfter(closeDateOnOrAfter(purchaseDate, statementDay), dueDay);
+}

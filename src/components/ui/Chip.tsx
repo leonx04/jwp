@@ -2,15 +2,18 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import type { IconName } from '@/lib/icons';
+import { bankFromIcon } from '@/lib/banks';
+import type { AppIcon, IconName } from '@/lib/icons';
 import { rgba, useTheme } from '@/theme';
 
 import { AppText } from './AppText';
+import { BankMark } from './BankMark';
 
 type ChipProps = {
   label: string;
   selected?: boolean;
-  icon?: IconName;
+  /** Tên Ionicons hoặc 'bank:<CODE>' (logo ngân hàng) */
+  icon?: AppIcon;
   /** Màu riêng (ví / danh mục / tag): chấm màu khi chưa chọn, nền màu khi chọn */
   color?: string | null;
   onPress?: () => void;
@@ -33,6 +36,7 @@ export function Chip({
 }: ChipProps) {
   const { colors } = useTheme();
   const tint = color ?? colors.primary;
+  const bank = bankFromIcon(icon);
   return (
     <Pressable
       accessibilityRole="button"
@@ -58,8 +62,10 @@ export function Chip({
         style,
       ]}
     >
-      {icon ? (
-        <Ionicons name={icon} size={16} color={selected ? tint : colors.textMuted} />
+      {bank ? (
+        <BankMark bank={bank} size={20} />
+      ) : icon ? (
+        <Ionicons name={icon as IconName} size={16} color={selected ? tint : colors.textMuted} />
       ) : color ? (
         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: tint }} />
       ) : null}

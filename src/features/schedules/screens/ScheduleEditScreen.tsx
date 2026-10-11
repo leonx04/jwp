@@ -32,7 +32,7 @@ import {
   vnDateToMs,
   WEEKDAY_SHORT,
 } from '@/lib/date';
-import type { IconName } from '@/lib/icons';
+import { toAppIcon } from '@/lib/icons';
 import {
   describeRule,
   generateOccurrences,
@@ -219,7 +219,7 @@ export function ScheduleEditScreen() {
             key={a.id}
             label={a.name}
             color={a.color}
-            icon={(a.icon as IconName) ?? undefined}
+            icon={a.icon ? toAppIcon(a.icon, 'wallet-outline') : undefined}
             selected={account === a.id}
             onPress={() => setAccountId(a.id)}
           />
@@ -241,7 +241,7 @@ export function ScheduleEditScreen() {
                   key={a.id}
                   label={a.name}
                   color={a.color}
-                  icon={(a.icon as IconName) ?? undefined}
+                  icon={a.icon ? toAppIcon(a.icon, 'wallet-outline') : undefined}
                   selected={toAccountId === a.id}
                   onPress={() => setToAccountId(a.id)}
                 />
@@ -257,7 +257,7 @@ export function ScheduleEditScreen() {
                 key={c.id}
                 label={c.name}
                 color={c.color}
-                icon={(c.icon as IconName) ?? undefined}
+                icon={c.icon ? toAppIcon(c.icon, 'pricetag-outline') : undefined}
                 selected={categoryId === c.id}
                 onPress={() => setCategoryId(categoryId === c.id ? null : c.id)}
               />

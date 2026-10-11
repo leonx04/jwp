@@ -1,7 +1,4 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
-import { BANKS, bankFromIcon, bankIcon, detectBank } from './index';
+import { BANKS, bankFromIcon, bankIcon, bankLogo, detectBank } from './index';
 
 describe('nhận diện ngân hàng từ tên ví', () => {
   it.each([
@@ -37,10 +34,9 @@ describe('nhận diện ngân hàng từ tên ví', () => {
   });
 
   it('mọi ngân hàng có logo (trừ ví dùng huy hiệu chữ), mã không trùng', () => {
-    const dir = path.join(__dirname, '../../../assets/banks');
     for (const bank of BANKS) {
       if (bank.monogram) continue;
-      expect(fs.existsSync(path.join(dir, `${bank.code}.png`))).toBe(true);
+      expect(bankLogo(bank)).not.toBeNull();
     }
     expect(new Set(BANKS.map((b) => b.code)).size).toBe(BANKS.length);
   });

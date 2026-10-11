@@ -66,7 +66,7 @@ const BY_CODE = new Map(BANKS.map((b) => [b.code, b]));
 
 export const BANK_ICON_PREFIX = 'bank:';
 
-export const bankIcon = (code: string) => `${BANK_ICON_PREFIX}${code}`;
+export const bankIcon = (code: string) => `bank:${code}` as const;
 
 export function bankFromIcon(icon: string | null | undefined): Bank | null {
   if (!icon?.startsWith(BANK_ICON_PREFIX)) return null;

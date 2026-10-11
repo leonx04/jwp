@@ -2,7 +2,20 @@ import { asc, count, eq, or, sql } from 'drizzle-orm';
 
 import { accounts, schedules, transactions, type Account } from '@/db/schema';
 import type { AppDatabase } from '@/db/types';
+import { bankFromIcon, bankIcon, detectBank } from '@/lib/banks';
 import { createId } from '@/lib/id';
+
+/** Cài đặt ví trả sau / thẻ tín dụng */
+export type CreditSettings = {
+  /** Hạn mức (đồng) */
+  limit: number | null;
+  /** Ngày chốt sao kê (1–31, 31 = cuối tháng) */
+  statementDay: number | null;
+  /** Ngày đến hạn thanh toán (1–31) */
+  dueDay: number | null;
+  /** Ví thường dùng để trả bill */
+  paymentAccountId: string | null;
+};
 
 export type AccountInput = {
   id?: string;
@@ -10,7 +23,12 @@ export type AccountInput = {
   color: string;
   icon: string;
   includeInBalance: boolean;
+  /** null / bỏ trống: ví thường */
+  credit?: CreditSettings | null;
 };
+
+const validDay = (day: number | null | undefined) =>
+  day != null && Number.isInteger(day) && day >= 1 && day <= 31 ? day : null;
 
 export function listAccounts(db: AppDatabase, { includeArchived = false } = {}): Account[] {
   return db
@@ -24,11 +42,17 @@ export function listAccounts(db: AppDatabase, { includeArchived = false } = {}):
 export function saveAccount(db: AppDatabase, input: AccountInput): string {
   const name = input.name.trim();
   if (!name) throw new Error('Tên ví không được trống.');
+  const credit = input.credit ?? null;
   const values = {
     name,
     color: input.color,
     icon: input.icon,
     includeInBalance: input.includeInBalance,
+    isCredit: credit !== null,
+    creditLimit: credit?.limit && credit.limit > 0 ? Math.round(credit.limit) : null,
+    statementDay: validDay(credit?.statementDay),
+    dueDay: validDay(credit?.dueDay),
+    paymentAccountId: credit?.paymentAccountId && credit.paymentAccountId !== input.id ? credit.paymentAccountId : null,
   };
   if (input.id) {
     db.update(accounts).set(values).where(eq(accounts.id, input.id)).run();
@@ -140,4 +164,26 @@ export function adjustBalance(
 /** Có ví nào chưa? (để biết có cần màn bắt đầu không) */
 export function hasAnyAccount(db: AppDatabase): boolean {
   return !!db.select({ id: accounts.id }).from(accounts).limit(1).get();
+}
+
+/** Ví có tên là ngân hàng / ví điện tử ("MB bank", "Ví Shoppe") nhưng chưa dùng logo */
+export function bankLogoCandidates<T extends Pick<Account, 'id' | 'name' | 'icon'>>(list: readonly T[]) {
+  return list.flatMap((account) => {
+    if (bankFromIcon(account.icon)) return [];
+    const bank = detectBank(account.name);
+    return bank ? [{ account, bank }] : [];
+  });
+}
+
+/** Gắn logo ngân hàng cho các ví được nhận diện. Trả về số ví đã đổi. */
+export function applyBankLogos(db: AppDatabase, ids?: readonly string[]): number {
+  const candidates = bankLogoCandidates(listAccounts(db, { includeArchived: true })).filter(
+    ({ account }) => !ids || ids.includes(account.id),
+  );
+  db.transaction((tx) => {
+    for (const { account, bank } of candidates) {
+      tx.update(accounts).set({ icon: bankIcon(bank.code) }).where(eq(accounts.id, account.id)).run();
+    }
+  });
+  return candidates.length;
 }

@@ -30,7 +30,7 @@ import {
   vnDateToMs,
   weekdayOf,
 } from '@/lib/date';
-import type { IconName } from '@/lib/icons';
+import { toAppIcon, type IconName } from '@/lib/icons';
 import { createStyles, rgba, useTheme } from '@/theme';
 
 const QUICK_ACTIONS: {
@@ -218,7 +218,7 @@ export function OverviewScreen() {
                     radius={24}
                   >
                     <IconBadge
-                      icon={(account.icon as IconName) ?? 'wallet-outline'}
+                      icon={toAppIcon(account.icon, 'wallet-outline')}
                       color={account.color}
                       size={36}
                     />

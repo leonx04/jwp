@@ -32,7 +32,7 @@ import {
 } from '@/features/suggestions/engine';
 import { ensureTag, listTags } from '@/features/tags/repository';
 import { addDays, formatAgo, formatDate, toVnDate, toVnTime, todayVn } from '@/lib/date';
-import type { IconName } from '@/lib/icons';
+import { toAppIcon } from '@/lib/icons';
 import { parseMoney } from '@/lib/money';
 import { createStyles, useTheme } from '@/theme';
 
@@ -417,7 +417,7 @@ export function TransactionEditorScreen() {
               <Chip
                 key={c.id}
                 label={c.name}
-                icon={(c.icon as IconName) ?? undefined}
+                icon={c.icon ? toAppIcon(c.icon, 'pricetag-outline') : undefined}
                 color={c.color}
                 selected={draft.categoryId === c.id}
                 onPress={() => set({ categoryId: draft.categoryId === c.id ? null : c.id })}
@@ -518,7 +518,7 @@ function AccountChips({
         <Chip
           key={a.id}
           label={a.name}
-          icon={(a.icon as IconName) ?? 'wallet-outline'}
+          icon={toAppIcon(a.icon, 'wallet-outline')}
           color={a.color}
           selected={value === a.id}
           onPress={() => onChange(a.id)}

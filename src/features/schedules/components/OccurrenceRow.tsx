@@ -3,14 +3,17 @@ import { Pressable, View } from 'react-native';
 
 import { IconButton } from '@/components/glass/IconButton';
 import { AmountText, AppText, IconBadge } from '@/components/ui';
+import { creditAccountOfBill, isCreditBill } from '@/features/credit/bills';
 import { formatDate, formatRelativeDue } from '@/lib/date';
-import type { IconName } from '@/lib/icons';
+import { toAppIcon, type AppIcon } from '@/lib/icons';
 import { useTheme } from '@/theme';
 
 import type { Occurrence } from '../occurrences';
 
 type Lookup = {
   accountName: (id: string) => string;
+  /** Icon của ví (logo ngân hàng) — dùng cho kỳ bill ví trả sau */
+  accountIcon?: (id: string) => string | null;
   category: (id: string | null) => { name: string; icon: string | null; color: string } | null;
 };
 
@@ -33,17 +36,27 @@ export function OccurrenceRow({
 }) {
   const { colors } = useTheme();
   const category = lookup.category(o.schedule.categoryId);
-  const icon: IconName =
-    o.type === 'transfer'
+  // Kỳ bill ví trả sau: không phải lịch thật → mở chi tiết ví, "đã trả" = ghi chuyển khoản trả bill
+  const creditBill = isCreditBill(o.scheduleId);
+  const creditId = creditBill ? creditAccountOfBill(o.scheduleId) : null;
+  const icon: AppIcon = creditId
+    ? toAppIcon(lookup.accountIcon?.(creditId), 'card-outline')
+    : o.type === 'transfer'
       ? 'swap-horizontal-outline'
-      : ((category?.icon as IconName) ??
-        (o.type === 'income' ? 'arrow-down-circle-outline' : 'calendar-outline'));
+      : toAppIcon(
+          category?.icon,
+          o.type === 'income' ? 'arrow-down-circle-outline' : 'calendar-outline',
+        );
   const tone = o.status === 'overdue' ? 'expense' : o.status === 'due' ? 'warning' : 'textMuted';
   const params = { scheduleId: o.scheduleId, dueDate: o.dueDate };
 
   return (
     <Pressable
-      onPress={() => router.push({ pathname: '/schedule/occurrence', params })}
+      onPress={() =>
+        creditId
+          ? router.push(`/account/${creditId}`)
+          : router.push({ pathname: '/schedule/occurrence', params })
+      }
       style={({ pressed }) => [
         { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
         pressed && { opacity: 0.6 },
@@ -80,8 +93,8 @@ export function OccurrenceRow({
               toAccountId: o.schedule.toAccountId ?? undefined,
               categoryId: o.schedule.categoryId ?? undefined,
               title: o.schedule.title,
-              scheduleId: o.scheduleId,
-              scheduleDueDate: o.dueDate,
+              scheduleId: creditBill ? undefined : o.scheduleId,
+              scheduleDueDate: creditBill ? undefined : o.dueDate,
             },
           })
         }

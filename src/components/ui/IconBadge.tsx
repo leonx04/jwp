@@ -1,21 +1,28 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import type { ComponentProps } from 'react';
 import { View } from 'react-native';
 
+import { bankFromIcon } from '@/lib/banks';
+import type { AppIcon, IconName } from '@/lib/icons';
 import { useTheme, withAlpha } from '@/theme';
 
-export type IconName = ComponentProps<typeof Ionicons>['name'];
+import { BankMark } from './BankMark';
+
+export type { IconName };
 
 type IconBadgeProps = {
-  icon: IconName;
+  /** Tên Ionicons hoặc 'bank:<CODE>' (logo ngân hàng) */
+  icon: AppIcon;
   /** Màu của danh mục / ví. Mặc định: màu chủ đạo */
   color?: string;
   size?: number;
 };
 
-/** Icon trong ô tròn nền nhạt cùng màu — dùng cho ví, danh mục, menu. */
+/** Icon trong ô bo góc nền nhạt cùng màu — dùng cho ví, danh mục, menu. Ví ngân hàng hiện logo. */
 export function IconBadge({ icon, color, size = 40 }: IconBadgeProps) {
   const { colors, dark } = useTheme();
+  const bank = bankFromIcon(icon);
+  if (bank) return <BankMark bank={bank} size={size} />;
+
   const tint = color ?? colors.primary;
   return (
     <View
@@ -28,7 +35,7 @@ export function IconBadge({ icon, color, size = 40 }: IconBadgeProps) {
         backgroundColor: withAlpha(tint, dark ? 0.22 : 0.14),
       }}
     >
-      <Ionicons name={icon} size={size * 0.5} color={tint} />
+      <Ionicons name={icon as IconName} size={size * 0.5} color={tint} />
     </View>
   );
 }
