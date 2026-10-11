@@ -22,8 +22,6 @@ export type ThemeColors = NeutralPalette &
     /** Hai màu gradient cho nút chính / thẻ số dư */
     gradient: readonly [string, string];
     onGradient: string;
-    /** Ba khối màu nhoè làm nền "lỏng" phía sau lớp kính */
-    blobs: readonly [string, string, string];
     /** Chuyển khoản hiển thị trung tính */
     transfer: string;
     /** Bảng màu tối (tiện cho các quyết định màu trong component) */
@@ -73,7 +71,6 @@ export function buildTheme({ dark, amoled = false, accent }: ThemeOptions): Them
       primarySoft: withAlpha(primary, dark ? 0.2 : 0.12),
       gradient,
       onGradient: readableOn(mix(gradient[0], gradient[1], 0.5)),
-      blobs: [primary, shiftHue(primary, 55), shiftHue(primary, -65)],
       transfer: neutral.text,
       dark,
     },

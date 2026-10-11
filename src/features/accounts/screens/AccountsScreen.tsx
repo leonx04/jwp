@@ -83,7 +83,7 @@ export function AccountsScreen() {
 
       {archived.length ? (
         <View style={{ gap: 12 }}>
-          <SectionTitle>Đã lưu trữ</SectionTitle>
+          <SectionTitle tone="section">Đã lưu trữ</SectionTitle>
           <Card style={{ gap: 0, paddingVertical: 6 }}>
             {archived.map((a) => (
               <ListRow

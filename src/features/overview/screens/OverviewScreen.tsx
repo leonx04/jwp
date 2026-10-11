@@ -17,6 +17,7 @@ import {
 import { db } from '@/db';
 import { totalBalance, useAccountBalances } from '@/features/accounts';
 import { createDefaultData } from '@/features/onboarding/defaults';
+import { UpcomingCard } from '@/features/schedules/components/UpcomingCard';
 import { useMoneyFormat, useSettings } from '@/features/settings';
 import { TransactionRow } from '@/features/transactions/components/TransactionRow';
 import { usePeriodSummary, useTransactions } from '@/features/transactions/hooks';
@@ -189,11 +190,13 @@ export function OverviewScreen() {
         })}
       </View>
 
+      <UpcomingCard />
+
       {/* Ví */}
       {hasAccounts ? (
         <>
           <View style={styles.sectionRow}>
-            <SectionTitle>Ví của bạn</SectionTitle>
+            <SectionTitle tone="section">Ví của bạn</SectionTitle>
             <Pressable onPress={() => router.push('/accounts')} hitSlop={8}>
               <AppText variant="label" color="primary">
                 Quản lý
@@ -242,7 +245,7 @@ export function OverviewScreen() {
       {recent && recent.length > 0 ? (
         <>
           <View style={styles.sectionRow}>
-            <SectionTitle>Gần đây</SectionTitle>
+            <SectionTitle tone="section">Gần đây</SectionTitle>
             <Pressable onPress={() => router.navigate('/transactions')} hitSlop={8}>
               <AppText variant="label" color="primary">
                 Xem tất cả
@@ -342,7 +345,7 @@ const useStyles = createStyles((t) => ({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: -t.spacing.sm,
+    marginBottom: -t.spacing.xs,
   },
   bleed: {
     marginHorizontal: -t.spacing.lg,

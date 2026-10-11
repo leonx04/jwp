@@ -130,7 +130,7 @@ export function AccountDetailScreen() {
       </View>
 
       <View style={styles.sectionRow}>
-        <SectionTitle>Giao dịch gần đây</SectionTitle>
+        <SectionTitle tone="section">Giao dịch gần đây</SectionTitle>
         <Pressable
           onPress={() => router.navigate({ pathname: '/transactions', params: { accountId: id } })}
           hitSlop={8}
@@ -172,6 +172,6 @@ const useStyles = createStyles((t) => ({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: -t.spacing.sm,
+    marginBottom: -t.spacing.xs,
   },
 }));
