@@ -3,8 +3,8 @@
 > Expo SDK 57 · React Native 0.86 · TypeScript · Expo Router · SQLite (Drizzle)
 > Dự án: `E:\Co-pro\App\JWP` — `Base` chỉ dùng để ghi chú / học.
 > **Local-first**: mọi dữ liệu nằm trên máy (SQLite), không cần backend. Sao lưu bằng file JSON/CSV. Firebase để sau nếu cần đồng bộ nhiều máy.
-> Test: máy ảo Android (Pixel_API36) + Huawei P40 Pro (không có Google Play Services).
-> Trạng thái: ✅ Giai đoạn 0, 1 xong · ⏭ đang làm: Giai đoạn 2
+> Test: máy ảo Android (Pixel_API36) + Huawei P50 Pro JAD-AL00 (arm64, API 31, không có Google Play Services).
+> Trạng thái: ✅ Giai đoạn 0–3 xong (+ logo ngân hàng, ví trả sau) · ⏭ đang làm: **Đợt 2 — sửa lỗi, nhẹ & mượt** (mục 15)
 
 ---
 
@@ -207,7 +207,7 @@ Chỉ lưu quy tắc + các kỳ đã xử lý / ghi đè; kỳ tương lai đư
 | Trường hợp | Kết quả |
 |---|---|
 | Đầy đủ | `1.500.000 ₫` (chấm ngăn nghìn, NBSP trước ₫, **một đơn vị duy nhất**, không `,00`) |
-| Rút gọn | `850 ₫` · `150 N` · `1,5 Tr` · `2,35 Tỷ` (phẩy thập phân, ≤ 2 số lẻ, bỏ `,0`) |
+| Rút gọn | `850 ₫` · `150k` · `1Tr` · `1,5Tr` · `2,35 Tỷ` (phẩy thập phân, ≤ 2 số lẻ, bỏ `,0`) |
 | Dấu | `−50.000 ₫` (chi, đỏ) · `+50.000 ₫` (thu, xanh) · trung tính cho chuyển khoản |
 | Nhập | Bàn phím riêng có phím `000`, tự chèn dấu chấm khi gõ, chặn số 0 đầu & số quá lớn |
 | Dán / nhập nhanh | `1.500.000`, `1,500,000`, `1.5tr`, `150k`, `2 tỷ` |
@@ -244,7 +244,7 @@ Tất cả chạy trong Expo Go **trừ thông báo** (cần dev build: `npx exp
 | Danh sách dài | @shopify/flash-list | 2 |
 | Bottom sheet | @gorhom/bottom-sheet | 2 |
 | Chọn ngày | @react-native-community/datetimepicker | 2 |
-| Biểu đồ | victory-native + @shopify/react-native-skia | 3 · 7 |
+| Biểu đồ | react-native-svg + d3-shape (tự vẽ, nhẹ) — đã bỏ Skia/victory-native ở Đợt 2 | 3 · 7 |
 
 Không dùng MMKV / module native ngoài Expo Go. Khi cần → dev build `npx expo run:android`.
 
@@ -295,3 +295,42 @@ drizzle/                 # migration SQL do drizzle-kit sinh ra (không sửa ta
 - Local-first, không backend; Firebase tìm hiểu sau
 - Sổ nợ mặc định trừ/cộng vào ví, tắt được cho từng khoản
 - Tham khảo tính năng Ivy, không chép code (GPL-3.0)
+
+---
+
+## 15. Đợt 2 — sửa lỗi, nhẹ & mượt (v0.2)
+
+Phản hồi sau khi cài APK lên máy thật (11/10/2026): app văng khi **dời ngày** và khi **đặt lịch nhận lương**, giật/lag và **nóng máy**, cài xong **190 MB**, icon danh mục ít, chưa có nhập bill bằng ảnh, chưa có sao lưu / xuất file, thống kê sơ sài, muốn xem lịch dạng **calendar**, rút gọn tiền `1k` / `1Tr`, logo app + hiệu ứng mở app.
+
+### 15.1. Nguyên nhân đã xác định
+| Vấn đề | Nguyên nhân | Hướng sửa |
+|---|---|---|
+| Văng app khi dời ngày / đặt lịch lương | `DateTimePickerAndroid.open({ design: 'material' })` bắt buộc theme Material Components, theme Expo không phải → crash | ✅ Bỏ `design: 'material'` (`pickDateTime.ts`); kiểm lại mọi chỗ chọn ngày/giờ |
+| APK 73 MB, cài xong ~190 MB | **46 MB dex** chưa bật R8 · **Skia 11 MB** (chỉ dùng cho nền + 1 biểu đồ) · ML Kit OCR 11 MB · ART biên dịch thêm khi cài | Bật R8 + shrinkResources · bỏ Skia/victory-native → SVG · chỉ build arm64-v8a (+ armeabi-v7a) · ảnh WebP |
+| Giật, nóng máy | **Làm mờ thời gian thực** (BlurView dimezis) trên thanh tab + header: chụp lại nội dung mỗi khung hình khi cuộn · canvas Skia toàn màn hình · bóng đổ nhiều lớp | Android: bỏ blur, dùng lớp phủ mờ đục tĩnh; nền gradient tĩnh; giảm bóng; rà re-render |
+
+### 15.2. Phương án nhẹ & mượt (đã chọn ✅)
+| Phương án | Giảm | Đánh đổi | Chọn |
+|---|---|---|---|
+| R8 minify + shrinkResources (`expo-build-properties`) | ~30 MB APK | Build release lâu hơn chút | ✅ |
+| Bỏ Skia + victory-native, tự vẽ biểu đồ bằng react-native-svg + d3-shape | ~11 MB, ít GPU | Tự viết component biểu đồ | ✅ |
+| Chỉ arm64-v8a (+ armeabi-v7a cho máy cũ) | đã làm | Không chạy trên máy x86 | ✅ |
+| Bỏ blur thật trên Android, giữ GlassView trên iOS 26 | hết nóng máy khi cuộn | Kính "đục" thay vì mờ thật | ✅ |
+| Logo ngân hàng 128px PNG → 96px WebP | ~70% dung lượng ảnh | — | ✅ |
+| Bỏ ML Kit OCR, dùng OCR đám mây | 11 MB | Tốn phí, cần mạng, lộ dữ liệu | ❌ giữ OCR trên máy |
+| Tách APK theo ABI / AAB qua Play Store | thêm vài MB | Cần tài khoản Play | để sau |
+
+### 15.3. Phân công (agent chạy song song, mỗi agent sở hữu file riêng)
+| Agent | Việc | File sở hữu |
+|---|---|---|
+| **A · perf-size** | R8/shrink + ABI qua `expo-build-properties`; bỏ blur Android; nền không Skia; giảm bóng; rà re-render & animation; logo ngân hàng → WebP; rà font thừa | `app.json` (mục plugins), `src/components/glass/*`, `src/components/ui/Screen.tsx`, `scripts/gen-bank-icons.js`, `assets/banks/*`, `src/lib/banks/logos.ts` |
+| **B · stats-charts** | Bộ biểu đồ SVG (đường/vùng, cột, donut, sparkline, animation nhẹ) thay victory-native; màn **Thống kê**: kỳ tháng/năm, cơ cấu danh mục, so sánh tháng, xu hướng 6 tháng, nhận xét tự động | `src/components/charts/*`, `src/features/stats/*`, `src/app/stats/*` |
+| **C · icons-categories** | ~150 icon chọn lọc theo nhóm + tìm kiếm tiếng Việt; danh mục dùng được **logo ngân hàng**; danh mục mặc định hợp người Việt | `src/lib/icons/*`, `src/components/ui/Pickers.tsx`, `src/features/categories/*`, `src/features/onboarding/defaults.ts`, `src/features/accounts/components/BankPicker.tsx`, `AccountEditScreen.tsx` |
+| **D · receipts** | Đọc biên lai MB/TCB/VCB/TPBank/MoMo/ShopeePay… (parser + test), **quét ảnh** & **dán ảnh** từ bàn phím/clipboard, xem trước + sửa trước khi lưu, chống trùng bằng mã GD; chip gợi ý bậc số tiền | `src/features/receipts/*`, `src/app/receipt/*`, `TransactionEditorScreen.tsx`, `src/features/transactions/repository.ts` |
+| **E · backup** | Xuất JSON (JWP đầy đủ + **dạng Ivy Wallet**), khôi phục (thay thế có tự sao lưu / gộp), **CSV chuẩn** (UTF-8 BOM, mở đúng Excel), chia sẻ / lưu vào máy, test round-trip | `src/features/backup/*`, `src/app/backup/*` |
+| **F · calendar** | Lịch tháng trực quan trong tab Lịch (chuyển Danh sách ⇄ Lịch): chấm thu/chi theo ngày, tổng ngày, bấm ngày xem chi tiết, vuốt đổi tháng, ngày âm lịch | `src/features/schedules/components/Calendar*`, `src/features/schedules/screens/ScheduleScreen.tsx`, `src/lib/date/lunar.ts` |
+| **G · brand-format** | Rút gọn tiền `1k` · `1Tr` · `1,5Tr` · `2,3 Tỷ`; **logo app** (icon, adaptive, monochrome, splash); **hiệu ứng mở app** ≤ 600 ms | `src/lib/money/*`, `assets/icon*`, `assets/splash*`, `assets/brand/*`, `app.json` (icon/splash), `src/app/_layout.tsx`, `src/components/brand/*` |
+| **H · credit-today** | Thẻ ví trả sau (dư nợ, kỳ này phải trả, hạn, **Trả bill**); mục trả góp khi mua; thẻ **Hôm nay** (được tiêu bao nhiêu, đã tiêu, còn mấy ngày đến lương); thông báo **báo cáo buổi sáng** từng ví | `src/features/credit/components/*`, `src/features/today/*`, `OverviewScreen.tsx`, `AccountDetailScreen.tsx`, `src/features/notifications/*` |
+| **Sau cùng · QA** | Build lại dev build, chạy máy ảo kiểm tra mọi luồng, sửa lỗi tích hợp, build APK release mới | — |
+
+Quy tắc chung cho agent: không sửa file ngoài phần sở hữu (cần thì ghi vào báo cáo); không cài thêm package; không chạy Metro / máy ảo / Gradle; không git commit; chỉ chạy `npx tsc --noEmit` (bỏ qua lỗi ở file của agent khác) và `npx jest <thư mục của mình>`.
