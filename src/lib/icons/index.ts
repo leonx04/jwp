@@ -4,6 +4,14 @@ import type { ComponentProps } from 'react';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
+/** Icon lưu trong DB: tên Ionicons, hoặc logo ngân hàng / ví điện tử dạng 'bank:<CODE>' */
+export type AppIcon = IconName | `bank:${string}`;
+
+/** Đọc icon từ DB (chuỗi tự do) → AppIcon, rỗng thì dùng icon mặc định */
+export function toAppIcon(value: string | null | undefined, fallback: IconName): AppIcon {
+  return (value || fallback) as AppIcon;
+}
+
 export const DEFAULT_ACCOUNT_ICON: IconName = 'wallet-outline';
 export const DEFAULT_CATEGORY_ICON: IconName = 'pricetag-outline';
 export const UNCATEGORIZED_ICON: IconName = 'help-circle-outline';

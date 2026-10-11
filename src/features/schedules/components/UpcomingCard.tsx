@@ -26,10 +26,11 @@ export function UpcomingCard() {
   const { colors } = useTheme();
 
   const lookup = useMemo(() => {
-    const acc = new Map(accounts.map((a) => [a.id, a.name]));
+    const acc = new Map(accounts.map((a) => [a.id, a]));
     const cat = new Map(categories.map((c) => [c.id, c]));
     return {
-      accountName: (id: string) => acc.get(id) ?? '?',
+      accountName: (id: string) => acc.get(id)?.name ?? '?',
+      accountIcon: (id: string) => acc.get(id)?.icon ?? null,
       category: (id: string | null) => (id ? (cat.get(id) ?? null) : null),
     };
   }, [accounts, categories]);

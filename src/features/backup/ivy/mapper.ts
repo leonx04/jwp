@@ -16,12 +16,18 @@ import type {
 } from '@/db/schema';
 import { computeBalances } from '@/features/accounts/balance';
 import type { SettingsState } from '@/features/settings/store';
+import { bankIcon, detectBank } from '@/lib/banks';
 import { addDays, toVnDate, todayVn, type DateString } from '@/lib/date';
 import { generateOccurrences, type Frequency, type RecurrenceRule } from '@/lib/recurrence';
 import { normalizeForSearch } from '@/lib/text';
 
 import { mapIvyIcon } from './icons';
 import type { IvyBackup, IvyPlannedRule } from './schema';
+
+function accountIcon(name: string, ivyIcon: string | null | undefined): string {
+  const bank = detectBank(name);
+  return bank ? bankIcon(bank.code) : mapIvyIcon(ivyIcon, 'account');
+}
 
 const DEFAULT_COLOR = '#5B5BD6';
 
@@ -168,7 +174,8 @@ export function mapIvyBackup(backup: IvyBackup, now: number = Date.now()): IvyIm
       id: a.id,
       name: a.name.trim() || 'Ví',
       color: ivyColorToHex(a.color),
-      icon: mapIvyIcon(a.icon, 'account'),
+      // Tên ví là ngân hàng / ví điện tử ("MB bank", "Ví Shoppe") → dùng logo thật
+      icon: accountIcon(a.name, a.icon),
       orderNum: a.orderNum,
       includeInBalance: a.includeInBalance,
     }));

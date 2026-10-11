@@ -38,7 +38,7 @@ import {
   todayVn,
   vnDateToMs,
 } from '@/lib/date';
-import type { IconName } from '@/lib/icons';
+import { toAppIcon } from '@/lib/icons';
 import { createStyles, useTheme } from '@/theme';
 
 import { TransactionRow } from '../components/TransactionRow';
@@ -224,7 +224,7 @@ function TransactionsList() {
           {categoryId ? (
             <Chip
               label={category?.name ?? 'Chưa phân loại'}
-              icon={(category?.icon as IconName) ?? 'help-circle-outline'}
+              icon={toAppIcon(category?.icon, 'help-circle-outline')}
               color={category?.color}
               selected
               removable

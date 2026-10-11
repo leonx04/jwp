@@ -17,7 +17,7 @@ import { useLiveData } from '@/db/useLiveData';
 import { useSettings } from '@/features/settings';
 import { TransactionRow } from '@/features/transactions/components/TransactionRow';
 import { useTransactions } from '@/features/transactions/hooks';
-import type { IconName } from '@/lib/icons';
+import { toAppIcon, type IconName } from '@/lib/icons';
 import { createStyles, rgba, useTheme } from '@/theme';
 
 import { getAccountBalance, listAccounts } from '../repository';
@@ -88,7 +88,7 @@ export function AccountDetailScreen() {
       <Card style={{ alignItems: 'center', gap: 6 }}>
         {account ? (
           <IconBadge
-            icon={(account.icon as IconName) ?? 'wallet-outline'}
+            icon={toAppIcon(account.icon, 'wallet-outline')}
             color={account.color}
             size={52}
           />

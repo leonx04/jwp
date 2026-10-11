@@ -1,5 +1,5 @@
 // Lịch thu chi: lưu quy tắc + trạng thái các kỳ đã xử lý (đã trả / bỏ qua / dời ngày).
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, ne } from 'drizzle-orm';
 
 import {
   scheduleOccurrences,
@@ -18,10 +18,15 @@ import { expandOccurrences, OVERDUE_LOOKBACK_DAYS } from './occurrences';
 
 export type ScheduleInput = Omit<NewSchedule, 'id' | 'createdAt' | 'updatedAt'> & { id?: string };
 
-export function listSchedules(db: AppDatabase): Schedule[] {
+/**
+ * Lịch thu chi. Mặc định bỏ kế hoạch trả góp (kind = 'installment'): đó chỉ là thông tin để tính
+ * bill ví trả sau — khoản mua đã ghi chi một lần, tiền ra thật là lúc trả bill.
+ */
+export function listSchedules(db: AppDatabase, { includeInstallments = false } = {}): Schedule[] {
   return db
     .select()
     .from(schedules)
+    .where(includeInstallments ? undefined : ne(schedules.kind, 'installment'))
     .orderBy(desc(schedules.active), asc(schedules.startDate))
     .all();
 }

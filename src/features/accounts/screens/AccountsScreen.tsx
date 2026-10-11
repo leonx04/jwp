@@ -5,19 +5,22 @@ import { IconButton } from '@/components/glass/IconButton';
 import {
   AmountText,
   AppText,
+  BankMark,
+  Button,
   Card,
   EmptyState,
   ListRow,
   Screen,
   SectionTitle,
 } from '@/components/ui';
+import { showSnackbar } from '@/components/feedback/snackbarStore';
 import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 import { useSettings } from '@/features/settings';
-import type { IconName } from '@/lib/icons';
+import { toAppIcon } from '@/lib/icons';
 
 import { totalBalance, useAccountBalances } from '../index';
-import { listAccounts } from '../repository';
+import { applyBankLogos, bankLogoCandidates, listAccounts } from '../repository';
 
 export function AccountsScreen() {
   const { data: balances = [] } = useAccountBalances();
@@ -25,6 +28,12 @@ export function AccountsScreen() {
     listAccounts(db, { includeArchived: true }).filter((a) => a.archived),
   );
   const hideBalance = useSettings((s) => s.hideBalance);
+  const logoCandidates = bankLogoCandidates(balances);
+
+  const applyLogos = () => {
+    const changed = applyBankLogos(db, logoCandidates.map((c) => c.account.id));
+    showSnackbar({ text: `Đã gắn logo cho ${changed} ví`, tone: 'success' });
+  };
 
   return (
     <Screen
@@ -51,12 +60,31 @@ export function AccountsScreen() {
         </AppText>
       </Card>
 
+      {logoCandidates.length ? (
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={{ flexDirection: 'row' }}>
+            {logoCandidates.slice(0, 3).map(({ bank }, index) => (
+              <View key={bank.code} style={{ marginLeft: index ? -12 : 0 }}>
+                <BankMark bank={bank} size={34} />
+              </View>
+            ))}
+          </View>
+          <View style={{ flex: 1 }}>
+            <AppText variant="bodyMedium">Gắn logo ngân hàng</AppText>
+            <AppText variant="caption" color="textMuted" numberOfLines={2}>
+              {logoCandidates.map((c) => c.account.name).join(', ')}
+            </AppText>
+          </View>
+          <Button title="Áp dụng" size="sm" onPress={applyLogos} />
+        </Card>
+      ) : null}
+
       {balances.length ? (
         <Card style={{ gap: 0, paddingVertical: 6 }}>
           {balances.map((a) => (
             <ListRow
               key={a.id}
-              icon={(a.icon as IconName) ?? 'wallet-outline'}
+              icon={toAppIcon(a.icon, 'wallet-outline')}
               iconColor={a.color}
               title={a.name}
               subtitle={a.includeInBalance ? undefined : 'Không tính vào tổng'}
@@ -88,7 +116,7 @@ export function AccountsScreen() {
             {archived.map((a) => (
               <ListRow
                 key={a.id}
-                icon={(a.icon as IconName) ?? 'wallet-outline'}
+                icon={toAppIcon(a.icon, 'wallet-outline')}
                 iconColor={a.color}
                 title={a.name}
                 subtitle="Ẩn khỏi danh sách và tổng số dư"

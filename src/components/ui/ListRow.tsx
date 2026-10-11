@@ -2,15 +2,16 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
+import type { AppIcon } from '@/lib/icons';
 import { createStyles, useTheme } from '@/theme';
 
 import { AppText } from './AppText';
-import { IconBadge, type IconName } from './IconBadge';
+import { IconBadge } from './IconBadge';
 
 type ListRowProps = {
   title: string;
   subtitle?: string;
-  icon?: IconName;
+  icon?: AppIcon;
   iconColor?: string;
   /** Nội dung bên phải (số tiền, switch...). Không truyền + có onPress → hiện mũi tên */
   right?: ReactNode;

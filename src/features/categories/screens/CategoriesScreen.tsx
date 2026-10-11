@@ -4,7 +4,7 @@ import { IconButton } from '@/components/glass/IconButton';
 import { Card, EmptyState, ListRow, Screen } from '@/components/ui';
 import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
-import type { IconName } from '@/lib/icons';
+import { toAppIcon } from '@/lib/icons';
 
 import { listCategories } from '../repository';
 
@@ -26,7 +26,7 @@ export function CategoriesScreen() {
           categories.map((c) => (
             <ListRow
               key={c.id}
-              icon={(c.icon as IconName) ?? 'pricetag-outline'}
+              icon={toAppIcon(c.icon, 'pricetag-outline')}
               iconColor={c.color}
               title={c.name}
               onPress={() => router.push({ pathname: '/category/edit', params: { id: c.id } })}
