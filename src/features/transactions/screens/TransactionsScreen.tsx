@@ -347,7 +347,7 @@ function SwipeRow({ entry, onDelete }: { entry: TransactionEntry; onDelete: () =
         overshootRight={false}
         renderRightActions={(progress) => <DeleteAction progress={progress} onPress={onDelete} />}
       >
-        <View style={[styles.rowInner, { backgroundColor: colors.glassFill }]}>
+        <View style={[styles.rowInner, { backgroundColor: colors.surface }]}>
           <TransactionRow item={entry.item} />
         </View>
       </ReanimatedSwipeable>

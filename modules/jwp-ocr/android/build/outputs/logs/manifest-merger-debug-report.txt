@@ -1,0 +1,16 @@
+-- Merging decision tree log ---
+manifest
+ADDED from E:\Co-pro\App\JWP\modules\jwp-ocr\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13560274570676573124.xml:2:13-83
+INJECTED from E:\Co-pro\App\JWP\modules\jwp-ocr\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13560274570676573124.xml:2:13-83
+	package
+		INJECTED from E:\Co-pro\App\JWP\modules\jwp-ocr\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13560274570676573124.xml
+	xmlns:android
+		ADDED from E:\Co-pro\App\JWP\modules\jwp-ocr\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13560274570676573124.xml:2:23-81
+uses-sdk
+INJECTED from E:\Co-pro\App\JWP\modules\jwp-ocr\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13560274570676573124.xml reason: use-sdk injection requested
+INJECTED from E:\Co-pro\App\JWP\modules\jwp-ocr\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13560274570676573124.xml
+INJECTED from E:\Co-pro\App\JWP\modules\jwp-ocr\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13560274570676573124.xml
+	android:targetSdkVersion
+		INJECTED from E:\Co-pro\App\JWP\modules\jwp-ocr\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13560274570676573124.xml
+	android:minSdkVersion
+		INJECTED from E:\Co-pro\App\JWP\modules\jwp-ocr\android\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13560274570676573124.xml

@@ -45,6 +45,16 @@ export const accounts = sqliteTable('accounts', {
   /** false: không cộng vào tổng số dư (vd quỹ tiết kiệm tách riêng) */
   includeInBalance: integer('include_in_balance', { mode: 'boolean' }).notNull().default(true),
   archived: integer('archived', { mode: 'boolean' }).notNull().default(false),
+  /** Ví trả sau / thẻ tín dụng (SPayLater, MoMo trả sau, thẻ tín dụng): số dư âm = dư nợ */
+  isCredit: integer('is_credit', { mode: 'boolean' }).notNull().default(false),
+  /** Hạn mức (đồng) */
+  creditLimit: integer('credit_limit'),
+  /** Ngày chốt sao kê trong tháng (1–31) */
+  statementDay: integer('statement_day'),
+  /** Ngày đến hạn thanh toán trong tháng (1–31) */
+  dueDay: integer('due_day'),
+  /** Ví thường dùng để trả bill */
+  paymentAccountId: text('payment_account_id'),
   ...timestamps,
 });
 
@@ -80,6 +90,7 @@ export const SCHEDULE_FREQUENCIES = ['once', 'daily', 'weekly', 'monthly', 'year
 /** Kỳ rơi vào cuối tuần: giữ nguyên / lùi về thứ Sáu / dời sang thứ Hai */
 export const WEEKEND_RULES = ['none', 'before', 'after'] as const;
 export const SCHEDULE_END_TYPES = ['never', 'until', 'count'] as const;
+export const SCHEDULE_KINDS = ['normal', 'installment', 'credit_bill'] as const;
 
 export const schedules = sqliteTable(
   'schedules',
@@ -112,6 +123,10 @@ export const schedules = sqliteTable(
     remindDaysBefore: integer('remind_days_before').notNull().default(1),
     remindTime: text('remind_time').notNull().default('09:00'),
     active: integer('active', { mode: 'boolean' }).notNull().default(true),
+    /** normal · installment: trả góp (sinh từ một lần mua) · credit_bill: bill ví trả sau */
+    kind: text('kind', { enum: SCHEDULE_KINDS }).notNull().default('normal'),
+    /** Giao dịch gốc (vd lần mua trả góp) */
+    linkTransactionId: text('link_transaction_id'),
     ...timestamps,
   },
   (t) => [
@@ -151,6 +166,8 @@ export const transactions = sqliteTable(
     isAdjustment: integer('is_adjustment', { mode: 'boolean' }).notNull().default(false),
     /** Giao dịch tiền ra/vào ví do cho vay / đi vay / trả nợ: tính vào số dư, không tính vào thống kê */
     debtId: text('debt_id').references((): AnySQLiteColumn => debts.id, { onDelete: 'set null' }),
+    /** Mã giao dịch bên ngoài (vd mã GD trên biên lai ngân hàng) — chống nhập trùng */
+    externalRef: text('external_ref'),
     ...timestamps,
   },
   (t) => [
@@ -161,6 +178,7 @@ export const transactions = sqliteTable(
     index('transactions_title_key_idx').on(t.titleKey),
     index('transactions_type_amount_idx').on(t.type, t.amount),
     index('transactions_schedule_idx').on(t.scheduleId),
+    index('transactions_external_ref_idx').on(t.externalRef),
     check('transactions_amount_non_negative', sql`${t.amount} >= 0`),
     // Chuyển khoản bắt buộc có ví nhận; thu/chi thì không được có
     check(

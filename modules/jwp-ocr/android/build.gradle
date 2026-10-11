@@ -1,0 +1,22 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.jwpocr'
+version = '1.0.0'
+
+android {
+  namespace "expo.modules.jwpocr"
+  defaultConfig {
+    versionCode 1
+    versionName '1.0.0'
+  }
+}
+
+dependencies {
+  // ML Kit nhận dạng chữ — bản ĐÓNG GÓI mô hình trong app (com.google.mlkit),
+  // KHÔNG dùng bản play-services → chạy được trên máy không có Google Play Services (Huawei).
+  // Chỉ mô hình chữ Latin (gồm tiếng Việt) để app không bị nặng thêm.
+  implementation 'com.google.mlkit:text-recognition:16.0.1'
+}

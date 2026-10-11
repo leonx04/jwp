@@ -33,8 +33,8 @@ export const fonts = {
 // Với font tuỳ chỉnh trên Android: chọn độ đậm bằng fontFamily, KHÔNG dùng fontWeight.
 export const typography = {
   /** Số tiền lớn nhất màn hình (tổng số dư, ô nhập tiền) */
-  hero: { fontFamily: fonts.bold, fontSize: 40, lineHeight: 50, letterSpacing: -1 },
-  display: { fontFamily: fonts.bold, fontSize: 32, lineHeight: 42, letterSpacing: -0.8 },
+  hero: { fontFamily: fonts.semibold, fontSize: 42, lineHeight: 52, letterSpacing: -1.4 },
+  display: { fontFamily: fonts.semibold, fontSize: 32, lineHeight: 42, letterSpacing: -0.9 },
   title: { fontFamily: fonts.bold, fontSize: 26, lineHeight: 34, letterSpacing: -0.5 },
   heading: { fontFamily: fonts.semibold, fontSize: 17, lineHeight: 24, letterSpacing: -0.2 },
   body: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 22 },

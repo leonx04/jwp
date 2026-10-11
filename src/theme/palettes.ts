@@ -1,10 +1,15 @@
-// Bảng màu nền (sáng / tối / AMOLED) và các màu chủ đạo người dùng chọn được.
+// Ngôn ngữ thiết kế "Calm Glass" (JWP v3):
+// - Nền tĩnh một tông + một quầng sáng rất nhẹ ở đỉnh theo màu chủ đạo (không loang lổ).
+// - Phân tầng bằng bậc sắc độ: nền → thẻ → nổi (cách Copilot Money làm), hạn chế viền.
+// - Kính (làm mờ) CHỈ cho lớp điều hướng nổi: thanh tab, header, bảng trượt (nguyên tắc Liquid Glass).
+// - Màu dữ liệu dịu: xanh cho thu, đỏ cam cho chi — tránh đỏ gắt gây áp lực khi xem tài chính.
 
 export type NeutralPalette = {
+  /** Nền màn hình */
   background: string;
-  /** Màu đặc gần đúng của một thẻ kính phủ trên nền (dùng tính độ tương phản chữ) */
+  /** Thẻ nội dung */
   surface: string;
-  /** Nền phụ: ô nhập, chip, phím số */
+  /** Nền lõm: ô nhập, chip, phím số, rãnh nút chọn */
   surfaceAlt: string;
   text: string;
   textMuted: string;
@@ -14,85 +19,85 @@ export type NeutralPalette = {
   warning: string;
 };
 
-/** Lớp kính (Liquid Glass) — màu có độ trong suốt */
+/** Lớp kính / phụ trợ (tên giữ "glass" để các component cũ dùng được) */
 export type GlassPalette = {
-  /** Nền thẻ nội dung (kính mỏng) */
+  /** Nền chip / ô nhập / phím số / nút tròn (bậc lõm) */
   glassFill: string;
-  /** Nền lớp điều hướng nổi: thanh tab, header, bảng trượt (kính dày hơn) */
+  /** Nền lớp điều hướng nổi có làm mờ: thanh tab, header, bảng trượt */
   glassChrome: string;
-  /** Viền sáng quanh mép kính */
+  /** Viền mảnh */
   glassBorder: string;
-  /** Vệt sáng phía trên (phản chiếu) */
+  /** Vệt phản chiếu trên lớp kính điều hướng */
   glassSheen: string;
-  /** Viên thuốc đánh dấu mục đang chọn trên kính */
+  /** Viên đánh dấu mục đang chọn (bậc nổi) */
   glassActive: string;
   shadow: string;
-  /** Độ đậm của các khối màu nhoè phía sau (0–1) */
-  blobOpacity: number;
+  /** Độ đậm quầng sáng màu chủ đạo ở đỉnh nền (0–1) */
+  glowOpacity: number;
   blurTint: 'light' | 'dark';
 };
 
 export const lightPalette: NeutralPalette = {
-  background: '#EEF0F7',
-  surface: '#F8F9FC',
-  surfaceAlt: '#E6E9F2',
-  text: '#11131A',
-  textMuted: '#5D6272',
-  border: '#DADEEA',
-  income: '#15803D',
-  expense: '#D92D3A',
-  warning: '#B45309',
+  background: '#F4F6FA',
+  surface: '#FFFFFF',
+  surfaceAlt: '#EDF0F6',
+  text: '#0E1320',
+  textMuted: '#5F687C',
+  border: '#E3E7EF',
+  income: '#13803F',
+  expense: '#C9372C',
+  warning: '#A95A06',
 };
 
 export const darkPalette: NeutralPalette = {
-  background: '#07080D',
-  surface: '#14161E',
-  surfaceAlt: '#1E212B',
-  text: '#F1F3F9',
-  textMuted: '#9BA1B0',
-  border: '#272A35',
-  income: '#4ADE80',
-  expense: '#FF6B6B',
-  warning: '#FBBF24',
+  background: '#060A12',
+  surface: '#0E1522',
+  surfaceAlt: '#151E30',
+  text: '#E9EDF5',
+  textMuted: '#8C97AD',
+  border: '#1C2639',
+  income: '#2FD27A',
+  expense: '#FF6B57',
+  warning: '#FECE4C',
 };
 
 /** Đen tuyền: điểm ảnh tắt hẳn trên màn OLED → tiết kiệm pin */
 export const amoledPalette: NeutralPalette = {
   ...darkPalette,
   background: '#000000',
-  surface: '#0D0E12',
-  surfaceAlt: '#17181D',
-  border: '#1F2026',
+  surface: '#0B0F17',
+  surfaceAlt: '#131926',
+  border: '#1A2130',
 };
 
 export const lightGlass: GlassPalette = {
-  glassFill: 'rgba(255,255,255,0.58)',
-  glassChrome: 'rgba(255,255,255,0.55)',
-  glassBorder: 'rgba(255,255,255,0.85)',
+  glassFill: '#EDF0F6',
+  glassChrome: 'rgba(255,255,255,0.74)',
+  glassBorder: 'rgba(16,24,40,0.07)',
   glassSheen: 'rgba(255,255,255,0.55)',
-  glassActive: 'rgba(255,255,255,0.9)',
-  shadow: 'rgba(40,48,90,0.14)',
-  blobOpacity: 0.55,
+  glassActive: '#FFFFFF',
+  shadow: 'rgba(16,24,40,0.08)',
+  glowOpacity: 0.13,
   blurTint: 'light',
 };
 
 export const darkGlass: GlassPalette = {
-  glassFill: 'rgba(255,255,255,0.055)',
-  glassChrome: 'rgba(22,24,32,0.55)',
-  glassBorder: 'rgba(255,255,255,0.10)',
-  glassSheen: 'rgba(255,255,255,0.07)',
-  glassActive: 'rgba(255,255,255,0.14)',
-  shadow: 'rgba(0,0,0,0.55)',
-  blobOpacity: 0.42,
+  glassFill: '#151E30',
+  glassChrome: 'rgba(14,21,34,0.72)',
+  glassBorder: 'rgba(255,255,255,0.06)',
+  glassSheen: 'rgba(255,255,255,0.06)',
+  glassActive: '#22304A',
+  shadow: 'rgba(0,0,0,0.45)',
+  glowOpacity: 0.2,
   blurTint: 'dark',
 };
 
 export const amoledGlass: GlassPalette = {
   ...darkGlass,
-  glassFill: 'rgba(255,255,255,0.045)',
-  glassChrome: 'rgba(10,10,12,0.6)',
-  // Giữ nền gần như đen để tiết kiệm pin, chỉ còn chút ánh màu
-  blobOpacity: 0.18,
+  glassFill: '#131926',
+  glassChrome: 'rgba(0,0,0,0.72)',
+  glassActive: '#1F2A40',
+  glowOpacity: 0.1,
 };
 
 export type Accent = {
@@ -104,9 +109,9 @@ export type Accent = {
 };
 
 export const ACCENTS = {
-  indigo: { name: 'Chàm', light: '#5B5BD6', dark: '#8E8EF7' },
+  indigo: { name: 'Chàm', light: '#4F46E5', dark: '#8B93FF' },
+  blue: { name: 'Xanh dương', light: '#1C6CFF', dark: '#5B9BFF' },
   violet: { name: 'Tím', light: '#7C3AED', dark: '#A78BFA' },
-  blue: { name: 'Xanh dương', light: '#2563EB', dark: '#60A5FA' },
   sky: { name: 'Xanh trời', light: '#0369A1', dark: '#38BDF8' },
   teal: { name: 'Xanh ngọc', light: '#0F766E', dark: '#2DD4BF' },
   green: { name: 'Xanh lá', light: '#15803D', dark: '#4ADE80' },

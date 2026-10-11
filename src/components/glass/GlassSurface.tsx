@@ -1,19 +1,12 @@
-// Bề mặt kính (Liquid Glass phỏng theo trên Android):
-//  - 'chrome': lớp điều hướng nổi (thanh tab, header, bảng trượt) → LÀM MỜ THẬT nội dung phía sau
-//    (expo-blur + BlurTargetView, Android 12+). iOS 26 dùng GlassView gốc của hệ thống.
-//  - 'card': thẻ nội dung → kính "giả": nền trong mờ + viền sáng + vệt phản chiếu (nhẹ, cuộn mượt).
+// Bề mặt theo ngôn ngữ "Calm Glass":
+//  - 'card' : thẻ nội dung — bề mặt ĐẶC, sạch (phân tầng bằng sắc độ; nền sáng có bóng rất mềm).
+//  - 'chrome': lớp điều hướng nổi (thanh tab, header, bảng trượt) — KÍNH làm mờ thật nội dung phía sau
+//    (expo-blur + BlurTargetView trên Android 12+; iOS 26 dùng GlassView gốc của hệ thống).
 import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { ReactNode, RefObject } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  View,
-  type StyleProp,
-  type View as RNView,
-  type ViewStyle,
-} from 'react-native';
+import { Platform, StyleSheet, View, type StyleProp, type View as RNView, type ViewStyle } from 'react-native';
 
 import { useTheme } from '@/theme';
 
@@ -27,8 +20,10 @@ type GlassSurfaceProps = {
   radius?: number;
   /** Đổ bóng mềm phía dưới */
   shadow?: boolean;
-  /** Viền sáng quanh mép (header tràn viền thì tắt) */
+  /** Viền mảnh quanh mép (header tràn viền thì tắt) */
   bordered?: boolean;
+  /** Ghi đè màu nền thẻ */
+  background?: string;
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
   children?: ReactNode;
@@ -40,55 +35,66 @@ export function GlassSurface({
   blurTarget,
   intensity = 60,
   radius,
-  shadow = variant === 'card',
+  shadow = true,
   bordered = true,
+  background,
   style,
   contentStyle,
   children,
   pointerEvents,
 }: GlassSurfaceProps) {
-  const { colors, radius: r } = useTheme();
+  const { colors, radius: r, dark } = useTheme();
   const borderRadius = radius ?? r.xl;
   const chrome = variant === 'chrome';
 
+  // Bóng: nền sáng dùng 2 lớp rất mềm; nền tối chỉ bóng cho lớp nổi (thẻ phân tầng bằng sắc độ)
+  const shadowStyle = shadow
+    ? dark
+      ? chrome
+        ? { boxShadow: `0 12px 32px ${colors.shadow}` }
+        : null
+      : { boxShadow: `0 1px 2px rgba(16,24,40,0.04), 0 8px 24px ${colors.shadow}` }
+    : null;
+
   return (
-    <View
-      pointerEvents={pointerEvents}
-      style={[{ borderRadius }, shadow && { boxShadow: `0 10px 30px ${colors.shadow}` }, style]}
-    >
+    <View pointerEvents={pointerEvents} style={[{ borderRadius }, shadowStyle, style]}>
       <View
         style={[
           styles.clip,
-          { borderRadius, borderColor: colors.glassBorder, borderWidth: bordered ? 1 : 0 },
+          {
+            borderRadius,
+            borderColor: colors.glassBorder,
+            borderWidth: bordered && (chrome || dark) ? StyleSheet.hairlineWidth * 2 : 0,
+            backgroundColor: chrome ? 'transparent' : (background ?? colors.surface),
+          },
         ]}
       >
-        {chrome && nativeLiquidGlass ? (
-          <GlassView style={StyleSheet.absoluteFill} glassEffectStyle="regular" />
-        ) : chrome && blurTarget ? (
-          <BlurView
-            style={StyleSheet.absoluteFill}
-            blurTarget={blurTarget}
-            blurMethod="dimezisBlurViewSdk31Plus"
-            intensity={intensity}
-            tint={colors.blurTint}
-          />
+        {chrome ? (
+          <>
+            {nativeLiquidGlass ? (
+              <GlassView style={StyleSheet.absoluteFill} glassEffectStyle="regular" />
+            ) : blurTarget ? (
+              <BlurView
+                style={StyleSheet.absoluteFill}
+                blurTarget={blurTarget}
+                blurMethod="dimezisBlurViewSdk31Plus"
+                intensity={intensity}
+                tint={colors.blurTint}
+              />
+            ) : null}
+            {!nativeLiquidGlass ? (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.glassChrome }]} />
+            ) : null}
+            {/* Vệt phản chiếu nhẹ ở mép trên — cho lớp kính cảm giác có độ dày */}
+            <LinearGradient
+              pointerEvents="none"
+              colors={[colors.glassSheen, 'transparent']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 0.6 }}
+              style={StyleSheet.absoluteFill}
+            />
+          </>
         ) : null}
-        {!nativeLiquidGlass || !chrome ? (
-          <View
-            style={[
-              StyleSheet.absoluteFill,
-              { backgroundColor: chrome ? colors.glassChrome : colors.glassFill },
-            ]}
-          />
-        ) : null}
-        {/* Vệt phản chiếu ánh sáng ở góc trên — thứ làm "kính" trông có độ dày */}
-        <LinearGradient
-          pointerEvents="none"
-          colors={[colors.glassSheen, 'transparent']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0.35, y: 0.7 }}
-          style={StyleSheet.absoluteFill}
-        />
         <View style={contentStyle}>{children}</View>
       </View>
     </View>

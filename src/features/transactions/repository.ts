@@ -3,6 +3,7 @@ import { eq, inArray } from 'drizzle-orm';
 
 import {
   scheduleOccurrences,
+  schedules,
   transactionTags,
   transactions,
   type ScheduleOccurrence,
@@ -83,6 +84,32 @@ export function saveTransaction(db: AppDatabase, input: TransactionInput): strin
       tx.insert(transactions)
         .values({ id, ...values })
         .run();
+
+    // Giao dịch trả cho một kỳ của lịch → đánh dấu kỳ đó "đã thanh toán"
+    if (input.scheduleId && input.scheduleDueDate) {
+      const ruleAmount = tx
+        .select({ amount: schedules.amount })
+        .from(schedules)
+        .where(eq(schedules.id, input.scheduleId))
+        .get()?.amount;
+      if (ruleAmount != null) {
+        const row = {
+          scheduleId: input.scheduleId,
+          dueDate: input.scheduleDueDate,
+          status: 'paid' as const,
+          newDate: null,
+          amount: input.amount !== ruleAmount ? input.amount : null,
+          transactionId: id,
+        };
+        tx.insert(scheduleOccurrences)
+          .values(row)
+          .onConflictDoUpdate({
+            target: [scheduleOccurrences.scheduleId, scheduleOccurrences.dueDate],
+            set: { ...row, updatedAt: Date.now() },
+          })
+          .run();
+      }
+    }
 
     // Tag: thay toàn bộ danh sách
     tx.delete(transactionTags).where(eq(transactionTags.transactionId, id)).run();

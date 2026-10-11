@@ -23,6 +23,7 @@ import { Snackbar } from '@/components/feedback/Snackbar';
 import { DatabaseProvider } from '@/db';
 import { useNotificationResponses } from '@/features/notifications';
 import { AppThemeProvider } from '@/features/settings';
+import { useStartupTasks } from '@/features/startup/useStartupTasks';
 import { useTheme } from '@/theme';
 
 // Giữ màn hình chờ đến khi font sẵn sàng → không bị nháy font mặc định
@@ -57,6 +58,7 @@ export default function RootLayout() {
 function RootNavigator() {
   const theme = useTheme();
   useNotificationResponses();
+  useStartupTasks();
 
   // Theme của thanh điều hướng / hiệu ứng chuyển màn theo theme của app
   const navigationTheme = useMemo(() => {

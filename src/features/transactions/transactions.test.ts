@@ -145,9 +145,7 @@ describe('xoá và hoàn tác', () => {
       scheduleId: 'S1',
       scheduleDueDate: '2026-10-01',
     });
-    db.insert(scheduleOccurrences)
-      .values({ scheduleId: 'S1', dueDate: '2026-10-01', status: 'paid', transactionId: paid })
-      .run();
+    // saveTransaction tự đánh dấu kỳ 01/10 của lịch S1 là đã trả
     const transfer = saveTransaction(db, {
       type: 'transfer',
       amount: 500_000,
