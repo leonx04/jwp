@@ -79,8 +79,10 @@ export type TodayStatus = {
   progress: number;
   /** Số ngày chia đều tới kỳ thu tiếp theo */
   days: number;
-  /** Tiền còn dùng được tới kỳ thu (âm = không đủ trả các khoản sắp tới) */
+  /** Tiền còn dùng được tới kỳ thu (âm = không đủ trả các khoản sắp tới), ĐÃ trừ ngưỡng an toàn */
   available: number;
+  /** Ngưỡng an toàn đang giữ lại (không được tiêu) */
+  reserve: number;
   /** Kỳ thu tiếp theo (sau hôm nay) */
   nextIncome: IncomeInfo | null;
   /** Khoản thu đến hạn hôm nay chưa xác nhận */
@@ -116,6 +118,7 @@ export function computeToday({
     progress: budget > 0 ? Math.min(1, spending.spent / budget) : spending.spent > 0 ? 1 : 0,
     days: allowance.days,
     available: allowance.available,
+    reserve: safetyThreshold,
     nextIncome: allowance.nextIncome,
     incomeToday: incomeEvent ? incomeInfo(incomeEvent, today) : null,
   };
@@ -178,7 +181,12 @@ export function projectAllowances({
       startBalance: point.balance - assumed,
       safetyThreshold,
     });
-    result.push({ date, allowance: a.perDay, nextIncome: a.nextIncome, incomeOnDay: incomeOn(date) });
+    result.push({
+      date,
+      allowance: a.perDay,
+      nextIncome: a.nextIncome,
+      incomeOnDay: incomeOn(date),
+    });
     assumed += a.perDay;
   }
   return result;
