@@ -16,9 +16,10 @@ import {
 } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { AppIntro } from '@/components/brand/AppIntro';
 import { Snackbar } from '@/components/feedback/Snackbar';
 import { DatabaseProvider } from '@/db';
 import { useNotificationResponses } from '@/features/notifications';
@@ -39,10 +40,6 @@ export default function RootLayout() {
   });
   const ready = fontsLoaded || fontError != null;
 
-  useEffect(() => {
-    if (ready) SplashScreen.hideAsync().catch(() => {});
-  }, [ready]);
-
   if (!ready) return null;
 
   return (
@@ -51,6 +48,8 @@ export default function RootLayout() {
         <DatabaseProvider>
           <RootNavigator />
         </DatabaseProvider>
+        {/* Logo phủ lên đúng lúc ẩn màn chờ native → nối liền, không nháy */}
+        <AppIntro onShown={() => SplashScreen.hideAsync().catch(() => {})} />
       </AppThemeProvider>
     </GestureHandlerRootView>
   );
