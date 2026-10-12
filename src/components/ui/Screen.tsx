@@ -232,7 +232,7 @@ function GlassHeader({
 
   // Màn tiêu đề lớn: nền kính + tiêu đề gọn hiện dần khi tiêu đề lớn cuộn khuất
   const fade = useAnimatedStyle(() => ({
-    opacity: collapsible ? interpolate(scrollY.value, [24, 64], [0, 1], Extrapolation.CLAMP) : 1,
+    opacity: collapsible ? interpolate(scrollY.value, [56, 92], [0, 1], Extrapolation.CLAMP) : 1,
   }));
 
   return (
