@@ -10,17 +10,16 @@ import { MAX_AMOUNT } from '@/lib/money';
 import { removeDiacritics } from '@/lib/text';
 
 /** Một dòng chữ OCR kèm khung toạ độ (điểm ảnh) — cùng dạng với kết quả của modules/jwp-ocr */
-export type ReceiptLine = { text: string; left: number; top: number; right: number; bottom: number };
+export type ReceiptLine = {
+  text: string;
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+};
 
 export type ReceiptField =
-  | 'amount'
-  | 'type'
-  | 'counterparty'
-  | 'content'
-  | 'date'
-  | 'transactionRef'
-  | 'bankCode'
-  | 'fee';
+  'amount' | 'type' | 'counterparty' | 'content' | 'date' | 'transactionRef' | 'bankCode' | 'fee';
 
 export type ParsedReceipt = {
   /** Số tiền chính (đồng, > 0) */
@@ -177,8 +176,14 @@ const tolerant = (source: string) => source.replace(/o/g, '[o0]');
 // Thứ tự quan trọng: cụ thể trước, chung chung sau. So khớp ở ĐẦU hàng, trên chữ đã bỏ dấu.
 const LABEL_DEFS: [LabelKind, string][] = [
   ['words', '(?:so tien )?(?:viet )?bang chu'],
-  ['balance', '(?:so du|sd)(?: kha dung| tai khoan| cuoi(?: ky)?| hien tai| sau (?:giao dich|gd))?'],
-  ['fee', '(?:tong )?phi(?: giao dich| gd| chuyen tien| chuyen khoan| dich vu| thanh toan| xu ly)?'],
+  [
+    'balance',
+    '(?:so du|sd)(?: kha dung| tai khoan| cuoi(?: ky)?| hien tai| sau (?:giao dich|gd))?',
+  ],
+  [
+    'fee',
+    '(?:tong )?phi(?: giao dich| gd| chuyen tien| chuyen khoan| dich vu| thanh toan| xu ly)?',
+  ],
   ['total', 'tong(?: tien| cong| so tien| thanh toan| tien thanh toan)?|thanh tien'],
   [
     'amount',
@@ -211,7 +216,7 @@ const LABEL_DEFS: [LabelKind, string][] = [
   ],
   [
     'content',
-    'noi dung(?: chuyen khoan| chuyen tien| giao dich| ck| thanh toan| gd)?|loi nhan|dien giai|mo ta|ghi chu|nd|message|chi tiet(?: giao dich)?|don hang|san pham',
+    'noi dung(?: chuyen khoan| chuyen tien| giao dich| ck| thanh toan| gd)?|loi nhan|tin nhan|dien giai|mo ta|ghi chu|nd|message|chi tiet(?: giao dich)?|don hang|san pham',
   ],
   ['service', 'dich vu|loai (?:giao dich|dich vu)'],
   [
@@ -234,7 +239,8 @@ function matchLabel(norm: string): { kind: LabelKind; end: number } | null {
 }
 
 /** Từ khoá đứng ngay trước một số tiền (cùng hàng) → số đó là gì */
-type AmountContext = 'words' | 'balance' | 'fee' | 'total' | 'amount' | 'ref' | 'account' | 'phone' | 'time';
+type AmountContext =
+  'words' | 'balance' | 'fee' | 'total' | 'amount' | 'ref' | 'account' | 'phone' | 'time';
 const AMOUNT_CONTEXT_DEFS: [AmountContext, string][] = [
   ['words', 'so tien bang chu|bang chu'],
   ['balance', 'so du kha dung|so du cuoi ky|so du hien tai|so du tai khoan|so du|sd'],
@@ -312,7 +318,12 @@ function labelRows(rows: Row[]): RowInfo[] {
   // Các hàng không nhãn ngay sau người nhận / người chuyển: ngân hàng, số tài khoản của họ
   let side: RowInfo['detailOf'] = null;
   for (const item of info) {
-    if (item.kind) side = RECEIVER_KINDS.includes(item.kind) ? 'receiver' : SENDER_KINDS.includes(item.kind) ? 'sender' : null;
+    if (item.kind)
+      side = RECEIVER_KINDS.includes(item.kind)
+        ? 'receiver'
+        : SENDER_KINDS.includes(item.kind)
+          ? 'sender'
+          : null;
     else item.detailOf = side;
   }
   return info;
@@ -399,7 +410,10 @@ function scoreAmount(c: AmountCandidate, rowCount: number, medianHeight: number)
   }
   if (c.row < Math.max(3, rowCount * 0.4)) score += 1;
   if (c.value < 1_000) score -= 4;
-  if (c.rowKind && ['content', 'receiverName', 'senderName', 'service', 'status'].includes(c.rowKind)) {
+  if (
+    c.rowKind &&
+    ['content', 'receiverName', 'senderName', 'service', 'status'].includes(c.rowKind)
+  ) {
     score -= 4;
   }
   return score;
@@ -423,14 +437,25 @@ function pickAmount(candidates: AmountCandidate[], rows: Row[]) {
   }
   scored.sort((a, b) => b.score - a.score || b.c.value - a.c.value);
   const best = scored[0];
-  const sign = best.c.sign ?? scored.find((s) => s.c.value === best.c.value && s.c.sign)?.c.sign ?? null;
+  const sign =
+    best.c.sign ?? scored.find((s) => s.c.value === best.c.value && s.c.sign)?.c.sign ?? null;
   const confidence =
-    best.score >= 10 ? 0.95 : best.score >= 8 ? 0.85 : best.score >= 6 ? 0.7 : best.score >= 4 ? 0.5 : 0.3;
+    best.score >= 10
+      ? 0.95
+      : best.score >= 8
+        ? 0.85
+        : best.score >= 6
+          ? 0.7
+          : best.score >= 4
+            ? 0.5
+            : 0.3;
   return { value: best.c.value, sign, confidence };
 }
 
 function pickFee(candidates: AmountCandidate[], rows: Row[], info: RowInfo[]): number | undefined {
-  const fee = candidates.find((c) => c.context === 'fee' && (c.currency || c.grouped || c.value === 0));
+  const fee = candidates.find(
+    (c) => c.context === 'fee' && (c.currency || c.grouped || c.value === 0),
+  );
   if (fee) return fee.value;
   const freeRow = info.findIndex(
     (item, i) => item.kind === 'fee' && /mien phi|free|khong mat phi/.test(rows[i].norm),
@@ -529,7 +554,7 @@ function cleanContent(value: string): string | undefined {
 
 // ─── Ngày giờ ───────────────────────────────────────────────────────────────
 
-const DATE_DMY = /(^|[^\d])(\d{1,2})\s?[/\-.]\s?(\d{1,2})\s?[/\-.]\s?(\d{4}|\d{2})(?!\d)/;
+const DATE_DMY = /(^|[^\d:])(\d{1,2})\s?[/\-.]\s?(\d{1,2})\s?[/\-.]\s?(\d{4}|\d{2})(?!\d)/;
 const DATE_YMD = /(^|[^\d])(\d{4})[/\-.](\d{1,2})[/\-.](\d{1,2})(?!\d)/;
 const DATE_WORDS = /(^|[^\d])(\d{1,2})\s?(?:thg|thang)\s?(\d{1,2}),?\s+(?:nam\s)?(\d{4})(?!\d)/;
 const TIME_RE = /(^|[^\d])([01]?\d|2[0-3])\s?[:h]\s?([0-5]\d)(?:\s?:\s?([0-5]\d))?(?!\d)/;
@@ -541,7 +566,13 @@ function findDate(text: string): FoundDate | null {
   if (dmy) {
     const year = dmy[4].length === 2 ? 2000 + Number(dmy[4]) : Number(dmy[4]);
     const start = dmy.index + dmy[1].length;
-    return { year, month: Number(dmy[3]), day: Number(dmy[2]), start, end: dmy.index + dmy[0].length };
+    return {
+      year,
+      month: Number(dmy[3]),
+      day: Number(dmy[2]),
+      start,
+      end: dmy.index + dmy[0].length,
+    };
   }
   const words = DATE_WORDS.exec(text);
   if (words) {
@@ -664,7 +695,10 @@ function pickBanks(rows: Row[], info: RowInfo[], type: 'expense' | 'income' | nu
   const source = first(sourceRows, (i) => normalizeWithMap(info[i].value).norm);
   // App đang chụp: hàng không thuộc phía bên kia, không phải nội dung / mã GD
   const appRows = all.filter(
-    (i) => !NOT_APP_KINDS.includes(info[i].kind as LabelKind) && !info[i].detailOf && !/chia se/.test(rows[i].norm),
+    (i) =>
+      !NOT_APP_KINDS.includes(info[i].kind as LabelKind) &&
+      !info[i].detailOf &&
+      !/chia se/.test(rows[i].norm),
   );
   const app = first(appRows, (i) => rows[i].norm);
   const otherSide = type === 'income' ? 'sender' : 'receiver';
@@ -718,6 +752,31 @@ export function parseReceipt(
   result.type = direction.type;
   if (direction.type) fields.type = direction.confidence;
 
+  // Giá trị của hàng có nhãn, nối các dòng xuống dòng:
+  // - nhãn đứng riêng một hàng → giá trị ở hàng dưới (bố cục xếp chồng của MoMo / app ngân hàng)
+  // - có toạ độ: nối các hàng cùng cột; không có toạ độ: nối tối đa 2 hàng không nhãn kế tiếp
+  const fullValue = (index: number): string => {
+    let value = info[index].value;
+    const row = rows[index];
+    const stacked = info[index + 1]?.inherited === true;
+    const valueLeft = stacked
+      ? (rows[index + 1].cells[0]?.left ?? null)
+      : row.cells.length > 1
+        ? row.cells[1].left
+        : null;
+    let extra = 0;
+    for (let j = index + (stacked ? 2 : 1); j < rows.length; j++) {
+      const next = rows[j];
+      if (info[j].kind || info[j].inherited) break;
+      if (valueLeft !== null && valueLeft > 0) {
+        if (next.cells.length !== 1) break;
+        if (Math.abs(next.cells[0].left - valueLeft) > Math.max(24, row.height * 1.5)) break;
+      } else if (++extra > 2) break;
+      value += ` ${next.raw}`;
+    }
+    return value;
+  };
+
   // Người nhận (khoản chi) / người chuyển (khoản thu)
   const nameKinds: LabelKind[] =
     direction.type === 'income'
@@ -726,9 +785,13 @@ export function parseReceipt(
         ? ['receiverName', 'receiverAccount']
         : ['receiverName', 'senderName', 'receiverAccount'];
   for (const kind of nameKinds) {
+    const isHeadline = (i: number) =>
+      /^(?:thanh toan|chuyen (?:tien|khoan)) (?:cho|den|toi)/.test(rows[i].norm);
     const name = info
-      .filter((r) => r.kind === kind && !r.inherited)
-      .map((r) => cleanName(r.value))
+      .map((r, i) => ({ r, i }))
+      .filter(({ r }) => r.kind === kind && !r.inherited)
+      .sort((a, b) => Number(isHeadline(a.i)) - Number(isHeadline(b.i)))
+      .map(({ i }) => cleanName(fullValue(i)))
       .find(Boolean);
     if (name) {
       result.counterparty = name;
@@ -739,7 +802,9 @@ export function parseReceipt(
   if (!result.counterparty) {
     // "Chuyển tiền tới NGUYEN VAN A" / "Nhận tiền từ ..." giữa câu
     for (const row of rows) {
-      const m = /(?:chuyen (?:tien|khoan)|thanh toan|nhan tien) (?:den|toi|cho|tu) (.+)$/.exec(row.norm);
+      const m = /(?:chuyen (?:tien|khoan)|thanh toan|nhan tien) (?:den|toi|cho|tu) (.+)$/.exec(
+        row.norm,
+      );
       if (!m) continue;
       const name = cleanName(row.raw.slice(row.map[m.index + m[0].length - m[1].length]));
       if (name) {
@@ -751,17 +816,11 @@ export function parseReceipt(
   }
 
   // Nội dung: lấy hàng có nhãn; nội dung dài xuống dòng (có toạ độ) → nối hàng kế cùng cột
-  const contentIndex = info.findIndex((r) => r.kind === 'content' && !r.inherited && cleanContent(r.value));
+  const contentIndex = info.findIndex(
+    (r) => r.kind === 'content' && !r.inherited && cleanContent(r.value),
+  );
   if (contentIndex >= 0) {
-    let content = info[contentIndex].value;
-    const row = rows[contentIndex];
-    const valueLeft = row.cells.length > 1 ? row.cells[1].left : null;
-    for (let j = contentIndex + 1; valueLeft !== null && j < rows.length; j++) {
-      const next = rows[j];
-      if (info[j].kind || info[j].inherited || next.cells.length !== 1) break;
-      if (Math.abs(next.cells[0].left - valueLeft) > Math.max(24, row.height * 1.5)) break;
-      content += ` ${next.raw}`;
-    }
+    const content = fullValue(contentIndex);
     result.content = cleanContent(content);
     fields.content = 0.8;
   } else {
@@ -806,8 +865,9 @@ export function parseReceipt(
   const all = rows.map((r) => r.norm).join(' | ');
   result.payLater = /s ?pay ?later|vi tra sau|pay ?later|mua truoc tra sau/.test(all);
   result.topUp =
-    /nap tien (?:vao )?(?:vi|tai khoan)|nap tien thanh cong|nap vi|top ?up|rut tien (?:ve|thanh cong)/.test(all) &&
-    !/dien thoai|the cao|data|game/.test(all);
+    /nap tien (?:vao )?(?:vi|tai khoan)|nap tien thanh cong|nap vi|top ?up|rut tien (?:ve|thanh cong)/.test(
+      all,
+    ) && !/dien thoai|the cao|data|game/.test(all);
 
   // Độ tin cậy tổng: số tiền quan trọng nhất
   const confidence =

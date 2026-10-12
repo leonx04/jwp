@@ -55,6 +55,8 @@ async function recognizeUri(
 ): Promise<Draft | null> {
   const ocr = await recognizeText(uri);
   const parsed = parseReceipt(ocr.text, ocr.lines);
+  // Chỉ ở bản debug: ghi chữ OCR + kết quả để chỉnh bộ đọc theo biên lai thật
+  if (__DEV__) console.log('[OCR]', JSON.stringify({ text: ocr.text, parsed }));
   if (!parsed.amount) return null;
   const ref = parsed.transactionRef ?? null;
   const account =

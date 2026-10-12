@@ -43,3 +43,57 @@ describe('parseReceipt', () => {
     expect(r.date == null || r.date <= NOW + 86_400_000).toBe(true);
   });
 });
+
+describe('parseReceipt — MoMo chuyển tiền tới tài khoản ngân hàng', () => {
+  // Chữ OCR: nhãn và giá trị thành các dòng riêng, đúng thứ tự đọc trên màn hình
+  const lines = [
+    'Chi Tiết Giao Dịch',
+    'THANH TOÁN CHO NGUYEN THI',
+    'NGOC HUE (SHB)',
+    '-20.000đ',
+    'Trạng thái',
+    'Thành công',
+    'Thời gian',
+    '07:13 - 11/10/2026',
+    'Quá trình giao dịch',
+    'Mã giao dịch',
+    '151086811171',
+    'Tài khoản/thẻ',
+    'MBBank',
+    'Tổng phí',
+    'Miễn phí',
+    'Danh mục',
+    'Sức khỏe',
+    'Số thẻ/TK',
+    'SQ1184X743R5',
+    'Ngân hàng',
+    'Ngân hàng TMCP Sài',
+    'Gòn - Hà Nội',
+    'Người nhận',
+    'NGUYEN THI NGOC',
+    'HUE',
+    'Số tiền',
+    '20.000đ',
+    'Tin nhắn',
+    'NGUYEN XUAN DUNG',
+    'chuyen tien qua MoMo',
+  ];
+
+  it('đọc đủ số tiền, thời gian, mã, nội dung và người nhận', () => {
+    const r = parseReceipt(lines.join('\n'), null, { now: Date.UTC(2026, 9, 12, 12, 0) });
+    expect(r.amount).toBe(20_000);
+    expect(r.type).toBe('expense');
+    expect(r.transactionRef).toBe('151086811171');
+    // 07:13 11/10/2026 giờ VN = 00:13 UTC
+    expect(r.date).toBe(Date.UTC(2026, 9, 11, 0, 13));
+    expect(r.content).toBe('NGUYEN XUAN DUNG chuyen tien qua MoMo');
+    expect(r.counterparty).toBe('Nguyen Thi Ngoc Hue');
+    expect(r.fee).toBe(0);
+  });
+
+  it('ví của mình là MB, bên kia là SHB', () => {
+    const r = parseReceipt(lines.join('\n'), null, { now: Date.UTC(2026, 9, 12, 12, 0) });
+    expect(r.bankCode).toBe('MB');
+    expect(r.counterpartyBankCode).toBe('SHB');
+  });
+});
