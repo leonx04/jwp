@@ -44,6 +44,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#7C3AED',
       },
       {
+        icon: 'save-outline',
+        title: 'Sao lưu & xuất dữ liệu',
+        subtitle: 'JSON, CSV, khôi phục từ file',
+        href: '/backup',
+        color: '#0EA5E9',
+      },
+      {
         icon: 'download-outline',
         title: 'Import từ Ivy Wallet',
         subtitle: 'Ví, giao dịch, lịch định kỳ, khoản vay',
