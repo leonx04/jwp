@@ -47,6 +47,8 @@ type Draft = {
   categoryId: string | null;
   /** Danh mục ghi trên biên lai (vd "Sức khỏe") — gợi ý gán hoặc tạo mới */
   categoryHint: string;
+  /** Nguồn tiền ghi trên biên lai (vd "TPBank") — rỗng nếu không đọc được */
+  sourceName: string;
   ref: string | null;
   confidence: number;
 };
@@ -89,7 +91,8 @@ async function recognizeUri(
         parsed.bankCode &&
         (bankOf(a.icon) === parsed.bankCode || detectBank(a.name)?.code === parsed.bankCode),
     ) ??
-    accounts[0] ??
+    // Biên lai ghi rõ nguồn tiền mà chưa có ví khớp → để trống cho người dùng chọn, không đoán
+    (parsed.bankCode ? null : accounts[0]) ??
     null;
   const type = parsed.type ?? 'expense';
   const title = parsed.content ?? parsed.counterparty ?? '';
@@ -113,6 +116,7 @@ async function recognizeUri(
     accountId: account?.id ?? null,
     categoryId,
     categoryHint,
+    sourceName: parsed.bankCode ? (detectBank(parsed.bankCode)?.name ?? parsed.bankCode) : '',
     ref,
     confidence: parsed.confidence,
   };
@@ -320,6 +324,13 @@ export function ReceiptScanScreen() {
                   />
                 ))}
               </View>
+              {d.sourceName ? (
+                <AppText variant="caption" color={d.accountId ? 'textMuted' : 'expense'}>
+                  {d.accountId
+                    ? `Nguồn tiền theo biên lai: ${d.sourceName}`
+                    : `Biên lai ghi nguồn tiền từ ${d.sourceName} nhưng chưa có ví khớp. Hãy chọn ví đúng.`}
+                </AppText>
+              ) : null}
               <AppText variant="label" color="textMuted">
                 Danh mục
               </AppText>
