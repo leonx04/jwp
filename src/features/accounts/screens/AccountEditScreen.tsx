@@ -186,8 +186,8 @@ export function AccountEditScreen() {
       {isCredit ? (
         <Card style={{ gap: 14 }}>
           <AppText variant="caption" color="textMuted">
-            Mua hàng bằng ví này: ghi khoản chi như thường. Trả bill: chuyển tiền từ ngân hàng vào ví
-            này. App tự tính kỳ sao kê, số phải trả và nhắc trước hạn.
+            Mua hàng bằng ví này: ghi khoản chi như thường. Trả bill: chuyển tiền từ ngân hàng vào
+            ví này. App tự tính kỳ sao kê, số phải trả và nhắc trước hạn.
           </AppText>
           <View style={{ gap: 8 }}>
             <AppText variant="label" color="textMuted">
@@ -230,7 +230,7 @@ export function AccountEditScreen() {
             <View style={{ flex: 1 }}>
               <TextField
                 label="Hạn thanh toán ngày"
-                placeholder="vd: 10"
+                placeholder="31 = cuối tháng"
                 keyboardType="number-pad"
                 maxLength={2}
                 value={dueDay}
@@ -295,8 +295,11 @@ export function AccountEditScreen() {
 
 /** Chu kỳ hay gặp — người dùng vẫn sửa được */
 const CREDIT_PRESETS = [
-  { label: 'SPayLater: chốt cuối tháng, hạn ngày 10', statementDay: 31, dueDay: 10 },
-  { label: 'Chốt ngày 25, hạn ngày 10', statementDay: 25, dueDay: 10 },
+  // SPayLater (Shopee): hóa đơn phát hành ngày 14 hoặc 24 tùy tài khoản — xem mục Hóa đơn trong app Shopee
+  { label: 'SPayLater: hóa đơn ngày 14, hạn cuối tháng', statementDay: 14, dueDay: 31 },
+  { label: 'SPayLater: hóa đơn ngày 24, hạn ngày 10', statementDay: 24, dueDay: 10 },
+  { label: 'SPayLater: hóa đơn ngày 14, hạn ngày 1', statementDay: 14, dueDay: 1 },
+  { label: 'Thẻ tín dụng: chốt ngày 25, hạn ngày 10', statementDay: 25, dueDay: 10 },
 ] as const;
 
 const dayText = (day: number | null | undefined) => (day ? String(day) : '');
