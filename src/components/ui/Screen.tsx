@@ -97,7 +97,7 @@ export function Screen({
 
   const onScrollJS = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      scrollY.value = e.nativeEvent.contentOffset.y;
+      scrollY.set(e.nativeEvent.contentOffset.y);
     },
     [scrollY],
   );
