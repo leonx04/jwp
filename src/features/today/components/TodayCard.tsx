@@ -23,6 +23,16 @@ export const TodayCard = memo(function TodayCard({ status }: { status: TodayStat
   const income = status.incomeToday ?? status.nextIncome;
   const overspent = status.over > 0;
   const short = status.available < 0;
+  // Tách rõ: thiếu cho các khoản phải trả, và phần ngưỡng an toàn đang giữ lại
+  const when = status.nextIncome ? 'trước kỳ thu tới' : '30 ngày tới';
+  const billsShort = Math.max(0, -(status.available + status.reserve));
+  const shortText =
+    billsShort > 0
+      ? `Chưa đủ tiền cho các khoản phải trả ${when}: thiếu ${mask(format.compact(billsShort))}` +
+        (status.reserve > 0
+          ? ` (chưa tính ${mask(format.compact(status.reserve))} ngưỡng an toàn)`
+          : '')
+      : `Đủ trả các khoản ${when} nhưng chưa giữ đủ ngưỡng an toàn ${mask(format.compact(status.reserve))} · thiếu ${mask(format.compact(-status.available))}`;
   const barColor = overspent
     ? colors.warning
     : status.progress > 0.8
@@ -76,9 +86,7 @@ export const TodayCard = memo(function TodayCard({ status }: { status: TodayStat
           <View style={styles.hint}>
             <Ionicons name="alert-circle" size={16} color={colors.expense} />
             <AppText variant="caption" color="expense" style={{ flex: 1 }}>
-              Chưa đủ tiền cho các khoản phải trả
-              {status.nextIncome ? ' trước kỳ thu tới' : ' 30 ngày tới'} · thiếu{' '}
-              {mask(format.compact(-status.available))}
+              {shortText}
             </AppText>
           </View>
         ) : null}
