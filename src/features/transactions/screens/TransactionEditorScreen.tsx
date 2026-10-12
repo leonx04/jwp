@@ -2,6 +2,13 @@
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
+import {
+  InstallmentSection,
+  applyInstallment,
+  installmentToSave,
+  loadInstallmentDraft,
+  type InstallmentValue,
+} from '@/features/credit/components';
 import { Alert, Keyboard, ScrollView, View } from 'react-native';
 
 import { showSnackbar } from '@/components/feedback/snackbarStore';
@@ -130,6 +137,10 @@ export function TransactionEditorScreen() {
     };
   });
   const [newTag, setNewTag] = useState('');
+  // Trả góp (chỉ áp dụng khoản chi từ ví trả sau)
+  const [installment, setInstallment] = useState<InstallmentValue | null>(() =>
+    editingId ? loadInstallmentDraft(db, editingId) : null,
+  );
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
@@ -200,10 +211,11 @@ export function TransactionEditorScreen() {
       return;
     }
     try {
-      saveTransaction(db, {
+      const plan = draft.type === 'expense' ? installment : null;
+      const savedId = saveTransaction(db, {
         id: editingId,
         type: draft.type,
-        amount: draft.amount,
+        amount: installmentToSave(plan, draft.amount).amount,
         accountId: accountId ?? '',
         toAccountId: draft.toAccountId,
         categoryId: draft.categoryId,
@@ -217,6 +229,16 @@ export function TransactionEditorScreen() {
         debtId: draft.debtId,
         isAdjustment: draft.isAdjustment,
       });
+      if (accountId) {
+        applyInstallment(db, {
+          transactionId: savedId,
+          accountId,
+          title: draft.title,
+          date: draft.date,
+          price: draft.amount,
+          value: plan,
+        });
+      }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       showSnackbar({ text: editingId ? 'Đã lưu thay đổi' : 'Đã thêm giao dịch', tone: 'success' });
       router.back();
@@ -411,6 +433,15 @@ export function TransactionEditorScreen() {
             value={accountId}
             onChange={(accountId) => set({ accountId })}
           />
+          {draft.type === 'expense' ? (
+            <InstallmentSection
+              accountId={accountId}
+              amount={draft.amount}
+              value={installment}
+              onChange={setInstallment}
+              date={draft.date}
+            />
+          ) : null}
           <SectionTitle>Danh mục</SectionTitle>
           <View style={styles.wrap}>
             {categories.map((c) => (
