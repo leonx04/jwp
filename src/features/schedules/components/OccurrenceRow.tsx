@@ -10,14 +10,14 @@ import { useTheme } from '@/theme';
 
 import type { Occurrence } from '../occurrences';
 
-type Lookup = {
+export type OccurrenceLookup = {
   accountName: (id: string) => string;
   /** Icon của ví (logo ngân hàng) — dùng cho kỳ bill ví trả sau */
   accountIcon?: (id: string) => string | null;
   category: (id: string | null) => { name: string; icon: string | null; color: string } | null;
 };
 
-export function occurrenceTitle(o: Occurrence, lookup: Lookup): string {
+export function occurrenceTitle(o: Occurrence, lookup: OccurrenceLookup): string {
   if (o.schedule.title) return o.schedule.title;
   if (o.type === 'transfer') return 'Chuyển khoản định kỳ';
   return (
@@ -32,7 +32,7 @@ export function OccurrenceRow({
   lookup,
 }: {
   occurrence: Occurrence;
-  lookup: Lookup;
+  lookup: OccurrenceLookup;
 }) {
   const { colors } = useTheme();
   const category = lookup.category(o.schedule.categoryId);
