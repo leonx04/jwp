@@ -34,6 +34,8 @@ export type TransactionInput = {
   scheduleDueDate?: string | null;
   debtId?: string | null;
   isAdjustment?: boolean;
+  /** Mã giao dịch bên ngoài (biên lai) — dùng chống nhập trùng */
+  externalRef?: string | null;
 };
 
 export class TransactionValidationError extends Error {}
@@ -53,6 +55,14 @@ function validate(input: TransactionInput) {
   if (input.fee != null && (input.fee < 0 || !Number.isInteger(input.fee))) {
     throw new TransactionValidationError('Phí không hợp lệ.');
   }
+}
+
+/** Id giao dịch đã nhập từ cùng một mã biên lai (null nếu chưa có) */
+export function findByExternalRef(db: AppDatabase, ref: string): string | null {
+  return (
+    db.select({ id: transactions.id }).from(transactions).where(eq(transactions.externalRef, ref)).get()?.id ??
+    null
+  );
 }
 
 /** Thêm mới (không có id) hoặc cập nhật. Trả về id giao dịch. */
@@ -75,6 +85,7 @@ export function saveTransaction(db: AppDatabase, input: TransactionInput): strin
     scheduleDueDate: input.scheduleDueDate ?? null,
     debtId: input.debtId ?? null,
     isAdjustment: input.isAdjustment ?? false,
+    ...(input.externalRef !== undefined ? { externalRef: input.externalRef } : {}),
   };
 
   return db.transaction((tx) => {
