@@ -21,6 +21,10 @@ import {
 } from '@/components/ui';
 import { db } from '@/db';
 import { listAccounts } from '@/features/accounts/repository';
+import { listCategories, saveCategory } from '@/features/categories/repository';
+import { suggestTitles } from '@/features/suggestions/engine';
+import { detectBank } from '@/lib/banks';
+import { normalizeForSearch } from '@/lib/text';
 import { findByExternalRef, saveTransaction } from '@/features/transactions/repository';
 import { toAppIcon } from '@/lib/icons';
 
@@ -40,6 +44,9 @@ type Draft = {
   counterparty: string;
   date: number;
   accountId: string | null;
+  categoryId: string | null;
+  /** Danh mục ghi trên biên lai (vd "Sức khỏe") — gợi ý gán hoặc tạo mới */
+  categoryHint: string;
   ref: string | null;
   confidence: number;
 };
@@ -49,9 +56,25 @@ let counter = 0;
 /** 'bank:MB' → 'MB' */
 const bankOf = (icon: string | null) => (icon?.startsWith('bank:') ? icon.slice(5) : null);
 
+type CategoryList = ReturnType<typeof listCategories>;
+
+/** Danh mục của app khớp với tên trên biên lai: trùng tên, hoặc một tên chứa tên kia */
+function matchCategory(hint: string, categories: CategoryList): string | null {
+  const key = normalizeForSearch(hint);
+  if (!key) return null;
+  const hit =
+    categories.find((c) => normalizeForSearch(c.name) === key) ??
+    categories.find((c) => {
+      const name = normalizeForSearch(c.name);
+      return name.length >= 3 && (name.includes(key) || key.includes(name));
+    });
+  return hit?.id ?? null;
+}
+
 async function recognizeUri(
   uri: string,
   accounts: ReturnType<typeof listAccounts>,
+  categories: CategoryList,
 ): Promise<Draft | null> {
   const ocr = await recognizeText(uri);
   const parsed = parseReceipt(ocr.text, ocr.lines);
@@ -59,9 +82,22 @@ async function recognizeUri(
   if (__DEV__) console.log('[OCR]', JSON.stringify({ text: ocr.text, parsed }));
   if (!parsed.amount) return null;
   const ref = parsed.transactionRef ?? null;
+  // Ví chi ra: lấy từ dòng "Tài khoản/thẻ" trên biên lai (MoMo) → khớp logo ngân hàng hoặc tên ví
   const account =
-    accounts.find((a) => parsed.bankCode && bankOf(a.icon) === parsed.bankCode) ??
+    accounts.find(
+      (a) =>
+        parsed.bankCode &&
+        (bankOf(a.icon) === parsed.bankCode || detectBank(a.name)?.code === parsed.bankCode),
+    ) ??
     accounts[0] ??
+    null;
+  const type = parsed.type ?? 'expense';
+  const title = parsed.content ?? parsed.counterparty ?? '';
+  // Danh mục: ưu tiên danh mục ghi trên biên lai (MoMo), sau đó đến gợi ý theo lịch sử
+  const categoryHint = parsed.category ?? '';
+  const categoryId =
+    matchCategory(categoryHint, categories) ??
+    suggestTitles(db, { type, query: title, amount: parsed.amount, limit: 1 })[0]?.categoryId ??
     null;
   return {
     key: `r${++counter}`,
@@ -75,6 +111,8 @@ async function recognizeUri(
     counterparty: parsed.counterparty ?? '',
     date: parsed.date ?? Date.now(),
     accountId: account?.id ?? null,
+    categoryId,
+    categoryHint,
     ref,
     confidence: parsed.confidence,
   };
@@ -86,6 +124,7 @@ export function ReceiptScanScreen() {
   const [skipped, setSkipped] = useState(0);
   const [zoomUri, setZoomUri] = useState<string | null>(null);
   const accounts = listAccounts(db);
+  const [categories, setCategories] = useState(() => listCategories(db));
 
   const process = async (uris: string[]) => {
     setBusy(true);
@@ -93,7 +132,7 @@ export function ReceiptScanScreen() {
       const found: Draft[] = [];
       let miss = 0;
       for (const uri of uris) {
-        const draft = await recognizeUri(uri, accounts);
+        const draft = await recognizeUri(uri, accounts, categories);
         if (draft) found.push({ ...draft, include: !draft.duplicate });
         else miss++;
       }
@@ -148,6 +187,7 @@ export function ReceiptScanScreen() {
           type: d.type,
           amount: d.amount,
           accountId: d.accountId!,
+          categoryId: d.categoryId,
           title: d.title,
           note:
             d.counterparty && d.counterparty !== d.title
@@ -258,6 +298,7 @@ export function ReceiptScanScreen() {
                 />
               </View>
               <MoneyField
+                keyboardType="numeric"
                 label="Số tiền"
                 value={d.amount}
                 onChange={(amount) => patch(d.key, { amount })}
@@ -276,6 +317,38 @@ export function ReceiptScanScreen() {
                     color={a.color}
                     selected={d.accountId === a.id}
                     onPress={() => patch(d.key, { accountId: a.id })}
+                  />
+                ))}
+              </View>
+              <AppText variant="label" color="textMuted">
+                Danh mục
+              </AppText>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                {d.categoryHint && !d.categoryId ? (
+                  <Chip
+                    label={`Tạo danh mục "${d.categoryHint}"`}
+                    icon="add"
+                    onPress={() => {
+                      const id = saveCategory(db, {
+                        name: d.categoryHint,
+                        color: '#7C3AED',
+                        icon: 'pricetag-outline',
+                      });
+                      setCategories(listCategories(db));
+                      patch(d.key, { categoryId: id, categoryHint: '' });
+                    }}
+                  />
+                ) : null}
+                {categories.map((c) => (
+                  <Chip
+                    key={c.id}
+                    label={c.name}
+                    icon={c.icon ? toAppIcon(c.icon, 'pricetag-outline') : undefined}
+                    color={c.color}
+                    selected={d.categoryId === c.id}
+                    onPress={() =>
+                      patch(d.key, { categoryId: d.categoryId === c.id ? null : c.id })
+                    }
                   />
                 ))}
               </View>

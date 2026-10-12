@@ -89,11 +89,63 @@ describe('parseReceipt — MoMo chuyển tiền tới tài khoản ngân hàng',
     expect(r.content).toBe('NGUYEN XUAN DUNG chuyen tien qua MoMo');
     expect(r.counterparty).toBe('Nguyen Thi Ngoc Hue');
     expect(r.fee).toBe(0);
+    expect(r.category).toBe('Sức khỏe');
   });
 
   it('ví của mình là MB, bên kia là SHB', () => {
     const r = parseReceipt(lines.join('\n'), null, { now: Date.UTC(2026, 9, 12, 12, 0) });
     expect(r.bankCode).toBe('MB');
     expect(r.counterpartyBankCode).toBe('SHB');
+  });
+});
+
+describe('parseReceipt — MB Bank chi tiết giao dịch (có nền mờ phía sau)', () => {
+  const NOW_MB = Date.UTC(2026, 9, 12, 12, 0);
+  const lines = [
+    'Chi tiết tài khoản',
+    // Nền mờ phía sau cửa sổ chi tiết: các giao dịch khác, không được lấy nhầm
+    'CASHIN-0377903208-OQCICRwlyA...',
+    'TIỀN VÀO',
+    '+680,000 VND',
+    'VND-TGTT-THAI VIET MINH KHOI',
+    '14:51',
+    '09/10/2026',
+    'TIỀN RA',
+    '-60,000 VND',
+    'CUSTOMER MOMO-',
+    '07:48',
+    // Cửa sổ chi tiết
+    'Chi tiết giao dịch',
+    '90,000 VND',
+    'Chuyển khoản đến',
+    'Tên tài khoản',
+    'NGUYEN XUAN DUNG',
+    'Số tài khoản',
+    '0377903208',
+    'Nội dung',
+    'NGUYEN XUAN DUNG',
+    'NGUYEN XUAN DUNG',
+    'chuyen tien I2JQ2P BT/',
+    '982357',
+    'Thời gian',
+    '08/10/2026 13:32:16',
+    'Mã giao dịch',
+    'FT26281321085434',
+  ];
+
+  it('đọc đúng số tiền 90,000, khoản chi, giờ có giây và mã FT…', () => {
+    const r = parseReceipt(lines.join('\n'), null, { now: NOW_MB });
+    expect(r.amount).toBe(90_000);
+    expect(r.type).toBe('expense');
+    expect(r.transactionRef).toBe('FT26281321085434');
+    // 13:32:16 08/10/2026 giờ VN = 06:32:16 UTC
+    expect(r.date).toBe(Date.UTC(2026, 9, 8, 6, 32, 16));
+    expect(r.counterparty).toBe('Nguyen Xuan Dung');
+  });
+
+  it('nội dung là cả 4 dòng nội dung chuyển khoản', () => {
+    const r = parseReceipt(lines.join('\n'), null, { now: NOW_MB });
+    expect(r.content).toContain('chuyen tien I2JQ2P BT/');
+    expect(r.content).toContain('982357');
   });
 });
