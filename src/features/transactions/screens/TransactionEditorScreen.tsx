@@ -2,6 +2,15 @@
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
+import { FuelSection } from '@/features/fuel/FuelSection';
+import {
+  isFuelText,
+  lastFuel,
+  litersFor,
+  mergeFuelNote,
+  parseFuelNote,
+  stripFuelNote,
+} from '@/features/fuel/fuel';
 import {
   InstallmentSection,
   applyInstallment,
@@ -109,7 +118,7 @@ export function TransactionEditorScreen() {
         toAccountId: existing.toAccountId,
         categoryId: existing.categoryId,
         title: existing.title,
-        note: existing.note ?? '',
+        note: stripFuelNote(existing.note),
         date: existing.date,
         tagIds: existing.tagIds,
         feeText: existing.fee ? String(existing.fee) : '',
@@ -137,6 +146,10 @@ export function TransactionEditorScreen() {
     };
   });
   const [newTag, setNewTag] = useState('');
+  // Đổ xăng: giá xăng hôm đó (đ/lít), ghi vào ghi chú khi lưu
+  const [fuelPrice, setFuelPrice] = useState(() =>
+    editingId ? (parseFuelNote(getTransaction(db, editingId)?.note)?.price ?? 0) : 0,
+  );
   // Trả góp (chỉ áp dụng khoản chi từ ví trả sau)
   const [installment, setInstallment] = useState<InstallmentValue | null>(() =>
     editingId ? loadInstallmentDraft(db, editingId) : null,
@@ -144,6 +157,15 @@ export function TransactionEditorScreen() {
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
+
+  const showFuel =
+    draft.type === 'expense' &&
+    (isFuelText(draft.title) ||
+      isFuelText(categories.find((c) => c.id === draft.categoryId)?.name));
+  const previousFuel = useMemo(
+    () => (showFuel ? lastFuel(db, editingId) : null),
+    [showFuel, editingId],
+  );
 
   useEffect(() => {
     const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardOpen(true));
@@ -220,7 +242,12 @@ export function TransactionEditorScreen() {
         toAccountId: draft.toAccountId,
         categoryId: draft.categoryId,
         title: draft.title,
-        note: draft.note,
+        note: mergeFuelNote(
+          draft.note,
+          showFuel && fuelPrice > 0
+            ? { price: fuelPrice, liters: litersFor(draft.amount, fuelPrice) }
+            : null,
+        ),
         date: draft.date,
         tagIds: draft.tagIds,
         fee: isTransfer ? Math.abs(fee) : 0,
@@ -378,6 +405,15 @@ export function TransactionEditorScreen() {
           value={draft.title}
           onChangeText={(title) => set({ title })}
           returnKeyType="done"
+        />
+      ) : null}
+
+      {showFuel ? (
+        <FuelSection
+          amount={draft.amount}
+          price={fuelPrice}
+          onChange={setFuelPrice}
+          last={previousFuel}
         />
       ) : null}
 
