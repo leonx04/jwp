@@ -1,7 +1,7 @@
 // Thêm / sửa giao dịch: chi, thu, chuyển tiền giữa ví (có phí), tag, gợi ý theo lịch sử & số tiền.
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { FuelSection } from '@/features/fuel/FuelSection';
 import {
   isFuelText,
@@ -18,12 +18,13 @@ import {
   loadInstallmentDraft,
   type InstallmentValue,
 } from '@/features/credit/components';
-import { Alert, Keyboard, ScrollView, View } from 'react-native';
+import { Alert, Keyboard, Pressable, ScrollView, View } from 'react-native';
 
 import { showSnackbar } from '@/components/feedback/snackbarStore';
 import { IconButton } from '@/components/glass/IconButton';
 import {
   AmountKeypad,
+  KeypadField,
   AppText,
   Button,
   Chip,
@@ -49,7 +50,7 @@ import {
 import { ensureTag, listTags } from '@/features/tags/repository';
 import { addDays, formatAgo, formatDate, toVnDate, toVnTime, todayVn } from '@/lib/date';
 import { toAppIcon } from '@/lib/icons';
-import { parseMoney } from '@/lib/money';
+import { groupThousands, parseMoney } from '@/lib/money';
 import { createStyles, useTheme } from '@/theme';
 
 import {
@@ -155,6 +156,8 @@ export function TransactionEditorScreen() {
     editingId ? loadInstallmentDraft(db, editingId) : null,
   );
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  // Bàn phím số có sẵn đang nhập ô nào: số tiền / giá xăng / phí chuyển khoản
+  const [target, setTarget] = useState<'amount' | 'fuel' | 'fee'>('amount');
 
   const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
 
@@ -162,6 +165,21 @@ export function TransactionEditorScreen() {
     draft.type === 'expense' &&
     (isFuelText(draft.title) ||
       isFuelText(categories.find((c) => c.id === draft.categoryId)?.name));
+  // Ô đang chọn chỉ có hiệu lực khi ô đó còn hiện
+  const activeTarget =
+    target === 'fuel' && !showFuel
+      ? 'amount'
+      : target === 'fee' && draft.type !== 'transfer'
+        ? 'amount'
+        : target;
+  const feeNumber = parseMoney(draft.feeText) || 0;
+  const keypadValue =
+    activeTarget === 'fuel' ? fuelPrice : activeTarget === 'fee' ? feeNumber : draft.amount;
+  const onKeypad = (value: number) => {
+    if (activeTarget === 'fuel') setFuelPrice(value);
+    else if (activeTarget === 'fee') set({ feeText: value ? String(value) : '' });
+    else set({ amount: value });
+  };
   const previousFuel = useMemo(
     () => (showFuel ? lastFuel(db, editingId) : null),
     [showFuel, editingId],
@@ -180,31 +198,36 @@ export function TransactionEditorScreen() {
   // Chưa chọn ví → mặc định ví đầu tiên
   const accountId = draft.accountId ?? accounts[0]?.id ?? null;
 
+  // Truy vấn gợi ý tính trên giá trị "trễ" → bàn phím số phản hồi ngay, gợi ý cập nhật sau
+  const deferredAmount = useDeferredValue(draft.amount);
+  const deferredTitle = useDeferredValue(draft.title);
+
   const suggestions: TitleSuggestion[] = useMemo(() => {
     if (!suggestionsEnabled || isTransfer) return [];
-    if (!draft.title && !draft.amount) {
+    if (!deferredTitle && !deferredAmount) {
       return suggestTitles(db, { type: draft.type as 'expense' | 'income', limit: 6 });
     }
     return suggestTitles(db, {
       type: draft.type as 'expense' | 'income',
-      query: draft.title,
-      amount: draft.amount,
+      query: deferredTitle,
+      amount: deferredAmount,
       limit: 6,
-    }).filter((s) => s.title !== draft.title.trim());
-  }, [suggestionsEnabled, isTransfer, draft.type, draft.title, draft.amount]);
+    }).filter((s) => s.title !== deferredTitle.trim());
+  }, [suggestionsEnabled, isTransfer, draft.type, deferredTitle, deferredAmount]);
 
   const history = useMemo(
-    () => (draft.title.trim() && !isTransfer ? priceHistory(db, draft.title, draft.type) : null),
-    [draft.title, draft.type, isTransfer],
+    () =>
+      deferredTitle.trim() && !isTransfer ? priceHistory(db, deferredTitle, draft.type) : null,
+    [deferredTitle, draft.type, isTransfer],
   );
   const tagSuggestions = useMemo(
     () =>
       suggestTags(
         db,
-        { categoryId: draft.categoryId, title: draft.title, exclude: draft.tagIds },
+        { categoryId: draft.categoryId, title: deferredTitle, exclude: draft.tagIds },
         6,
       ),
-    [draft.categoryId, draft.title, draft.tagIds],
+    [draft.categoryId, deferredTitle, draft.tagIds],
   );
   const pairs = useMemo(() => (isTransfer ? frequentTransferPairs(db) : []), [isTransfer]);
 
@@ -323,7 +346,7 @@ export function TransactionEditorScreen() {
           />
         ) : (
           <IconButton
-            icon="scan-outline"
+            icon="image-outline"
             accessibilityLabel="Nhập từ ảnh biên lai"
             onPress={() => router.push('/receipt-scan')}
           />
@@ -332,7 +355,7 @@ export function TransactionEditorScreen() {
       footer={
         keyboardOpen ? null : (
           <View style={styles.footer}>
-            <AmountKeypad value={draft.amount} onChange={(amount) => set({ amount })} />
+            <AmountKeypad value={keypadValue} onChange={onKeypad} />
             <Button
               title={editingId ? 'Lưu thay đổi' : 'Lưu'}
               icon="checkmark"
@@ -358,7 +381,7 @@ export function TransactionEditorScreen() {
       />
 
       {/* Số tiền */}
-      <View style={styles.amountBox}>
+      <Pressable style={styles.amountBox} onPress={() => setTarget('amount')}>
         <AppText
           variant="hero"
           color={draft.amount ? amountColor : 'textMuted'}
@@ -377,7 +400,7 @@ export function TransactionEditorScreen() {
               : ''}
           </AppText>
         ) : null}
-      </View>
+      </Pressable>
 
       {/* Gợi ý từ lịch sử */}
       {suggestions.length > 0 ? (
@@ -414,6 +437,8 @@ export function TransactionEditorScreen() {
           price={fuelPrice}
           onChange={setFuelPrice}
           last={previousFuel}
+          active={activeTarget === 'fuel'}
+          onActivate={() => setTarget('fuel')}
         />
       ) : null}
 
@@ -459,12 +484,13 @@ export function TransactionEditorScreen() {
               ))}
             </ScrollView>
           ) : null}
-          <TextField
+          <KeypadField
             icon="receipt-outline"
-            placeholder="Phí chuyển khoản (nếu có), vd 3.300"
-            keyboardType="numeric"
-            value={draft.feeText}
-            onChangeText={(feeText) => set({ feeText })}
+            label="Phí chuyển khoản (nếu có)"
+            text={feeNumber ? groupThousands(feeNumber) : ''}
+            placeholder="Chạm để nhập, vd 3.300"
+            active={activeTarget === 'fee'}
+            onPress={() => setTarget('fee')}
           />
         </>
       ) : (

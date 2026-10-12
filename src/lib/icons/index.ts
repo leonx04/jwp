@@ -2,7 +2,7 @@
 // Tìm kiếm / gợi ý icon (kể cả logo ngân hàng) nằm ở '@/lib/icons/search' để barrel này không kéo theo ảnh logo.
 import type { AppIcon, IconName } from './types';
 
-export type { AppIcon, IconName } from './types';
+export type { AppIcon, IconName, McIcon } from './types';
 export { ICON_CHOICES, ICON_GROUPS, iconInfo, type IconEntry, type IconGroup } from './catalog';
 
 /** Đọc icon từ DB (chuỗi tự do) → AppIcon, rỗng thì dùng icon mặc định */

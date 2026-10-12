@@ -1,5 +1,10 @@
 // Ánh xạ tên icon của Ivy Wallet ('fooddrink', 'ic_vue_shop_bag1'...) sang Ionicons.
-import { DEFAULT_ACCOUNT_ICON, DEFAULT_CATEGORY_ICON, type IconName } from '@/lib/icons';
+import {
+  DEFAULT_ACCOUNT_ICON,
+  DEFAULT_CATEGORY_ICON,
+  type IconName,
+  type McIcon,
+} from '@/lib/icons';
 
 const EXACT: Record<string, IconName> = {
   cash: 'cash-outline',
@@ -23,12 +28,12 @@ const EXACT: Record<string, IconName> = {
 };
 
 // Đoán theo từ khoá cho các icon chưa có trong bảng trên (Ivy có hàng trăm icon)
-const KEYWORDS: [RegExp, IconName][] = [
+const KEYWORDS: [RegExp, IconName | McIcon][] = [
   [/food|eat|restaurant|meal|lunch|dinner/, 'restaurant-outline'],
   [/coffee|cafe|tea|drink/, 'cafe-outline'],
   [/beer|wine|bar|alcohol/, 'beer-outline'],
   [/shop|bag|cart|store|market/, 'bag-handle-outline'],
-  [/fuel|gas|petrol/, 'speedometer-outline'],
+  [/fuel|gas|petrol/, 'mci:gas-station'],
   [/car|vehicle|auto/, 'car-outline'],
   [/bus|transport|taxi|metro/, 'bus-outline'],
   [/bike|bicycle|motor/, 'bicycle-outline'],
@@ -65,7 +70,7 @@ const KEYWORDS: [RegExp, IconName][] = [
 export function mapIvyIcon(
   name: string | null | undefined,
   kind: 'account' | 'category',
-): IconName {
+): IconName | McIcon {
   const fallback = kind === 'account' ? DEFAULT_ACCOUNT_ICON : DEFAULT_CATEGORY_ICON;
   const key = (name ?? '').trim().toLowerCase();
   if (!key) return fallback;

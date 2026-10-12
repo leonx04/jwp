@@ -44,7 +44,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#7C3AED',
       },
       {
-        icon: 'scan-outline',
+        icon: 'image-outline',
         title: 'Nhập từ ảnh biên lai',
         subtitle: 'Chụp màn hình chuyển khoản, đọc ngay trên máy',
         href: '/receipt-scan',

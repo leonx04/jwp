@@ -19,7 +19,11 @@ export function SectionTitle({ children, tone = 'label', right }: SectionTitlePr
         {children}
       </AppText>
     ) : (
-      <AppText variant="bodyMedium" color="textMuted" style={{ fontSize: 14, lineHeight: 20, marginTop: 2 }}>
+      <AppText
+        variant="bodyMedium"
+        color="textMuted"
+        style={{ fontSize: 14, lineHeight: 20, marginTop: 2 }}
+      >
         {children}
       </AppText>
     );

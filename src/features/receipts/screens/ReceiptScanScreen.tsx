@@ -369,7 +369,7 @@ export function ReceiptScanScreen() {
       ) : (
         <Card>
           <EmptyState
-            icon="scan-outline"
+            icon="image-outline"
             title="Chưa có ảnh nào"
             description="Chụp màn hình biên lai chuyển khoản / ví điện tử rồi chọn ảnh ở trên."
           />
