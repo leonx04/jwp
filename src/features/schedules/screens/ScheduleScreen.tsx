@@ -23,9 +23,15 @@ import { useMoneyFormat, useSettings } from '@/features/settings';
 import { addDays, formatDate, formatRelativeDue } from '@/lib/date';
 import { rgba, useTheme } from '@/theme';
 
+import { MonthCalendar } from '../components/MonthCalendar';
 import { OccurrenceRow, occurrenceTitle } from '../components/OccurrenceRow';
 import { useScheduleOverview } from '../hooks';
 import type { Occurrence } from '../occurrences';
+
+const VIEW_OPTIONS = [
+  { value: 'forecast', label: 'Dự trù' },
+  { value: 'month', label: 'Lịch tháng' },
+] as const;
 
 const RANGE_OPTIONS = [
   { value: '7', label: '7 ngày' },
@@ -34,6 +40,7 @@ const RANGE_OPTIONS = [
 ] as const;
 
 export function ScheduleScreen() {
+  const [view, setView] = useState<'forecast' | 'month'>('forecast');
   const [range, setRange] = useState<'7' | '30' | '90'>('30');
   const days = Number(range);
   const { data } = useScheduleOverview(days);
@@ -94,136 +101,154 @@ export function ScheduleScreen() {
 
   return (
     <Screen tabBar largeTitle title="Lịch thu chi" headerRight={headerRight}>
-      <SegmentedControl options={RANGE_OPTIONS} value={range} onChange={setRange} />
-
-      {/* Dự trù */}
-      <Card>
-        <View
-          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}
-        >
-          <View>
-            <AppText variant="label" color="textMuted">
-              SỐ DƯ DỰ KIẾN SAU {days} NGÀY
-            </AppText>
-            <AppText
-              variant="display"
-              color={forecast.endBalance < 0 ? 'expense' : 'text'}
-              style={{ fontVariant: ['tabular-nums'] }}
-            >
-              {format.money(forecast.endBalance)}
-            </AppText>
-          </View>
-        </View>
-        <BalanceLineChart points={forecast.points} safetyThreshold={safetyThreshold} />
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Stat
-            label="Thu dự kiến"
-            value={`+${format.compact(forecast.totalIncome)}`}
-            color={colors.income}
-          />
-          <Stat
-            label="Chi dự kiến"
-            value={`−${format.compact(forecast.totalExpense)}`}
-            color={colors.expense}
-          />
-          <Stat
-            label={`Thấp nhất ${formatDate(forecast.lowest.date, false)}`}
-            value={format.compact(forecast.lowest.balance)}
-            color={forecast.lowest.balance < 0 ? colors.expense : colors.text}
-          />
-        </View>
-      </Card>
-
-      {/* Cảnh báo */}
-      {forecast.firstNegative ? (
-        <Alert
-          tone="expense"
-          icon="warning"
-          text={`Ngày ${formatDate(forecast.firstNegative.date, false)} số dư dự kiến âm ${format.money(-forecast.firstNegative.balance)}`}
-        />
-      ) : forecast.firstBelowSafety ? (
-        <Alert
-          tone="warning"
-          icon="alert-circle"
-          text={`Ngày ${formatDate(forecast.firstBelowSafety.date, false)} số dư xuống dưới ngưỡng an toàn ${format.money(safetyThreshold)}`}
-        />
-      ) : null}
-      {forecast.walletWarnings.slice(0, 3).map((w) => (
-        <Alert
-          key={`${w.occurrence.scheduleId}-${w.occurrence.dueDate}`}
-          tone="warning"
-          icon="wallet"
-          text={`${occurrenceTitle(w.occurrence, lookup)} ${format.money(w.occurrence.amount)} (${formatRelativeDue(w.occurrence.date)}) trả từ ${accountName(w.accountId)} nhưng ví sẽ thiếu ${format.money(-w.balanceAfter)}`}
-        />
-      ))}
-
-      {/* Chi tiêu an toàn */}
-      {forecast.nextIncome ? (
-        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-          <View
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: rgba(colors.income, 0.18),
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Ionicons name="shield-checkmark" size={22} color={colors.income} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <AppText variant="caption" color="textMuted">
-              Có thể chi mỗi ngày đến kỳ thu {formatDate(forecast.nextIncome.date, false)} (còn{' '}
-              {forecast.safeDays} ngày)
-            </AppText>
-            <AppText variant="title" color={forecast.safeDailySpend > 0 ? 'income' : 'expense'}>
-              ~{format.money(forecast.safeDailySpend)}
-            </AppText>
-          </View>
-        </Card>
-      ) : (
-        <Card>
-          <AppText color="textMuted">
-            Chưa có lịch khoản thu nào trong {days} ngày tới. Thêm lịch nhận lương để JWP tính được
-            mức chi an toàn mỗi ngày.
-          </AppText>
-          <Button
-            title="Thêm lịch nhận lương"
-            icon="cash-outline"
-            variant="secondary"
-            onPress={() => router.push({ pathname: '/schedule/edit', params: { type: 'income' } })}
-          />
-        </Card>
+      <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={setView} />
+      {view === 'month' ? <MonthCalendar lookup={lookup} /> : null}
+      {view === 'month' ? null : (
+        <SegmentedControl options={RANGE_OPTIONS} value={range} onChange={setRange} />
       )}
 
-      {/* Các kỳ */}
-      {groups.length ? (
-        groups.map((g) => (
-          <View key={g.title} style={{ gap: 10 }}>
-            <SectionTitle tone="section">{`${g.title} · ${g.items.length}`}</SectionTitle>
-            <Card style={{ gap: 0, paddingVertical: 4 }}>
-              {g.items.slice(0, 30).map((o) => (
-                <OccurrenceRow
-                  key={`${o.scheduleId}-${o.dueDate}`}
-                  occurrence={o}
-                  lookup={lookup}
-                />
-              ))}
+      {/* Dự trù */}
+      {view === 'month' ? null : (
+        <>
+          <Card>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'flex-end',
+              }}
+            >
+              <View>
+                <AppText variant="label" color="textMuted">
+                  SỐ DƯ DỰ KIẾN SAU {days} NGÀY
+                </AppText>
+                <AppText
+                  variant="display"
+                  color={forecast.endBalance < 0 ? 'expense' : 'text'}
+                  style={{ fontVariant: ['tabular-nums'] }}
+                >
+                  {format.money(forecast.endBalance)}
+                </AppText>
+              </View>
+            </View>
+            <BalanceLineChart points={forecast.points} safetyThreshold={safetyThreshold} />
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Stat
+                label="Thu dự kiến"
+                value={`+${format.compact(forecast.totalIncome)}`}
+                color={colors.income}
+              />
+              <Stat
+                label="Chi dự kiến"
+                value={`−${format.compact(forecast.totalExpense)}`}
+                color={colors.expense}
+              />
+              <Stat
+                label={`Thấp nhất ${formatDate(forecast.lowest.date, false)}`}
+                value={format.compact(forecast.lowest.balance)}
+                color={forecast.lowest.balance < 0 ? colors.expense : colors.text}
+              />
+            </View>
+          </Card>
+
+          {/* Cảnh báo */}
+          {forecast.firstNegative ? (
+            <Alert
+              tone="expense"
+              icon="warning"
+              text={`Ngày ${formatDate(forecast.firstNegative.date, false)} số dư dự kiến âm ${format.money(-forecast.firstNegative.balance)}`}
+            />
+          ) : forecast.firstBelowSafety ? (
+            <Alert
+              tone="warning"
+              icon="alert-circle"
+              text={`Ngày ${formatDate(forecast.firstBelowSafety.date, false)} số dư xuống dưới ngưỡng an toàn ${format.money(safetyThreshold)}`}
+            />
+          ) : null}
+          {forecast.walletWarnings.slice(0, 3).map((w) => (
+            <Alert
+              key={`${w.occurrence.scheduleId}-${w.occurrence.dueDate}`}
+              tone="warning"
+              icon="wallet"
+              text={`${occurrenceTitle(w.occurrence, lookup)} ${format.money(w.occurrence.amount)} (${formatRelativeDue(w.occurrence.date)}) trả từ ${accountName(w.accountId)} nhưng ví sẽ thiếu ${format.money(-w.balanceAfter)}`}
+            />
+          ))}
+
+          {/* Chi tiêu an toàn */}
+          {forecast.nextIncome ? (
+            <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: rgba(colors.income, 0.18),
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="shield-checkmark" size={22} color={colors.income} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <AppText variant="caption" color="textMuted">
+                  Có thể chi mỗi ngày đến kỳ thu {formatDate(forecast.nextIncome.date, false)} (còn{' '}
+                  {forecast.safeDays} ngày)
+                </AppText>
+                <AppText variant="title" color={forecast.safeDailySpend > 0 ? 'income' : 'expense'}>
+                  ~{format.money(forecast.safeDailySpend)}
+                </AppText>
+              </View>
             </Card>
-          </View>
-        ))
-      ) : (
-        <Card>
-          <EmptyState
-            icon="calendar-outline"
-            title={schedules.length ? 'Không có khoản nào sắp tới' : 'Chưa có lịch thu chi'}
-            description="Đặt lịch cho lương, tiền nhà, trả góp, điện nước... để được nhắc và dự trù dòng tiền."
-            action={
-              <Button title="Thêm lịch" icon="add" onPress={() => router.push('/schedule/edit')} />
-            }
-          />
-        </Card>
+          ) : (
+            <Card>
+              <AppText color="textMuted">
+                Chưa có lịch khoản thu nào trong {days} ngày tới. Thêm lịch nhận lương để JWP tính
+                được mức chi an toàn mỗi ngày.
+              </AppText>
+              <Button
+                title="Thêm lịch nhận lương"
+                icon="cash-outline"
+                variant="secondary"
+                onPress={() =>
+                  router.push({ pathname: '/schedule/edit', params: { type: 'income' } })
+                }
+              />
+            </Card>
+          )}
+
+          {/* Các kỳ */}
+          {groups.length ? (
+            groups.map((g) => (
+              <View key={g.title} style={{ gap: 10 }}>
+                <SectionTitle tone="section">{`${g.title} · ${g.items.length}`}</SectionTitle>
+                <Card style={{ gap: 0, paddingVertical: 4 }}>
+                  {g.items.slice(0, 30).map((o) => (
+                    <OccurrenceRow
+                      key={`${o.scheduleId}-${o.dueDate}`}
+                      occurrence={o}
+                      lookup={lookup}
+                    />
+                  ))}
+                </Card>
+              </View>
+            ))
+          ) : (
+            <Card>
+              <EmptyState
+                icon="calendar-outline"
+                title={schedules.length ? 'Không có khoản nào sắp tới' : 'Chưa có lịch thu chi'}
+                description="Đặt lịch cho lương, tiền nhà, trả góp, điện nước... để được nhắc và dự trù dòng tiền."
+                action={
+                  <Button
+                    title="Thêm lịch"
+                    icon="add"
+                    onPress={() => router.push('/schedule/edit')}
+                  />
+                }
+              />
+            </Card>
+          )}
+        </>
       )}
     </Screen>
   );
