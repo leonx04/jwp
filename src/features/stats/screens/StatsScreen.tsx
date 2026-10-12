@@ -194,7 +194,7 @@ export function StatsScreen() {
             }}
           />
         ))}
-        <View style={{ width: 12 }} />
+        <View style={{ flexBasis: '100%', height: 0 }} />
         {TYPE_TABS.map((t) => (
           <Pill
             key={t.value}
