@@ -3,7 +3,20 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Linking, View } from 'react-native';
 
-import { AppText, Button, Card, EmptyState, ListRow, Screen, SectionTitle } from '@/components/ui';
+import {
+  AppText,
+  Button,
+  Card,
+  Chip,
+  EmptyState,
+  ListRow,
+  Screen,
+  SectionTitle,
+  SwitchRow,
+} from '@/components/ui';
+import { db } from '@/db';
+import { useSettings } from '@/features/settings';
+import { sendMorningBriefingPreview } from '../morningBriefing';
 
 import { notificationsSupported } from '../module';
 import { useResponseLog } from '../responseLog';
@@ -47,8 +60,9 @@ export function NotificationTestScreen() {
 
 /** Expo Go Android không chạy được expo-notifications (SDK 53+) */
 function UnsupportedNotice() {
+
   return (
-    <Screen title="Kiểm tra thông báo">
+    <Screen title="Thông báo">
       <Card>
         <EmptyState
           icon="notifications-off-outline"
@@ -65,6 +79,8 @@ function UnsupportedNotice() {
 }
 
 function NotificationTester() {
+  const prefs = useSettings((s) => s.notifications);
+  const updateNotifications = useSettings((s) => s.updateNotifications);
   const [permission, setPermission] = useState<PermissionState>('undetermined');
   const [scheduled, setScheduled] = useState(0);
   const entries = useResponseLog((s) => s.entries);
@@ -104,7 +120,7 @@ function NotificationTester() {
   };
 
   return (
-    <Screen title="Kiểm tra thông báo">
+    <Screen title="Thông báo">
       <Card>
         <ListRow
           icon="notifications-outline"
@@ -133,6 +149,37 @@ function NotificationTester() {
               />
             ) : null
           }
+        />
+      </Card>
+
+      <SectionTitle>Báo cáo buổi sáng</SectionTitle>
+      <Card style={{ gap: 12 }}>
+        <SwitchRow
+          icon="sunny-outline"
+          title="Báo cáo mỗi sáng"
+          subtitle="Số dư các ví, hôm nay được tiêu bao nhiêu, bill sắp đến hạn"
+          value={prefs.enabled && prefs.morningBriefing}
+          onValueChange={(on) => {
+            updateNotifications(
+              on ? { enabled: true, morningBriefing: true } : { morningBriefing: false },
+            );
+            if (on && permission !== 'granted') void ensurePermission();
+          }}
+        />
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {['06:30', '07:00', '07:30', '08:00', '09:00'].map((t) => (
+            <Chip
+              key={t}
+              label={t}
+              selected={prefs.morningBriefingTime === t}
+              onPress={() => updateNotifications({ morningBriefingTime: t })}
+            />
+          ))}
+        </View>
+        <Button
+          title="Gửi thử sau 3 giây"
+          variant="secondary"
+          onPress={() => sendMorningBriefingPreview(db, 3).catch(() => {})}
         />
       </Card>
 
