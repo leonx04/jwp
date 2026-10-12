@@ -44,3 +44,6 @@ yarn-error.*
 IvyWalletBackup_*/
 *.backup.json
 JWP_*.json
+
+# Build output của module native cục bộ
+modules/*/android/build/
