@@ -80,8 +80,12 @@ export function dueDateAfter(closeDate: DateString, dueDay: number): DateString 
   return sameMonth > closeDate ? sameMonth : dayOfMonth(addMonths(dayOfMonth(closeDate, 1), 1), dueDay);
 }
 
-function balanceThrough(movements: readonly AccountMovement[], date: DateString): number {
-  return movements.reduce((sum, m) => (toVnDate(m.date) <= date ? sum + m.delta : sum), 0);
+/**
+ * Số dư TRƯỚC ngày `date`. Giao dịch đúng ngày chốt thuộc kỳ SAU (SPayLater: đơn hoàn thành
+ * 24/05 nằm trong hóa đơn phát hành 24/06, chỉ đơn trước ngày phát hành mới vào hóa đơn đó).
+ */
+function balanceBefore(movements: readonly AccountMovement[], date: DateString): number {
+  return movements.reduce((sum, m) => (toVnDate(m.date) < date ? sum + m.delta : sum), 0);
 }
 
 /** Phần trả góp chưa tới hạn (sau `after`) của các khoản mua trước / trong ngày `purchasedBy` */
@@ -111,7 +115,7 @@ export function computeCreditStatus({
 
   const closeDate = lastCloseDate(today, statementDay);
   const dueDate = dueDateAfter(closeDate, dueDay);
-  const statementBalance = Math.max(0, -balanceThrough(movements, closeDate));
+  const statementBalance = Math.max(0, -balanceBefore(movements, closeDate));
   const paid = movements
     .filter((m) => toVnDate(m.date) > closeDate && m.delta > 0)
     .reduce((sum, m) => sum + m.delta, 0);
@@ -146,10 +150,10 @@ export function installmentAmounts(price: number, months: number, monthlyFee: nu
   return { total, perMonth: Math.ceil(total / months), fee: monthlyFee * months };
 }
 
-/** Ngày chốt của kỳ chứa `date` (ngày chốt đầu tiên ≥ date) */
+/** Ngày chốt của kỳ chứa `date`: ngày chốt đầu tiên SAU `date` (mua đúng ngày chốt → kỳ sau) */
 export function closeDateOnOrAfter(date: DateString, statementDay: number): DateString {
   const thisMonth = dayOfMonth(date, statementDay);
-  return thisMonth >= date ? thisMonth : dayOfMonth(addMonths(dayOfMonth(date, 1), 1), statementDay);
+  return thisMonth > date ? thisMonth : dayOfMonth(addMonths(dayOfMonth(date, 1), 1), statementDay);
 }
 
 /**
