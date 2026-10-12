@@ -12,6 +12,8 @@ type MoneyFieldProps = {
   value: number;
   onChange: (value: number) => void;
   placeholder?: string;
+  /** 'numeric' = bàn phím số (không gõ được 'k', 'tr'); mặc định bàn phím chữ để gõ tắt */
+  keyboardType?: 'default' | 'numeric';
 };
 
 /** Ô nhập tiền dùng bàn phím hệ thống: hiểu "1.500.000", "1tr5", "150k", "2 tỷ" */
@@ -20,6 +22,7 @@ export function MoneyField({
   value,
   onChange,
   placeholder = 'vd: 1.500.000 hoặc 1tr5',
+  keyboardType = 'default',
 }: MoneyFieldProps) {
   const format = useMoneyFormat();
   const [text, setText] = useState(value ? groupThousands(value) : '');
@@ -31,7 +34,7 @@ export function MoneyField({
       <TextField
         label={label}
         icon="cash-outline"
-        keyboardType="default"
+        keyboardType={keyboardType}
         placeholder={placeholder}
         value={text}
         onChangeText={(next) => {

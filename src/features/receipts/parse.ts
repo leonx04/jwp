@@ -30,6 +30,8 @@ export type ParsedReceipt = {
   counterparty?: string;
   /** Nội dung chuyển khoản / lời nhắn */
   content?: string;
+  /** Danh mục ghi sẵn trên biên lai (vd MoMo: 'Sức khỏe') — để gợi ý gán danh mục */
+  category?: string;
   /** Thời điểm giao dịch (ms UTC) */
   date?: number;
   /** Mã giao dịch / số tham chiếu — dùng chống nhập trùng */
@@ -166,6 +168,7 @@ type LabelKind =
   | 'senderName'
   | 'ref'
   | 'content'
+  | 'category'
   | 'service'
   | 'time'
   | 'status';
@@ -189,6 +192,7 @@ const LABEL_DEFS: [LabelKind, string][] = [
     'amount',
     'so tien(?: giao dich| gd| chuyen(?: khoan)?| thanh toan| nhan| giao dich)?|gia tri(?: giao dich)?|amount|st',
   ],
+  ['category', 'danh muc|phan loai|loai chi tieu'],
   ['receiverBank', 'ngan hang(?: nguoi)? (?:nhan|thu huong|huong|den)|(?:den|toi) ngan hang'],
   ['senderBank', 'ngan hang(?: nguoi)? (?:chuyen|gui)|tu ngan hang'],
   [
@@ -204,7 +208,7 @@ const LABEL_DEFS: [LabelKind, string][] = [
   ['account', 'so tai khoan|stk|tai khoan|so the|tk'],
   [
     'receiverName',
-    '(?:ten )?(?:nguoi|don vi) (?:thu huong|nhan|huong)(?: tien)?|ten (?:tai khoan|tk|chu tai khoan) (?:nhan|thu huong|huong)|(?:chuyen )?(?:den|toi)(?! (?:ngan hang|han|ngay|tai khoan|tk))|nha cung cap|(?:ten )?cua hang|merchant|doi tac|thanh toan cho|don vi chap nhan|diem ban',
+    '(?:ten )?(?:nguoi|don vi) (?:thu huong|nhan|huong)(?: tien)?|ten (?:tai khoan|tk|chu tai khoan) (?:nhan|thu huong|huong)|ten (?:tai khoan|tk|chu tai khoan)(?! (?:nguon|chuyen|gui|nguoi chuyen))|(?:chuyen )?(?:den|toi)(?! (?:ngan hang|han|ngay|tai khoan|tk))|nha cung cap|(?:ten )?cua hang|merchant|doi tac|thanh toan cho|don vi chap nhan|diem ban',
   ],
   [
     'senderName',
@@ -294,11 +298,15 @@ function cleanValue(value: string): string {
   return value.replace(/^[\s:：|•·.\-–]+/, '').trim();
 }
 
+const HEADING_ONLY =
+  /^(?:chuyen (?:tien|khoan)(?: nhanh)? (?:den|toi)|chi tiet giao dich|thong tin giao dich)$/;
+
 function labelRows(rows: Row[]): RowInfo[] {
   const info: RowInfo[] = [];
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const label = matchLabel(row.norm);
+    // "Chuyển khoản đến" đứng một mình là tiêu đề loại giao dịch, không phải nhãn người nhận
+    const label = HEADING_ONLY.test(row.norm) ? null : matchLabel(row.norm);
     if (!label) {
       info.push({ kind: null, value: row.raw, inherited: false, detailOf: null });
       continue;
@@ -468,7 +476,7 @@ function pickFee(candidates: AmountCandidate[], rows: Row[], info: RowInfo[]): n
 const INCOME_PHRASES =
   /nhan tien thanh cong|ban (?:da )?nhan(?: duoc)?|da nhan duoc|nhan duoc tien|duoc cong|cong tien|tien vao|hoan tien|ghi co|nap tien thanh cong|nhan tien tu/g;
 const EXPENSE_PHRASES =
-  /chuyen (?:tien|khoan)(?: nhanh)? thanh cong|chuyen thanh cong|thanh toan thanh cong|da thanh toan|ban (?:da )?chuyen|da chuyen|da tra|tru tien|ghi no|rut tien|thanh toan hoa don|mua hang thanh cong|thanh toan (?:qr|don hang)/g;
+  /chuyen (?:tien|khoan)(?: nhanh)? (?:den|toi)\b|chuyen (?:tien|khoan)(?: nhanh)? thanh cong|chuyen thanh cong|thanh toan thanh cong|da thanh toan|ban (?:da )?chuyen|da chuyen|da tra|tru tien|ghi no|rut tien|thanh toan hoa don|mua hang thanh cong|thanh toan (?:qr|don hang)/g;
 
 const NAME_KINDS: LabelKind[] = ['content', 'receiverName', 'senderName', 'service'];
 
@@ -718,13 +726,27 @@ function pickBanks(rows: Row[], info: RowInfo[], type: 'expense' | 'income' | nu
 
 // ─── Ghép lại ───────────────────────────────────────────────────────────────
 
+/**
+ * Ảnh chụp cửa sổ "Chi tiết giao dịch" nổi lên trên danh sách (app ngân hàng): chữ của danh sách
+ * mờ phía sau cũng bị đọc (số tiền, ngày của giao dịch khác). Nếu có tiêu đề cửa sổ ở giữa ảnh
+ * (phía trên còn nhiều dòng, phía dưới đủ nội dung) thì chỉ đọc từ tiêu đề trở xuống.
+ */
+const SHEET_TITLE = /^(?:chi tiet giao dich|thong tin giao dich|chi tiet chuyen (?:tien|khoan))$/;
+
+function detailSheetRows(rows: Row[]): Row[] {
+  for (let i = rows.length - 1; i >= 3; i--) {
+    if (SHEET_TITLE.test(rows[i].norm) && rows.length - i >= 6) return rows.slice(i + 1);
+  }
+  return rows;
+}
+
 export function parseReceipt(
   text: string,
   lines?: readonly ReceiptLine[] | null,
   options: ParseOptions = {},
 ): ParsedReceipt {
   const now = options.now ?? Date.now();
-  const rows = buildRows(text ?? '', lines ?? undefined);
+  const rows = detailSheetRows(buildRows(text ?? '', lines ?? undefined));
   const info = labelRows(rows);
   const fields: ParsedReceipt['fieldConfidence'] = {};
   const result: ParsedReceipt = {
@@ -754,7 +776,7 @@ export function parseReceipt(
 
   // Giá trị của hàng có nhãn, nối các dòng xuống dòng:
   // - nhãn đứng riêng một hàng → giá trị ở hàng dưới (bố cục xếp chồng của MoMo / app ngân hàng)
-  // - có toạ độ: nối các hàng cùng cột; không có toạ độ: nối tối đa 2 hàng không nhãn kế tiếp
+  // - có toạ độ: nối các hàng cùng cột; không có toạ độ: nối tối đa 4 hàng không nhãn kế tiếp
   const fullValue = (index: number): string => {
     let value = info[index].value;
     const row = rows[index];
@@ -771,7 +793,7 @@ export function parseReceipt(
       if (valueLeft !== null && valueLeft > 0) {
         if (next.cells.length !== 1) break;
         if (Math.abs(next.cells[0].left - valueLeft) > Math.max(24, row.height * 1.5)) break;
-      } else if (++extra > 2) break;
+      } else if (++extra > 4) break;
       value += ` ${next.raw}`;
     }
     return value;
@@ -786,7 +808,7 @@ export function parseReceipt(
         : ['receiverName', 'senderName', 'receiverAccount'];
   for (const kind of nameKinds) {
     const isHeadline = (i: number) =>
-      /^(?:thanh toan|chuyen (?:tien|khoan)) (?:cho|den|toi)/.test(rows[i].norm);
+      /^(?:thanh toan|chuyen (?:tien|khoan)) (?:cho|den|toi)\b/.test(rows[i].norm);
     const name = info
       .map((r, i) => ({ r, i }))
       .filter(({ r }) => r.kind === kind && !r.inherited)
@@ -830,6 +852,10 @@ export function parseReceipt(
       fields.content = 0.5;
     }
   }
+
+  // Danh mục ghi sẵn trên biên lai
+  const categoryIndex = info.findIndex((r) => r.kind === 'category' && !r.inherited && cleanContent(r.value));
+  if (categoryIndex >= 0) result.category = cleanContent(info[categoryIndex].value);
 
   // Mã giao dịch
   const ref = info
