@@ -82,7 +82,7 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
   const mask = (text: string) => (hideBalance ? MASK : text);
   const compact = (amount: number) => mask(format.compact(amount));
 
-  const { account, status } = summary;
+  const { account, status, installments } = summary;
   const current = status.current;
   const line = statementLine(status, compact);
   const high = (status.utilization ?? 0) > HIGH_UTILIZATION;
@@ -92,9 +92,6 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
     extras.push(
       `Kỳ sau ~${compact(status.next.estimatedAmount)} · hạn ${formatDate(status.next.dueDate, false)}`,
     );
-  }
-  if (status.installmentRemaining > 0) {
-    extras.push(`Trả góp chưa tới hạn ${compact(status.installmentRemaining)}`);
   }
 
   const payBill = () =>
@@ -158,6 +155,19 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
           {line.text}
         </AppText>
       </View>
+
+      {/* Kỳ trả góp / vay sắp tới: coi như khoản phải trả có hạn, giống bill trả sau */}
+      {installments
+        .filter((plan) => plan.nextDueDate)
+        .map((plan) => (
+          <View key={plan.scheduleId} style={styles.line}>
+            <Ionicons name="calendar-outline" size={18} color={colors.text} />
+            <AppText variant="bodyMedium" style={styles.lineText}>
+              {plan.title}: phải trả {compact(plan.amount)} trước{' '}
+              {formatDate(plan.nextDueDate!, false)}
+            </AppText>
+          </View>
+        ))}
 
       {extras.length ? (
         <AppText variant="caption" color="textMuted" style={styles.tabular}>
