@@ -214,7 +214,7 @@ export function AccountEditScreen() {
             label="Hạn mức"
             value={creditLimit}
             onChange={setCreditLimit}
-            placeholder="vd: 5tr"
+            placeholder="vd: 5.000.000"
           />
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <View style={{ flex: 1 }}>
