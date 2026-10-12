@@ -278,10 +278,10 @@ describe('nhận xét tự động', () => {
     const insights = buildInsights({
       ...base,
       spikes: [{ key: 'fun', name: 'Giải trí', amount: 900_000, baseline: 400_000, ratio: 2.25 }],
-      limit: 3,
+      limit: 4,
     });
-    expect(insights).toHaveLength(3);
-    expect(insights[2].text).toBe('Giải trí cao bất thường: gấp 2,3 lần mức trung bình 3 tháng trước');
+    expect(insights).toHaveLength(4);
+    expect(insights[3].text).toBe('Giải trí cao bất thường: gấp 2,3 lần mức trung bình 3 tháng trước');
     expect(buildInsights({ ...base, total: 0, previousTotal: 0, projection: null })).toEqual([]);
   });
 
