@@ -1,11 +1,14 @@
 // Lịch tháng: lưới 6 tuần, chấm màu thu / chi / bill, âm lịch nhỏ; bấm ngày để xem chi tiết.
-import { memo, useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { usePathname } from 'expo-router';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { Modal, Pressable, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { IconButton } from '@/components/glass/IconButton';
-import { AppText, Card, SectionTitle } from '@/components/ui';
+import { AppText, Card } from '@/components/ui';
 import { useMoneyFormat } from '@/features/settings';
 import { TransactionRow } from '@/features/transactions/components/TransactionRow';
+import type { TransactionListItem } from '@/features/transactions/queries';
 import { useTransactions } from '@/features/transactions/hooks';
 import {
   WEEKDAY_SHORT,
@@ -26,6 +29,11 @@ const CELL_HEIGHT = 56;
 export function MonthCalendar({ lookup }: { lookup: OccurrenceLookup }) {
   const [month, setMonth] = useState<DateString>(() => todayVn());
   const [selected, setSelected] = useState<DateString>(() => todayVn());
+  // Popup xem nhanh các giao dịch của ngày vừa bấm
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const pathname = usePathname();
+  // Bấm vào một giao dịch / kỳ trong popup sẽ chuyển màn → đóng popup
+  useEffect(() => setSheetOpen(false), [pathname]);
   const { data } = useCalendarMonth(month);
   const format = useMoneyFormat();
   const { colors } = useTheme();
@@ -103,49 +111,27 @@ export function MonthCalendar({ lookup }: { lookup: OccurrenceLookup }) {
         {rows.map((week) => (
           <View key={week[0].date} style={{ flexDirection: 'row' }}>
             {week.map((d) => (
-              <DayCell key={d.date} day={d} selected={d.date === selected} onPress={setSelected} />
+              <DayCell
+                key={d.date}
+                day={d}
+                selected={d.date === selected}
+                onPress={(date) => {
+                  setSelected(date);
+                  setSheetOpen(true);
+                }}
+              />
             ))}
           </View>
         ))}
       </Card>
 
-      {day ? (
-        <View style={{ gap: 10 }}>
-          <SectionTitle tone="section">{formatDate(day.date)}</SectionTitle>
-          <Card style={{ gap: 6 }}>
-            <AppText variant="caption" color="textMuted">
-              Âm lịch {day.lunar}
-            </AppText>
-            {day.totals ? (
-              <View style={{ flexDirection: 'row', gap: 16 }}>
-                <AppText color="income">+{format.compact(day.totals.income)}</AppText>
-                <AppText color="expense">−{format.compact(day.totals.expense)}</AppText>
-                <AppText color="textMuted">{day.totals.count} giao dịch</AppText>
-              </View>
-            ) : (
-              <AppText color="textMuted">Không có giao dịch</AppText>
-            )}
-          </Card>
-          {dayTransactions.length ? (
-            <Card style={{ gap: 0, paddingVertical: 4 }}>
-              {dayTransactions.map((item) => (
-                <TransactionRow key={item.id} item={item} />
-              ))}
-            </Card>
-          ) : null}
-          {day.planned.length ? (
-            <Card style={{ gap: 0, paddingVertical: 4 }}>
-              {day.planned.map((o) => (
-                <OccurrenceRow
-                  key={`${o.scheduleId}-${o.dueDate}`}
-                  occurrence={o}
-                  lookup={lookup}
-                />
-              ))}
-            </Card>
-          ) : null}
-        </View>
-      ) : null}
+      <DaySheet
+        visible={sheetOpen && !!day}
+        day={day}
+        transactions={dayTransactions}
+        lookup={lookup}
+        onClose={() => setSheetOpen(false)}
+      />
     </>
   );
 }
@@ -216,5 +202,122 @@ function Summary({ label, value, color }: { label: string; value: string; color:
         {value}
       </AppText>
     </View>
+  );
+}
+
+/** Popup xem nhanh trong ngày: trượt từ dưới lên, danh sách cuộn được, bấm một dòng để mở / sửa */
+function DaySheet({
+  visible,
+  day,
+  transactions,
+  lookup,
+  onClose,
+}: {
+  visible: boolean;
+  day: CalendarDay | undefined;
+  transactions: readonly TransactionListItem[];
+  lookup: OccurrenceLookup;
+  onClose: () => void;
+}) {
+  const { colors } = useTheme();
+  const format = useMoneyFormat();
+  const insets = useSafeAreaInsets();
+  if (!day) return null;
+  const empty = !transactions.length && !day.planned.length;
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable
+        accessibilityLabel="Đóng"
+        onPress={onClose}
+        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          maxHeight: '75%',
+          backgroundColor: colors.surface,
+          borderTopLeftRadius: 28,
+          borderTopRightRadius: 28,
+          paddingTop: 10,
+          paddingBottom: insets.bottom + 12,
+        }}
+      >
+        <View
+          style={{
+            alignSelf: 'center',
+            width: 40,
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: rgba(colors.text, 0.2),
+          }}
+        />
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: 20,
+            paddingTop: 12,
+            paddingBottom: 8,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <AppText variant="heading">{formatDate(day.date)}</AppText>
+            <AppText variant="caption" color="textMuted">
+              Âm lịch {day.lunar}
+              {day.totals ? ` · ${day.totals.count} giao dịch` : ''}
+            </AppText>
+          </View>
+          {day.totals ? (
+            <View style={{ alignItems: 'flex-end' }}>
+              {day.totals.income > 0 ? (
+                <AppText color="income">+{format.compact(day.totals.income)}</AppText>
+              ) : null}
+              {day.totals.expense > 0 ? (
+                <AppText color="expense">−{format.compact(day.totals.expense)}</AppText>
+              ) : null}
+            </View>
+          ) : null}
+          <IconButton icon="close" accessibilityLabel="Đóng" onPress={onClose} />
+        </View>
+        <ScrollView
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8, gap: 12 }}
+          showsVerticalScrollIndicator
+        >
+          {empty ? (
+            <AppText color="textMuted" style={{ textAlign: 'center', paddingVertical: 24 }}>
+              Không có giao dịch hay khoản dự kiến trong ngày này.
+            </AppText>
+          ) : null}
+          {transactions.length ? (
+            <Card style={{ gap: 0, paddingVertical: 4 }}>
+              {transactions.map((item) => (
+                <TransactionRow key={item.id} item={item} />
+              ))}
+            </Card>
+          ) : null}
+          {day.planned.length ? (
+            <>
+              <AppText variant="label" color="textMuted">
+                KHOẢN THEO LỊCH
+              </AppText>
+              <Card style={{ gap: 0, paddingVertical: 4 }}>
+                {day.planned.map((o) => (
+                  <OccurrenceRow
+                    key={`${o.scheduleId}-${o.dueDate}`}
+                    occurrence={o}
+                    lookup={lookup}
+                  />
+                ))}
+              </Card>
+            </>
+          ) : null}
+        </ScrollView>
+      </View>
+    </Modal>
   );
 }
