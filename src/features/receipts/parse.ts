@@ -201,7 +201,7 @@ const LABEL_DEFS: [LabelKind, string][] = [
   ],
   [
     'source',
-    'tai khoan (?:nguon|chuyen|trich no|thanh toan)|tu (?:so )?(?:tai khoan|tk|the|vi)|tk nguon|nguon(?: tien| thanh toan)?|thanh toan (?:bang|qua|tu)|(?:phuong|hinh) thuc(?: thanh toan)?',
+    'tai khoan ?/ ?(?:the|tk)|tk ?/ ?the|nguon tien|tai khoan (?:nguon|chuyen|trich no|thanh toan)|tu (?:so )?(?:tai khoan|tk|the|vi)|tk nguon|nguon(?: tien| thanh toan)?|thanh toan (?:bang|qua|tu)|(?:phuong|hinh) thuc(?: thanh toan)?',
   ],
   ['bank', 'ngan hang'],
   ['phone', 'so dien thoai|sdt|dien thoai|so dt'],

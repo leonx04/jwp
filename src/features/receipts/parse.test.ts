@@ -149,3 +149,46 @@ describe('parseReceipt — MB Bank chi tiết giao dịch (có nền mờ phía 
     expect(r.content).toContain('982357');
   });
 });
+
+describe('parseReceipt — MoMo: nguồn tiền lấy từ "Tài khoản/thẻ"', () => {
+  const momo = (source: string) =>
+    [
+      'Chi Tiết Giao Dịch',
+      'THANH TOÁN CHO NGUYEN THI',
+      'NGOC HUE (SHB)',
+      '-20.000đ',
+      'Trạng thái',
+      'Thành công',
+      'Thời gian',
+      '07:13 - 11/10/2026',
+      'Mã giao dịch',
+      '151086811171',
+      'Tài khoản/thẻ',
+      source,
+      'Tổng phí',
+      'Miễn phí',
+      'Số thẻ/TK',
+      'SQ1184X743R5',
+      'Ngân hàng',
+      'Ngân hàng TMCP Sài',
+      'Gòn - Hà Nội',
+      'Người nhận',
+      'NGUYEN THI NGOC',
+      'HUE',
+      'Tin nhắn',
+      'NGUYEN XUAN DUNG',
+      'chuyen tien qua MoMo',
+    ].join('\n');
+  const now = Date.UTC(2026, 9, 12, 12, 0);
+
+  it.each([
+    ['MBBank', 'MB'],
+    ['TPBank', 'TPB'],
+    ['Vietcombank', 'VCB'],
+    ['Ví MoMo', 'MOMO'],
+  ])('nguồn "%s" → ví %s, bên nhận vẫn là SHB', (source, code) => {
+    const r = parseReceipt(momo(source), null, { now });
+    expect(r.bankCode).toBe(code);
+    expect(r.counterpartyBankCode).toBe('SHB');
+  });
+});
