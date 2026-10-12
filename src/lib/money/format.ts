@@ -64,9 +64,10 @@ function formatHundredths(hundredths: number): string {
 }
 
 /**
- * Dạng rút gọn cho biểu đồ / chỗ hẹp (≤ 2 số lẻ, phẩy thập phân, bỏ ',0'):
- * 850 → '850 ₫' · 1000 → '1k' · 1500 → '1,5k' · 150000 → '150k' · 1000000 → '1Tr'
- * 1500000 → '1,5Tr' · 1000000000 → '1 Tỷ' · 2350000000 → '2,35 Tỷ'
+ * Dạng rút gọn cho biểu đồ / chỗ hẹp, KHÔNG BAO GIỜ làm tròn: chỉ rút gọn khi đúng tuyệt đối với ≤ 2 số lẻ,
+ * còn lại hiện đủ số (vd 1.487.759 ₫ chứ không phải '1,49Tr').
+ * 850 → '850 ₫' · 1000 → '1k' · 1500 → '1,5k' · 150000 → '150k' · 1500000 → '1,5Tr' · 2350000000 → '2,35 Tỷ'
+ * 1234 → '1.234 ₫' · 1487759 → '1.487.759 ₫'
  */
 export function formatCompact(
   amount: Money,
@@ -74,18 +75,14 @@ export function formatCompact(
 ): string {
   const abs = Math.round(Math.abs(amount));
   const signed = amount < 0 ? -abs : abs;
-  if (abs < 1_000) return applySign(`${abs}${NBSP}${symbol}`, signed, sign);
-
-  let index = COMPACT_UNITS.findIndex((unit) => abs >= unit.value);
-  let hundredths = Math.round((abs * 100) / COMPACT_UNITS[index].value);
-  // Làm tròn có thể đẩy lên 1.000 của đơn vị hiện tại (999.999 → "1.000k") → chuyển lên đơn vị lớn hơn ("1Tr")
-  if (hundredths >= 100_000 && index > 0) {
-    index -= 1;
-    hundredths = Math.round((abs * 100) / COMPACT_UNITS[index].value);
+  for (const [i, unit] of COMPACT_UNITS.entries()) {
+    if (abs < unit.value) continue;
+    // k chỉ dùng dưới 1Tr, Tr chỉ dùng dưới 1 Tỷ (tránh "1.005k")
+    if (i > 0 && abs >= COMPACT_UNITS[i - 1].value) continue;
+    const hundredths = (abs * 100) / unit.value;
+    if (Number.isInteger(hundredths)) {
+      return applySign(`${formatHundredths(hundredths)}${unit.label}`, signed, sign);
+    }
   }
-  return applySign(
-    `${formatHundredths(hundredths)}${COMPACT_UNITS[index].label}`,
-    signed,
-    sign,
-  );
+  return applySign(`${groupThousands(abs)}${NBSP}${symbol}`, signed, sign);
 }

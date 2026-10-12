@@ -13,3 +13,29 @@ export function applyKeypadKey(current: Money, key: KeypadKey): Money {
   const next = key === '000' ? current * 1000 : current * 10 + Number(key);
   return next > MAX_AMOUNT ? current : next;
 }
+
+export type CalcOp = '+' | '-' | '×' | '÷';
+
+/**
+ * Máy tính bấm nhanh: a op b. Trả null nếu kết quả không hợp lệ làm số tiền —
+ * âm, vượt MAX_AMOUNT, chia cho 0, hoặc chia không hết (KHÔNG làm tròn).
+ */
+export function calcMoney(a: Money, op: CalcOp, b: Money): Money | null {
+  let result: number;
+  switch (op) {
+    case '+':
+      result = a + b;
+      break;
+    case '-':
+      result = a - b;
+      break;
+    case '×':
+      result = a * b;
+      break;
+    case '÷':
+      if (b === 0 || a % b !== 0) return null;
+      result = a / b;
+      break;
+  }
+  return Number.isSafeInteger(result) && result >= 0 && result <= MAX_AMOUNT ? result : null;
+}

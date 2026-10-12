@@ -8,5 +8,5 @@ export {
   type MoneyFlow,
 } from './constants';
 export { formatCompact, formatFlow, formatMoney, groupThousands } from './format';
-export { applyKeypadKey, type KeypadKey } from './keypad';
+export { applyKeypadKey, calcMoney, type CalcOp, type KeypadKey } from './keypad';
 export { parseMoney } from './parse';
