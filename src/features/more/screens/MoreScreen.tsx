@@ -37,6 +37,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
     title: 'Dữ liệu',
     items: [
       {
+        icon: 'stats-chart-outline',
+        title: 'Thống kê',
+        subtitle: 'Biểu đồ, xu hướng chi tiêu, so sánh kỳ trước',
+        href: '/stats',
+        color: '#7C3AED',
+      },
+      {
         icon: 'download-outline',
         title: 'Import từ Ivy Wallet',
         subtitle: 'Ví, giao dịch, lịch định kỳ, khoản vay',
