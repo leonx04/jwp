@@ -34,6 +34,8 @@ type Draft = {
   type: 'expense' | 'income';
   amount: number;
   title: string;
+  /** Người nhận / người chuyển — lưu vào ghi chú */
+  counterparty: string;
   date: number;
   accountId: string | null;
   ref: string | null;
@@ -45,20 +47,27 @@ let counter = 0;
 /** 'bank:MB' → 'MB' */
 const bankOf = (icon: string | null) => (icon?.startsWith('bank:') ? icon.slice(5) : null);
 
-async function recognizeUri(uri: string, accounts: ReturnType<typeof listAccounts>): Promise<Draft | null> {
+async function recognizeUri(
+  uri: string,
+  accounts: ReturnType<typeof listAccounts>,
+): Promise<Draft | null> {
   const ocr = await recognizeText(uri);
   const parsed = parseReceipt(ocr.text, ocr.lines);
   if (!parsed.amount) return null;
   const ref = parsed.transactionRef ?? null;
   const account =
-    accounts.find((a) => parsed.bankCode && bankOf(a.icon) === parsed.bankCode) ?? accounts[0] ?? null;
+    accounts.find((a) => parsed.bankCode && bankOf(a.icon) === parsed.bankCode) ??
+    accounts[0] ??
+    null;
   return {
     key: `r${++counter}`,
     include: true,
     duplicate: ref ? findByExternalRef(db, ref) != null : false,
     type: parsed.type ?? 'expense',
     amount: parsed.amount,
-    title: parsed.counterparty ?? parsed.content ?? '',
+    // Tiêu đề = nội dung chuyển tiền; tên người nhận chỉ để ghi chú
+    title: parsed.content ?? parsed.counterparty ?? '',
+    counterparty: parsed.counterparty ?? '',
     date: parsed.date ?? Date.now(),
     accountId: account?.id ?? null,
     ref,
@@ -103,7 +112,10 @@ export function ReceiptScanScreen() {
 
   const pasteClipboard = async () => {
     if (!(await Clipboard.hasImageAsync())) {
-      showSnackbar({ text: 'Clipboard chưa có ảnh. Hãy sao chép ảnh biên lai trước.', tone: 'default' });
+      showSnackbar({
+        text: 'Clipboard chưa có ảnh. Hãy sao chép ảnh biên lai trước.',
+        tone: 'default',
+      });
       return;
     }
     const image = await Clipboard.getImageAsync({ format: 'png' });
@@ -131,6 +143,10 @@ export function ReceiptScanScreen() {
           amount: d.amount,
           accountId: d.accountId!,
           title: d.title,
+          note:
+            d.counterparty && d.counterparty !== d.title
+              ? `Người ${d.type === 'income' ? 'chuyển' : 'nhận'}: ${d.counterparty}`
+              : null,
           date: d.date,
           externalRef: d.ref,
         });
@@ -170,7 +186,12 @@ export function ReceiptScanScreen() {
         <AppText variant="caption" color="textMuted">
           Ảnh được đọc ngay trên máy, không gửi đi đâu. Chọn nhiều ảnh cùng lúc để nhập hàng loạt.
         </AppText>
-        <Button title="Chọn ảnh từ thư viện" icon="images-outline" disabled={busy} onPress={pickGallery} />
+        <Button
+          title="Chọn ảnh từ thư viện"
+          icon="images-outline"
+          disabled={busy}
+          onPress={pickGallery}
+        />
         <Button
           title="Dán ảnh từ clipboard"
           icon="clipboard-outline"
@@ -216,8 +237,16 @@ export function ReceiptScanScreen() {
                   onPress={() => patch(d.key, { type: 'income' })}
                 />
               </View>
-              <MoneyField label="Số tiền" value={d.amount} onChange={(amount) => patch(d.key, { amount })} />
-              <TextField label="Tiêu đề" value={d.title} onChangeText={(title) => patch(d.key, { title })} />
+              <MoneyField
+                label="Số tiền"
+                value={d.amount}
+                onChange={(amount) => patch(d.key, { amount })}
+              />
+              <TextField
+                label="Tiêu đề"
+                value={d.title}
+                onChangeText={(title) => patch(d.key, { title })}
+              />
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 {accounts.map((a) => (
                   <Chip
