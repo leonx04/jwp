@@ -54,7 +54,7 @@ const QUICK_ACTIONS: {
     href: '/transaction/new?type=transfer',
     tone: 'primary',
   },
-  { label: 'Ví', icon: 'wallet', href: '/accounts', tone: 'primary' },
+  { label: 'Quét biên lai', icon: 'scan-outline', href: '/receipt-scan', tone: 'primary' },
 ];
 
 function greeting(now = new Date()): string {
@@ -149,6 +149,16 @@ export function OverviewScreen() {
             value={mask(format.compact(summary?.expense ?? 0))}
           />
         </View>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/stats')}
+          hitSlop={8}
+          style={{ alignSelf: 'flex-end', marginTop: 4 }}
+        >
+          <AppText variant="label" color="primary">
+            Xem thống kê ›
+          </AppText>
+        </Pressable>
       </GlassSurface>
 
       {!hasAccounts && balances ? (
@@ -213,10 +223,6 @@ export function OverviewScreen() {
         })}
       </View>
 
-      {todayStatus ? <TodayCard status={todayStatus} /> : null}
-      {overview?.credit.length ? <CreditSection credit={overview.credit} load={load} /> : null}
-      <UpcomingCard />
-
       {/* Ví */}
       {hasAccounts ? (
         <>
@@ -265,6 +271,10 @@ export function OverviewScreen() {
           </ScrollView>
         </>
       ) : null}
+
+      {todayStatus ? <TodayCard status={todayStatus} /> : null}
+      {overview?.credit.length ? <CreditSection credit={overview.credit} load={load} /> : null}
+      <UpcomingCard />
 
       {/* Giao dịch gần đây */}
       {recent && recent.length > 0 ? (

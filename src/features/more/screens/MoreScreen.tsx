@@ -8,6 +8,25 @@ type Item = { icon: IconName; title: string; subtitle: string; href: Href; color
 
 const SECTIONS: { title: string; items: Item[] }[] = [
   {
+    title: 'Phân tích & công cụ',
+    items: [
+      {
+        icon: 'stats-chart-outline',
+        title: 'Thống kê',
+        subtitle: 'Biểu đồ, xu hướng chi tiêu, so sánh kỳ trước',
+        href: '/stats',
+        color: '#7C3AED',
+      },
+      {
+        icon: 'scan-outline',
+        title: 'Nhập từ ảnh biên lai',
+        subtitle: 'Chụp màn hình chuyển khoản, đọc ngay trên máy',
+        href: '/receipt-scan',
+        color: '#F59E0B',
+      },
+    ],
+  },
+  {
     title: 'Quản lý',
     items: [
       {
@@ -37,20 +56,6 @@ const SECTIONS: { title: string; items: Item[] }[] = [
     title: 'Dữ liệu',
     items: [
       {
-        icon: 'stats-chart-outline',
-        title: 'Thống kê',
-        subtitle: 'Biểu đồ, xu hướng chi tiêu, so sánh kỳ trước',
-        href: '/stats',
-        color: '#7C3AED',
-      },
-      {
-        icon: 'image-outline',
-        title: 'Nhập từ ảnh biên lai',
-        subtitle: 'Chụp màn hình chuyển khoản, đọc ngay trên máy',
-        href: '/receipt-scan',
-        color: '#F59E0B',
-      },
-      {
         icon: 'save-outline',
         title: 'Sao lưu & xuất dữ liệu',
         subtitle: 'JSON, CSV, khôi phục từ file',
@@ -78,7 +83,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
       },
       {
         icon: 'notifications-outline',
-        title: 'Kiểm tra thông báo',
+        title: 'Thông báo',
         subtitle: 'Thử popup, nút hành động, hướng dẫn Huawei',
         href: '/settings/notifications',
         color: '#0D9488',

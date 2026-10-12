@@ -235,7 +235,7 @@ const useStyles = createStyles((t) => ({
   },
   key: {
     flex: 1,
-    height: 52,
+    height: 42,
     borderRadius: t.radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
