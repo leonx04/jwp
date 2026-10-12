@@ -294,7 +294,13 @@ export function TransactionEditorScreen() {
             color={colors.expense}
             onPress={remove}
           />
-        ) : null
+        ) : (
+          <IconButton
+            icon="scan-outline"
+            accessibilityLabel="Nhập từ ảnh biên lai"
+            onPress={() => router.push('/receipt-scan')}
+          />
+        )
       }
       footer={
         keyboardOpen ? null : (
