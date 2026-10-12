@@ -46,10 +46,12 @@ export function formatFlow(
   return formatMoney(abs, { symbol });
 }
 
+// Cách viết quen thuộc của người Việt: '150k', '1,5Tr' viết liền; 'Tỷ' là chữ trọn vẹn nên cách một khoảng
+// (không ngắt dòng) → '2,35 Tỷ'.
 const COMPACT_UNITS = [
-  { value: 1_000_000_000, label: 'Tỷ' },
+  { value: 1_000_000_000, label: `${NBSP}Tỷ` },
   { value: 1_000_000, label: 'Tr' },
-  { value: 1_000, label: 'N' },
+  { value: 1_000, label: 'k' },
 ] as const;
 
 /** 150 (phần trăm của đơn vị) → '1,5' · 235 → '2,35' · 100 → '1' */
@@ -62,8 +64,9 @@ function formatHundredths(hundredths: number): string {
 }
 
 /**
- * Dạng rút gọn cho biểu đồ / chỗ hẹp:
- * 850 → '850 ₫' · 150000 → '150 N' · 1500000 → '1,5 Tr' · 2350000000 → '2,35 Tỷ'
+ * Dạng rút gọn cho biểu đồ / chỗ hẹp (≤ 2 số lẻ, phẩy thập phân, bỏ ',0'):
+ * 850 → '850 ₫' · 1000 → '1k' · 1500 → '1,5k' · 150000 → '150k' · 1000000 → '1Tr'
+ * 1500000 → '1,5Tr' · 1000000000 → '1 Tỷ' · 2350000000 → '2,35 Tỷ'
  */
 export function formatCompact(
   amount: Money,
@@ -75,13 +78,13 @@ export function formatCompact(
 
   let index = COMPACT_UNITS.findIndex((unit) => abs >= unit.value);
   let hundredths = Math.round((abs * 100) / COMPACT_UNITS[index].value);
-  // Làm tròn có thể đẩy lên 1.000 của đơn vị hiện tại (999.999 → "1.000 N") → chuyển lên đơn vị lớn hơn ("1 Tr")
+  // Làm tròn có thể đẩy lên 1.000 của đơn vị hiện tại (999.999 → "1.000k") → chuyển lên đơn vị lớn hơn ("1Tr")
   if (hundredths >= 100_000 && index > 0) {
     index -= 1;
     hundredths = Math.round((abs * 100) / COMPACT_UNITS[index].value);
   }
   return applySign(
-    `${formatHundredths(hundredths)}${NBSP}${COMPACT_UNITS[index].label}`,
+    `${formatHundredths(hundredths)}${COMPACT_UNITS[index].label}`,
     signed,
     sign,
   );

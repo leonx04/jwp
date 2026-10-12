@@ -19,11 +19,11 @@ import {
   TextField,
 } from '@/components/ui';
 import { db } from '@/db';
-import { bankIcon, type Bank } from '@/lib/banks';
+import { bankFromIcon, bankIcon } from '@/lib/banks';
 import { DEFAULT_ACCOUNT_ICON, toAppIcon, type AppIcon } from '@/lib/icons';
+import { suggestedBank } from '@/lib/icons/search';
 import { createStyles } from '@/theme';
 
-import { BankPicker, suggestedBank } from '../components/BankPicker';
 import {
   accountTransactionCount,
   deleteAccount,
@@ -53,8 +53,10 @@ export function AccountEditScreen() {
   const otherAccounts = listAccounts(db).filter((a) => a.id !== id && !a.isCredit);
   const suggestion = suggestedBank(name, icon);
 
-  const pickBank = (bank: Bank | null) => {
-    setIcon(bank ? bankIcon(bank.code) : DEFAULT_ACCOUNT_ICON);
+  // Chọn logo ngân hàng / ví → lấy luôn màu thương hiệu (vẫn đổi lại được ở mục Màu)
+  const pickIcon = (next: AppIcon) => {
+    setIcon(next);
+    const bank = bankFromIcon(next);
     if (bank) setColor(bank.color);
   };
 
@@ -147,7 +149,7 @@ export function AccountEditScreen() {
       {suggestion ? (
         <Pressable
           accessibilityRole="button"
-          onPress={() => pickBank(suggestion)}
+          onPress={() => pickIcon(bankIcon(suggestion.code))}
           style={({ pressed }) => [styles.suggestion, pressed && { opacity: 0.7 }]}
         >
           <BankMark bank={suggestion} size={32} />
@@ -160,8 +162,16 @@ export function AccountEditScreen() {
         </Pressable>
       ) : null}
 
-      <SectionTitle>Ngân hàng / ví điện tử</SectionTitle>
-      <BankPicker value={icon} onChange={pickBank} />
+      {/* Logo ngân hàng / ví hoặc biểu tượng: một dòng gọn, bấm để mở bảng chọn */}
+      <IconPicker
+        value={icon}
+        onChange={pickIcon}
+        color={color}
+        kind="account"
+        hint={name}
+        hintBanks={false}
+        title="Logo / biểu tượng"
+      />
 
       <SectionTitle>Ví trả sau / thẻ tín dụng</SectionTitle>
       <Card style={{ gap: 0 }}>
@@ -276,8 +286,6 @@ export function AccountEditScreen() {
           />
         ) : null}
       </Card>
-      <SectionTitle>Hoặc chọn biểu tượng</SectionTitle>
-      <IconPicker value={icon} color={color} onChange={setIcon} />
       <SectionTitle>Màu</SectionTitle>
       <ColorPicker value={color} onChange={setColor} />
       {id ? <Button title="Xoá ví" variant="danger" icon="trash-outline" onPress={remove} /> : null}

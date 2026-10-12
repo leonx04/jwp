@@ -1,19 +1,13 @@
-// Biểu đồ đường số dư dự kiến (victory-native, vẽ bằng Skia trên GPU).
-// Vạch đứt đỏ ở mức 0 ₫ và vạch vàng ở ngưỡng an toàn.
-import { BeVietnamPro_500Medium } from '@expo-google-fonts/be-vietnam-pro';
-import {
-  DashPathEffect,
-  LinearGradient,
-  Line as SkLine,
-  useFont,
-  vec,
-} from '@shopify/react-native-skia';
+// Biểu đồ đường số dư dự kiến (SVG — không dùng Skia).
+// Vạch đứt đỏ ở mức 0 ₫ và vạch vàng ở ngưỡng an toàn. Chạm / kéo để xem số dư từng ngày.
+import { useMemo } from 'react';
 import { View } from 'react-native';
-import { Area, CartesianChart, Line } from 'victory-native';
 
-import { parseDate, type DateString } from '@/lib/date';
-import { formatCompact } from '@/lib/money';
+import { useMoneyFormat } from '@/features/settings/hooks/useMoneyFormat';
+import { formatDayHeader, parseDate, type DateString } from '@/lib/date';
 import { rgba, useTheme } from '@/theme';
+
+import { AreaLineChart, type LineSeries, type ReferenceLine } from './AreaLineChart';
 
 type Point = { date: DateString; balance: number };
 
@@ -29,87 +23,51 @@ export function BalanceLineChart({
   height = 180,
 }: BalanceLineChartProps) {
   const { colors } = useTheme();
-  const font = useFont(BeVietnamPro_500Medium, 10);
-  const data = points.map((p, index) => ({ x: index, y: p.balance }));
-  const min = Math.min(0, safetyThreshold, ...data.map((d) => d.y));
-  const max = Math.max(0, ...data.map((d) => d.y));
-  const pad = Math.max(1, (max - min) * 0.12);
-  const lineColor = data.some((d) => d.y < 0) ? colors.expense : colors.primary;
+  const format = useMoneyFormat();
 
-  if (data.length < 2) return <View style={{ height }} />;
+  const { series, labels, references, summary } = useMemo(() => {
+    const balances = points.map((p) => p.balance);
+    const negative = balances.some((b) => b < 0);
+    const lineColor = negative ? colors.expense : colors.primary;
+    const refs: ReferenceLine[] = [
+      { key: 'zero', value: 0, color: rgba(colors.expense, 0.7), dash: '5 5' },
+    ];
+    if (safetyThreshold > 0) {
+      refs.push({
+        key: 'safety',
+        value: safetyThreshold,
+        color: rgba(colors.warning, 0.75),
+        dash: '3 5',
+      });
+    }
+    const lowest = balances.length ? Math.min(...balances) : 0;
+    const last = balances.length ? balances[balances.length - 1] : 0;
+    return {
+      series: [
+        { key: 'balance', label: 'Số dư', values: balances, color: lineColor, area: true },
+      ] satisfies LineSeries[],
+      labels: points.map((p) => {
+        const { day, month } = parseDate(p.date);
+        return `${day}/${month}`;
+      }),
+      references: refs,
+      summary: `Số dư dự kiến: cuối kỳ ${format.money(last)}, thấp nhất ${format.money(lowest)}`,
+    };
+  }, [points, safetyThreshold, colors.expense, colors.primary, colors.warning, format]);
+
+  if (points.length < 2) return <View style={{ height }} />;
 
   return (
-    <View style={{ height }}>
-      <CartesianChart
-        data={data}
-        xKey="x"
-        yKeys={['y']}
-        domain={{ y: [min - pad, max + pad] }}
-        padding={{ left: 4, right: 8, top: 8, bottom: 4 }}
-        xAxis={{
-          font,
-          tickCount: 4,
-          labelColor: colors.textMuted,
-          lineColor: 'transparent',
-          formatXLabel: (x) => {
-            const p = points[Math.round(Number(x))];
-            if (!p) return '';
-            const { day, month } = parseDate(p.date);
-            return `${day}/${month}`;
-          },
-        }}
-        yAxis={[
-          {
-            font,
-            tickCount: 4,
-            labelColor: colors.textMuted,
-            lineColor: rgba(colors.textMuted, 0.15),
-            formatYLabel: (y) => formatCompact(Number(y)).replace(/ ₫$/, ''),
-          },
-        ]}
-      >
-        {({ points: chartPoints, chartBounds, yScale }) => (
-          <>
-            <Area
-              points={chartPoints.y}
-              y0={chartBounds.bottom}
-              curveType="monotoneX"
-              animate={{ type: 'timing', duration: 400 }}
-            >
-              <LinearGradient
-                start={vec(0, chartBounds.top)}
-                end={vec(0, chartBounds.bottom)}
-                colors={[rgba(lineColor, 0.35), rgba(lineColor, 0.02)]}
-              />
-            </Area>
-            <Line
-              points={chartPoints.y}
-              color={lineColor}
-              strokeWidth={2.5}
-              curveType="monotoneX"
-              animate={{ type: 'timing', duration: 400 }}
-            />
-            <SkLine
-              p1={vec(chartBounds.left, yScale(0))}
-              p2={vec(chartBounds.right, yScale(0))}
-              color={rgba(colors.expense, 0.7)}
-              strokeWidth={1}
-            >
-              <DashPathEffect intervals={[5, 5]} />
-            </SkLine>
-            {safetyThreshold > 0 ? (
-              <SkLine
-                p1={vec(chartBounds.left, yScale(safetyThreshold))}
-                p2={vec(chartBounds.right, yScale(safetyThreshold))}
-                color={rgba(colors.warning, 0.7)}
-                strokeWidth={1}
-              >
-                <DashPathEffect intervals={[3, 5]} />
-              </SkLine>
-            ) : null}
-          </>
-        )}
-      </CartesianChart>
-    </View>
+    <AreaLineChart
+      series={series}
+      xLabels={labels}
+      height={height}
+      references={references}
+      xTickCount={4}
+      legend={false}
+      formatTooltipValue={format.money}
+      tooltipTitle={(index) => formatDayHeader(points[index].date)}
+      accessibilityLabel={summary}
+    />
   );
 }

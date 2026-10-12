@@ -54,7 +54,7 @@ export function Snackbar() {
           styles.bar,
           {
             backgroundColor: colors.dark ? 'rgba(36,38,48,0.96)' : 'rgba(22,24,32,0.94)',
-            boxShadow: `0 10px 30px ${colors.shadow}`,
+            boxShadow: `0 6px 16px ${colors.shadow}`,
           },
         ]}
       >

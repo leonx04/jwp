@@ -1,7 +1,6 @@
 // Khung chung cho mọi màn hình: nền lỏng + nội dung + header kính nổi (làm mờ thật nội dung cuộn phía sau).
 // - Màn trong stack: truyền `title` → header gọn có nút quay lại / đóng.
 // - Màn tab: `largeTitle` → tiêu đề lớn nằm trong nội dung, header gọn chỉ hiện khi cuộn xuống.
-import { BlurTargetView } from 'expo-blur';
 import { router } from 'expo-router';
 import { createContext, useContext, useRef, useState, type ReactNode, type RefObject } from 'react';
 import {
@@ -21,6 +20,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BlurTarget } from '@/components/glass/BlurTarget';
 import { AppBackground } from '@/components/glass/AppBackground';
 import { GlassSurface } from '@/components/glass/GlassSurface';
 import { IconButton } from '@/components/glass/IconButton';
@@ -106,7 +106,7 @@ export function Screen({
   return (
     <ScreenContext.Provider value={layout}>
       <View style={styles.root}>
-        <BlurTargetView ref={blurTarget} style={StyleSheet.absoluteFill}>
+        <BlurTarget ref={blurTarget} style={StyleSheet.absoluteFill}>
           <AppBackground />
           {scroll ? (
             <Animated.ScrollView
@@ -133,7 +133,7 @@ export function Screen({
           ) : (
             <View style={[styles.fill, contentStyle]}>{children}</View>
           )}
-        </BlurTargetView>
+        </BlurTarget>
 
         {showHeader && (!largeTitle || title) ? (
           <GlassHeader

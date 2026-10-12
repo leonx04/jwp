@@ -14,9 +14,12 @@ import {
 } from '@/components/ui';
 import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
+import { CreditCard, InstallmentPlanList } from '@/features/credit/components';
+import { getCreditSummary } from '@/features/credit/queries';
 import { useSettings } from '@/features/settings';
 import { TransactionRow } from '@/features/transactions/components/TransactionRow';
 import { useTransactions } from '@/features/transactions/hooks';
+import { todayVn } from '@/lib/date';
 import { toAppIcon, type IconName } from '@/lib/icons';
 import { createStyles, rgba, useTheme } from '@/theme';
 
@@ -36,6 +39,15 @@ export function AccountDetailScreen() {
     id,
   ]);
   const { data: recent = [] } = useTransactions({ accountId: id, limit: 30 });
+  // Ví trả sau: dư nợ, kỳ sao kê, kế hoạch trả góp
+  const { data: credit = null } = useLiveData(
+    ['transactions', 'accounts', 'schedules'],
+    () => {
+      const acc = listAccounts(db, { includeArchived: true }).find((a) => a.id === id);
+      return acc?.isCredit ? getCreditSummary(db, acc, todayVn()) : null;
+    },
+    [id],
+  );
 
   if (account === null) {
     return (
@@ -85,28 +97,32 @@ export function AccountDetailScreen() {
         />
       }
     >
-      <Card style={{ alignItems: 'center', gap: 6 }}>
-        {account ? (
-          <IconBadge
-            icon={toAppIcon(account.icon, 'wallet-outline')}
-            color={account.color}
-            size={52}
-          />
-        ) : null}
-        <AppText variant="label" color="textMuted">
-          SỐ DƯ
-        </AppText>
-        {hideBalance ? (
-          <AppText variant="display">••••••</AppText>
-        ) : (
-          <AmountText amount={balance} variant="display" />
-        )}
-        {account && !account.includeInBalance ? (
-          <AppText variant="caption" color="textMuted">
-            Không tính vào tổng số dư
+      {credit ? (
+        <CreditCard summary={credit} />
+      ) : (
+        <Card style={{ alignItems: 'center', gap: 6 }}>
+          {account ? (
+            <IconBadge
+              icon={toAppIcon(account.icon, 'wallet-outline')}
+              color={account.color}
+              size={52}
+            />
+          ) : null}
+          <AppText variant="label" color="textMuted">
+            Số dư
           </AppText>
-        ) : null}
-      </Card>
+          {hideBalance ? (
+            <AppText variant="display">••••••</AppText>
+          ) : (
+            <AmountText amount={balance} variant="display" />
+          )}
+          {account && !account.includeInBalance ? (
+            <AppText variant="caption" color="textMuted">
+              Không tính vào tổng số dư
+            </AppText>
+          ) : null}
+        </Card>
+      )}
 
       <View style={styles.actions}>
         {actions.map((a) => (
@@ -128,6 +144,13 @@ export function AccountDetailScreen() {
           </Pressable>
         ))}
       </View>
+
+      {credit && credit.installments.length > 0 ? (
+        <>
+          <SectionTitle tone="section">Trả góp</SectionTitle>
+          <InstallmentPlanList installments={credit.installments} />
+        </>
+      ) : null}
 
       <View style={styles.sectionRow}>
         <SectionTitle tone="section">Giao dịch gần đây</SectionTitle>

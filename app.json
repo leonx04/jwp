@@ -14,7 +14,7 @@
     "android": {
       "package": "com.jungnguyen.jwp",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#6B4AF1",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -35,11 +35,11 @@
         "expo-splash-screen",
         {
           "image": "./assets/splash-icon.png",
-          "imageWidth": 160,
+          "imageWidth": 128,
           "resizeMode": "contain",
-          "backgroundColor": "#F4F5F9",
+          "backgroundColor": "#F4F6FA",
           "dark": {
-            "backgroundColor": "#0E0F14"
+            "backgroundColor": "#060A12"
           }
         }
       ],
@@ -54,7 +54,20 @@
       ],
       "expo-sharing",
       "@react-native-community/datetimepicker",
-      "expo-build-properties"
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "buildArchs": [
+              "arm64-v8a",
+              "armeabi-v7a"
+            ],
+            "extraProguardRules": "-keep class com.google.mlkit.vision.text.** { *; }\n-keep class expo.modules.jwpocr.** { *; }\n-dontwarn com.google.mlkit.vision.text.**\n"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

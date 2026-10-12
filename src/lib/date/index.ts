@@ -8,6 +8,14 @@ export {
   formatMonth,
   formatRelativeDue,
 } from './format';
+export {
+  formatLunar,
+  lunarLabel,
+  lunarYearName,
+  solarToLunar,
+  toLunar,
+  type LunarDate,
+} from './lunar';
 export { periodContaining, shiftPeriod, type Period } from './period';
 export {
   VN_OFFSET_MS,

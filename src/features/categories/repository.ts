@@ -2,12 +2,20 @@ import { asc, eq, sql } from 'drizzle-orm';
 
 import { categories, type Category } from '@/db/schema';
 import type { AppDatabase } from '@/db/types';
+import type { IconName } from '@/lib/icons';
 import { createId } from '@/lib/id';
 
 export type CategoryInput = { id?: string; name: string; color: string; icon: string };
 
-/** Danh mục đặc biệt cho phí chuyển khoản (tạo khi cần) */
+/** Danh mục đặc biệt cho phí chuyển khoản (tạo khi cần, hoặc có sẵn trong dữ liệu mặc định) */
 export const FEE_CATEGORY_ID = 'jwp-category-fee';
+
+/** Tên / màu / icon của danh mục phí — dùng chung cho ensureFeeCategory và dữ liệu mặc định */
+export const FEE_CATEGORY = {
+  name: 'Phí giao dịch',
+  color: '#94A3B8',
+  icon: 'remove-circle-outline',
+} as const satisfies { name: string; color: string; icon: IconName };
 
 export function listCategories(db: AppDatabase): Category[] {
   return db.select().from(categories).orderBy(asc(categories.orderNum), asc(categories.name)).all();
@@ -43,9 +51,7 @@ export function ensureFeeCategory(db: AppDatabase): string {
   db.insert(categories)
     .values({
       id: FEE_CATEGORY_ID,
-      name: 'Phí giao dịch',
-      color: '#94A3B8',
-      icon: 'receipt-outline',
+      ...FEE_CATEGORY,
       orderNum: 999,
     })
     .onConflictDoNothing()

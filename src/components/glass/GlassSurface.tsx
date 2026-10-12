@@ -51,9 +51,9 @@ export function GlassSurface({
   const shadowStyle = shadow
     ? dark
       ? chrome
-        ? { boxShadow: `0 12px 32px ${colors.shadow}` }
+        ? { boxShadow: `0 6px 16px ${colors.shadow}` }
         : null
-      : { boxShadow: `0 1px 2px rgba(16,24,40,0.04), 0 8px 24px ${colors.shadow}` }
+      : { boxShadow: `0 2px 8px ${colors.shadow}` }
     : null;
 
   return (
@@ -73,7 +73,7 @@ export function GlassSurface({
           <>
             {nativeLiquidGlass ? (
               <GlassView style={StyleSheet.absoluteFill} glassEffectStyle="regular" />
-            ) : blurTarget ? (
+            ) : Platform.OS === 'ios' && blurTarget ? (
               <BlurView
                 style={StyleSheet.absoluteFill}
                 blurTarget={blurTarget}
@@ -83,7 +83,13 @@ export function GlassSurface({
               />
             ) : null}
             {!nativeLiquidGlass ? (
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.glassChrome }]} />
+              <View
+                style={[
+                  StyleSheet.absoluteFill,
+                  // Android không làm mờ → dùng nền gần như đặc để chữ phía sau không lộ
+                  { backgroundColor: Platform.OS === 'android' ? colors.surface : colors.glassChrome },
+                ]}
+              />
             ) : null}
             {/* Vệt phản chiếu nhẹ ở mép trên — cho lớp kính cảm giác có độ dày */}
             <LinearGradient
