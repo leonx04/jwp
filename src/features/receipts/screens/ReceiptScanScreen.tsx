@@ -4,7 +4,7 @@ import { File, Paths } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Modal, Pressable, View } from 'react-native';
 
 import { showSnackbar } from '@/components/feedback/snackbarStore';
 import {
@@ -28,6 +28,8 @@ import { ocrAvailable, recognizeText } from '../../../../modules/jwp-ocr';
 import { parseReceipt } from '../parse';
 
 type Draft = {
+  /** Ảnh gốc để đối chiếu */
+  uri: string;
   key: string;
   include: boolean;
   duplicate: boolean;
@@ -61,6 +63,7 @@ async function recognizeUri(
     null;
   return {
     key: `r${++counter}`,
+    uri,
     include: true,
     duplicate: ref ? findByExternalRef(db, ref) != null : false,
     type: parsed.type ?? 'expense',
@@ -79,6 +82,7 @@ export function ReceiptScanScreen() {
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [busy, setBusy] = useState(false);
   const [skipped, setSkipped] = useState(0);
+  const [zoomUri, setZoomUri] = useState<string | null>(null);
   const accounts = listAccounts(db);
 
   const process = async (uris: string[]) => {
@@ -213,6 +217,20 @@ export function ReceiptScanScreen() {
           <SectionTitle tone="section">{`Kiểm tra lại · ${drafts.length}`}</SectionTitle>
           {drafts.map((d) => (
             <Card key={d.key} style={{ gap: 10 }}>
+              <Pressable
+                accessibilityRole="imagebutton"
+                accessibilityLabel="Phóng to ảnh biên lai"
+                onPress={() => setZoomUri(d.uri)}
+              >
+                <Image
+                  source={{ uri: d.uri }}
+                  resizeMode="cover"
+                  style={{ width: '100%', height: 140, borderRadius: 12 }}
+                />
+                <AppText variant="caption" color="textMuted" style={{ marginTop: 4 }}>
+                  Bấm vào ảnh để phóng to
+                </AppText>
+              </Pressable>
               <SwitchRow
                 title={d.type === 'expense' ? 'Khoản chi' : 'Khoản thu'}
                 subtitle={
@@ -271,6 +289,25 @@ export function ReceiptScanScreen() {
           />
         </Card>
       )}
+      <Modal
+        visible={zoomUri != null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setZoomUri(null)}
+      >
+        <Pressable
+          onPress={() => setZoomUri(null)}
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', justifyContent: 'center' }}
+        >
+          {zoomUri ? (
+            <Image
+              source={{ uri: zoomUri }}
+              resizeMode="contain"
+              style={{ width: '100%', height: '90%' }}
+            />
+          ) : null}
+        </Pressable>
+      </Modal>
     </Screen>
   );
 }
