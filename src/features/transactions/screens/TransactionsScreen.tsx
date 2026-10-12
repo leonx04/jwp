@@ -1,7 +1,7 @@
 // Danh sách giao dịch: tìm kiếm không dấu, lọc theo kỳ / loại / ví / danh mục / tag,
 // nhóm theo ngày kiểu "inset grouped", vuốt trái để xoá (có hoàn tác).
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AnimatedFlashList } from '@shopify/flash-list';
+import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -84,7 +84,7 @@ function TransactionsList() {
     categoryId?: string;
     tagId?: string;
   }>();
-  const { top, bottom, onScroll } = useScreenLayout();
+  const { top, bottom, onScrollJS } = useScreenLayout();
   const styles = useStyles();
   const { colors } = useTheme();
   const format = useMoneyFormat();
@@ -240,11 +240,11 @@ function TransactionsList() {
   );
 
   return (
-    <AnimatedFlashList
+    <FlashList
       data={rows}
       keyExtractor={(row: GroupedRow) => row.key}
       getItemType={(row: GroupedRow) => row.kind}
-      onScroll={onScroll}
+      onScroll={onScrollJS}
       scrollEventThrottle={16}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}

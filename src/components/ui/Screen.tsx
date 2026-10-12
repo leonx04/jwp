@@ -2,10 +2,12 @@
 // - Màn trong stack: truyền `title` → header gọn có nút quay lại / đóng.
 // - Màn tab: `largeTitle` → tiêu đề lớn nằm trong nội dung, header gọn chỉ hiện khi cuộn xuống.
 import { router } from 'expo-router';
-import { createContext, useContext, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { createContext, useCallback, useContext, useRef, useState, type ReactNode, type RefObject } from 'react';
 import {
   StyleSheet,
   View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   type StyleProp,
   type View as RNView,
   type ViewStyle,
@@ -41,6 +43,8 @@ type ScreenLayout = {
   bottom: number;
   scrollY: SharedValue<number>;
   onScroll: ReturnType<typeof useAnimatedScrollHandler>;
+  /** Dành cho FlashList / FlatList: chúng tự gọi onScroll như hàm thường nên không nhận được handler của Reanimated */
+  onScrollJS: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 const ScreenContext = createContext<ScreenLayout | null>(null);
@@ -91,6 +95,13 @@ export function Screen({
     scrollY.value = e.contentOffset.y;
   });
 
+  const onScrollJS = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollY.value = e.nativeEvent.contentOffset.y;
+    },
+    [scrollY],
+  );
+
   const lead = leading ?? (title && !largeTitle ? 'back' : 'none');
   const showHeader = !!title || lead !== 'none' || !!headerRight;
   const headerHeight = insets.top + HEADER_BAR;
@@ -101,7 +112,7 @@ export function Screen({
       ? footerHeight + spacing.lg
       : insets.bottom + spacing.xl;
 
-  const layout: ScreenLayout = { blurTarget, top, bottom, scrollY, onScroll };
+  const layout: ScreenLayout = { blurTarget, top, bottom, scrollY, onScroll, onScrollJS };
 
   return (
     <ScreenContext.Provider value={layout}>
