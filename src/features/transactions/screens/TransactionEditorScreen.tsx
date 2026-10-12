@@ -156,6 +156,7 @@ export function TransactionEditorScreen() {
     editingId ? loadInstallmentDraft(db, editingId) : null,
   );
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   // Bàn phím số có sẵn đang nhập ô nào: số tiền / giá xăng / phí chuyển khoản
   const [target, setTarget] = useState<'amount' | 'fuel' | 'fee'>('amount');
 
@@ -353,17 +354,40 @@ export function TransactionEditorScreen() {
         )
       }
       footer={
-        keyboardOpen ? null : (
-          <View style={styles.footer}>
-            <AmountKeypad value={keypadValue} onChange={onKeypad} />
-            <Button
-              title={editingId ? 'Lưu thay đổi' : 'Lưu'}
-              icon="checkmark"
-              disabled={!draft.amount}
-              onPress={save}
-            />
-          </View>
-        )
+        <View style={styles.footer}>
+          <Pressable style={styles.amountBox} onPress={() => setTarget('amount')}>
+            <AppText
+              variant="hero"
+              color={draft.amount ? amountColor : 'textMuted'}
+              style={styles.amount}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              {format.money(draft.amount)}
+            </AppText>
+            {history ? (
+              <AppText variant="caption" color="textMuted" style={styles.center}>
+                Lần trước {format.money(history.lastAmount)} · {formatAgo(history.lastDate)}
+                {history.count > 1 ? ` · TB ${format.compact(history.avgAmount)}` : ''}
+                {history.count > 2 && history.minAmount !== history.maxAmount
+                  ? ` · ${format.compact(history.minAmount)}–${format.compact(history.maxAmount)}`
+                  : ''}
+              </AppText>
+            ) : null}
+          </Pressable>
+
+          {keyboardOpen ? null : (
+            <>
+              <AmountKeypad value={keypadValue} onChange={onKeypad} />
+              <Button
+                title={editingId ? 'Lưu thay đổi' : 'Lưu'}
+                icon="checkmark"
+                disabled={!draft.amount}
+                onPress={save}
+              />
+            </>
+          )}
+        </View>
       }
     >
       {draft.debtId ? (
@@ -379,28 +403,6 @@ export function TransactionEditorScreen() {
           set({ type, categoryId: type === 'transfer' ? null : draft.categoryId })
         }
       />
-
-      {/* Số tiền */}
-      <Pressable style={styles.amountBox} onPress={() => setTarget('amount')}>
-        <AppText
-          variant="hero"
-          color={draft.amount ? amountColor : 'textMuted'}
-          style={styles.amount}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {format.money(draft.amount)}
-        </AppText>
-        {history ? (
-          <AppText variant="caption" color="textMuted" style={styles.center}>
-            Lần trước {format.money(history.lastAmount)} · {formatAgo(history.lastDate)}
-            {history.count > 1 ? ` · TB ${format.compact(history.avgAmount)}` : ''}
-            {history.count > 2 && history.minAmount !== history.maxAmount
-              ? ` · ${format.compact(history.minAmount)}–${format.compact(history.maxAmount)}`
-              : ''}
-          </AppText>
-        ) : null}
-      </Pressable>
 
       {/* Gợi ý từ lịch sử */}
       {suggestions.length > 0 ? (
@@ -531,41 +533,6 @@ export function TransactionEditorScreen() {
         </>
       )}
 
-      {/* Tag */}
-      <SectionTitle>Tag</SectionTitle>
-      <View style={styles.wrap}>
-        {draft.tagIds.map((id) => {
-          const tag = allTags.find((t) => t.id === id);
-          return tag ? (
-            <Chip
-              key={id}
-              label={`#${tag.name}`}
-              color={tag.color}
-              selected
-              removable
-              onPress={() => set({ tagIds: draft.tagIds.filter((t) => t !== id) })}
-            />
-          ) : null;
-        })}
-        {tagSuggestions.map((t) => (
-          <Chip
-            key={t.id}
-            label={`#${t.name}`}
-            color={t.color}
-            onPress={() => set({ tagIds: [...draft.tagIds, t.id] })}
-          />
-        ))}
-      </View>
-      <TextField
-        icon="pricetag-outline"
-        placeholder="Thêm tag mới rồi bấm Enter"
-        value={newTag}
-        onChangeText={setNewTag}
-        onSubmitEditing={addTag}
-        returnKeyType="done"
-        submitBehavior="submit"
-      />
-
       {/* Thời gian */}
       <SectionTitle>Thời gian</SectionTitle>
       <View style={styles.wrap}>
@@ -585,13 +552,56 @@ export function TransactionEditorScreen() {
         <Chip icon="time-outline" label={toVnTime(draft.date)} onPress={() => pickDate('time')} />
       </View>
 
-      <TextField
-        icon="document-text-outline"
-        placeholder="Ghi chú"
-        value={draft.note}
-        onChangeText={(note) => set({ note })}
-        multiline
-      />
+      {/* Tag + ghi chú: gập lại cho gọn, tự mở khi đã có nội dung */}
+      {moreOpen || draft.tagIds.length > 0 || !!draft.note ? (
+        <>
+          <SectionTitle>Tag</SectionTitle>
+          <View style={styles.wrap}>
+            {draft.tagIds.map((id) => {
+              const tag = allTags.find((t) => t.id === id);
+              return tag ? (
+                <Chip
+                  key={id}
+                  label={`#${tag.name}`}
+                  color={tag.color}
+                  selected
+                  removable
+                  onPress={() => set({ tagIds: draft.tagIds.filter((t) => t !== id) })}
+                />
+              ) : null;
+            })}
+            {tagSuggestions.map((t) => (
+              <Chip
+                key={t.id}
+                label={`#${t.name}`}
+                color={t.color}
+                onPress={() => set({ tagIds: [...draft.tagIds, t.id] })}
+              />
+            ))}
+          </View>
+          <TextField
+            icon="pricetag-outline"
+            placeholder="Thêm tag mới rồi bấm Enter"
+            value={newTag}
+            onChangeText={setNewTag}
+            onSubmitEditing={addTag}
+            returnKeyType="done"
+            submitBehavior="submit"
+          />
+
+          <TextField
+            icon="document-text-outline"
+            placeholder="Ghi chú"
+            value={draft.note}
+            onChangeText={(note) => set({ note })}
+            multiline
+          />
+        </>
+      ) : (
+        <View style={styles.wrap}>
+          <Chip icon="add" label="Thêm tag / ghi chú" onPress={() => setMoreOpen(true)} />
+        </View>
+      )}
     </Screen>
   );
 }
@@ -630,8 +640,8 @@ function AccountChips({
 const useStyles = createStyles((t) => ({
   footer: {
     paddingHorizontal: t.spacing.lg,
-    paddingTop: t.spacing.md,
-    gap: t.spacing.md,
+    paddingTop: t.spacing.sm,
+    gap: t.spacing.sm,
   },
   amountBox: {
     alignItems: 'center',
@@ -639,8 +649,8 @@ const useStyles = createStyles((t) => ({
     gap: 4,
   },
   amount: {
-    fontSize: 44,
-    lineHeight: 54,
+    fontSize: 36,
+    lineHeight: 44,
     fontVariant: ['tabular-nums'],
     textAlign: 'center',
   },
