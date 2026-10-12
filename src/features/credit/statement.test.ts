@@ -89,3 +89,18 @@ describe('SPayLater: chốt cuối tháng, hạn ngày 10', () => {
     expect(s).toMatchObject({ owed: 500_000, available: 1_500_000, utilization: 0.25, current: null });
   });
 });
+
+describe('trả nợ đúng ngày chốt hóa đơn', () => {
+  it('khoản trả 14/09 (ngày chốt) tính cho hóa đơn cũ, không còn quá hạn', () => {
+    const movements = [m('2026-08-13', -1_487_759), m('2026-09-14', 1_487_759)];
+    const s = computeCreditStatus({
+      today: '2026-10-12',
+      statementDay: 14,
+      dueDay: 31,
+      creditLimit: 10_000_000,
+      movements,
+    });
+    expect(s.current!.statementBalance).toBe(0);
+    expect(s.current!.overdue).toBe(false);
+  });
+});

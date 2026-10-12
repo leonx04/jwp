@@ -82,10 +82,14 @@ export function dueDateAfter(closeDate: DateString, dueDay: number): DateString 
 
 /**
  * Số dư TRƯỚC ngày `date`. Giao dịch đúng ngày chốt thuộc kỳ SAU (SPayLater: đơn hoàn thành
- * 24/05 nằm trong hóa đơn phát hành 24/06, chỉ đơn trước ngày phát hành mới vào hóa đơn đó).
+ * 24/05 nằm trong hóa đơn phát hành 24/06, chỉ đơn trước ngày phát hành mới vào hóa đơn đó). Khoản trả nợ đúng ngày chốt thì tính vào hóa đơn cũ.
  */
 function balanceBefore(movements: readonly AccountMovement[], date: DateString): number {
-  return movements.reduce((sum, m) => (toVnDate(m.date) < date ? sum + m.delta : sum), 0);
+  // Tiền TRẢ NỢ (delta > 0) đúng ngày chốt vẫn tính cho hóa đơn cũ (trả cùng ngày hóa đơn phát hành)
+  return movements.reduce((sum, m) => {
+    const day = toVnDate(m.date);
+    return day < date || (day === date && m.delta > 0) ? sum + m.delta : sum;
+  }, 0);
 }
 
 /** Phần trả góp chưa tới hạn (sau `after`) của các khoản mua trước / trong ngày `purchasedBy` */
