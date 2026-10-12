@@ -6,6 +6,7 @@ import { bankFromIcon } from '@/lib/banks';
 import type { AppIcon, IconName } from '@/lib/icons';
 import { rgba, useTheme } from '@/theme';
 
+import { AppIconGlyph } from './AppIconGlyph';
 import { AppText } from './AppText';
 import { BankMark } from './BankMark';
 
@@ -65,7 +66,7 @@ export function Chip({
       {bank ? (
         <BankMark bank={bank} size={20} />
       ) : icon ? (
-        <Ionicons name={icon as IconName} size={16} color={selected ? tint : colors.textMuted} />
+        <AppIconGlyph icon={icon} size={16} color={selected ? tint : colors.textMuted} />
       ) : color ? (
         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: tint }} />
       ) : null}

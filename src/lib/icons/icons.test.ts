@@ -1,4 +1,5 @@
 import glyphMap from '@expo/vector-icons/build/vendor/react-native-vector-icons/glyphmaps/Ionicons.json';
+import mciGlyphMap from '@expo/vector-icons/build/vendor/react-native-vector-icons/glyphmaps/MaterialCommunityIcons.json';
 
 import { mapIvyIcon } from '@/features/backup/ivy/icons';
 import { BANKS, bankIcon } from '@/lib/banks';
@@ -21,7 +22,11 @@ import {
   suggestIcons,
 } from './search';
 
-const exists = (name: string) => Object.prototype.hasOwnProperty.call(glyphMap, name);
+// 'mci:<tên>' = MaterialCommunityIcons (vd bơm xăng), còn lại là Ionicons
+const exists = (name: string) =>
+  name.startsWith('mci:')
+    ? Object.prototype.hasOwnProperty.call(mciGlyphMap, name.slice(4))
+    : Object.prototype.hasOwnProperty.call(glyphMap, name);
 
 describe('icon', () => {
   it('mọi icon trong bộ chọn đều có trong Ionicons', () => {
@@ -119,7 +124,7 @@ describe('nhóm chọn icon (kể cả logo ngân hàng)', () => {
     const find = (q: string) => icons(filterIconGroups(all, q));
     expect(find('cà phê')[0]).toBe('cafe-outline');
     expect(find('ca phe')[0]).toBe('cafe-outline');
-    expect(find('xang')).toContain('speedometer-outline');
+    expect(find('xang')).toContain('mci:gas-station');
     expect(find('Gửi xe')).toContain('key-outline');
     expect(find('điện')).toContain('flash-outline');
     expect(find('trả góp')).toContain('calendar-number-outline');
@@ -133,7 +138,7 @@ describe('nhóm chọn icon (kể cả logo ngân hàng)', () => {
   it('gợi ý icon theo tên danh mục / ví', () => {
     expect(suggestIcons('Ăn uống')[0]).toBe('restaurant-outline');
     expect(suggestIcons('Cà phê')[0]).toBe('cafe-outline');
-    expect(suggestIcons('Xăng xe')).toContain('speedometer-outline');
+    expect(suggestIcons('Xăng xe')).toContain('mci:gas-station');
     expect(suggestIcons('Hiếu hỉ')).toContain('mail-outline');
     expect(suggestIcons('Biếu bố mẹ')).toContain('people-circle-outline');
     expect(suggestIcons('Tiền mặt')).toContain('cash-outline');

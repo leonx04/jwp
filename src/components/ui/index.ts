@@ -1,4 +1,6 @@
 export { AmountText } from './AmountText';
+export { AppIconGlyph } from './AppIconGlyph';
+export { KeypadField } from './KeypadField';
 export { AppText, type TextColor } from './AppText';
 export { Button } from './Button';
 export { Card } from './Card';

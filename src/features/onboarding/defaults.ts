@@ -2,10 +2,10 @@
 import { accounts, categories } from '@/db/schema';
 import type { AppDatabase } from '@/db/types';
 import { FEE_CATEGORY, FEE_CATEGORY_ID } from '@/features/categories/repository';
-import type { IconName } from '@/lib/icons';
+import type { IconName, McIcon } from '@/lib/icons';
 import { normalizeForSearch } from '@/lib/text';
 
-type DefaultCategory = { name: string; icon: IconName; color: string; id?: string };
+type DefaultCategory = { name: string; icon: IconName | McIcon; color: string; id?: string };
 
 /**
  * Danh mục mặc định theo thói quen chi tiêu của người Việt: chi hằng ngày trước, thu nhập sau.
@@ -18,7 +18,7 @@ export const DEFAULT_CATEGORIES: readonly DefaultCategory[] = [
   { name: 'Cà phê', icon: 'cafe-outline', color: '#A16207' },
   { name: 'Đi chợ', icon: 'basket-outline', color: '#16A34A' },
   { name: 'Đi lại', icon: 'car-outline', color: '#0EA5E9' },
-  { name: 'Xăng xe', icon: 'speedometer-outline', color: '#DC2626' },
+  { name: 'Xăng xe', icon: 'mci:gas-station', color: '#DC2626' },
   { name: 'Gửi xe', icon: 'key-outline', color: '#0F766E' },
   { name: 'Hoá đơn', icon: 'receipt-outline', color: '#0891B2' },
   { name: 'Nhà cửa', icon: 'home-outline', color: '#7C3AED' },

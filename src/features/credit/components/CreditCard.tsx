@@ -53,6 +53,15 @@ export function statementLine(
       text: `Kỳ này phải trả ${money(current.dueAmount)} trước ${due} · ${when}`,
     };
   }
+  // Kỳ vừa chốt không còn gì phải trả, nhưng đang nợ → khoản nợ đó sẽ vào bill kỳ sau
+  const next = status.next;
+  if (next && next.estimatedAmount > 0) {
+    return {
+      icon: 'calendar-outline',
+      tone: 'text',
+      text: `Chưa tới kỳ chốt · dự kiến phải trả ${money(next.estimatedAmount)} trước ${formatDate(next.dueDate, false)} (bill chốt ${formatDate(next.closeDate, false)})`,
+    };
+  }
   if (current.statementBalance > 0 || current.paid > 0) {
     return { icon: 'checkmark-circle', tone: 'income', text: 'Đã trả đủ kỳ này' };
   }

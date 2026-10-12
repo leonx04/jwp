@@ -1,10 +1,10 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { View } from 'react-native';
 
 import { bankFromIcon } from '@/lib/banks';
 import type { AppIcon, IconName } from '@/lib/icons';
 import { useTheme, withAlpha } from '@/theme';
 
+import { AppIconGlyph } from './AppIconGlyph';
 import { BankMark } from './BankMark';
 
 export type { IconName };
@@ -35,7 +35,7 @@ export function IconBadge({ icon, color, size = 40 }: IconBadgeProps) {
         backgroundColor: withAlpha(tint, dark ? 0.22 : 0.14),
       }}
     >
-      <Ionicons name={icon as IconName} size={size * 0.5} color={tint} />
+      <AppIconGlyph icon={icon} size={size * 0.5} color={tint} />
     </View>
   );
 }

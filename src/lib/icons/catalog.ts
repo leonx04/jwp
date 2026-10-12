@@ -1,10 +1,10 @@
 // Bộ icon chọn lọc (Ionicons, ưu tiên nét mảnh "-outline") xếp theo nhóm chi tiêu của người Việt.
 // keywords: tiếng Việt KHÔNG dấu + tiếng Anh, chữ thường → tìm kiếm không phân biệt dấu.
 // Mỗi icon chỉ nằm trong một nhóm; test kiểm tra mọi tên đều có trong Ionicons.
-import type { IconName } from './types';
+import type { IconName, McIcon } from './types';
 
 export type IconEntry = {
-  name: IconName;
+  name: IconName | McIcon;
   /** Tên ngắn tiếng Việt (có dấu) — dùng cho trợ năng và dòng mô tả */
   label: string;
   /** Từ khoá không dấu, chữ thường, cách nhau bởi khoảng trắng */
@@ -18,7 +18,7 @@ export type IconGroup = {
   icons: readonly IconEntry[];
 };
 
-const e = (name: IconName, label: string, keywords: string): IconEntry => ({
+const e = (name: IconName | McIcon, label: string, keywords: string): IconEntry => ({
   name,
   label,
   keywords,
@@ -47,7 +47,8 @@ export const ICON_GROUPS: readonly IconGroup[] = [
     key: 'transport',
     label: 'Đi lại',
     icons: [
-      e('speedometer-outline', 'Xăng xe', 'xang xe do xang xe may petrol fuel gas station'),
+      e('mci:gas-station', 'Đổ xăng', 'xang xe do xang xe may petrol fuel gas station cay xang tram xang'),
+      e('speedometer-outline', 'Bảo dưỡng xe', 'bao duong sua xe thay nhot rua xe dong ho km speedometer maintenance'),
       e('bicycle-outline', 'Xe máy, xe đạp', 'xe may xe dap xe dien motorbike bicycle bike'),
       e('car-outline', 'Ô tô', 'o to xe hoi xe oto car'),
       e('car-sport-outline', 'Grab, taxi', 'grab taxi be xanh sm gojek goi xe xe om cong nghe ride'),
@@ -266,7 +267,7 @@ export const ICON_GROUPS: readonly IconGroup[] = [
 ];
 
 /** Toàn bộ icon (phẳng) theo thứ tự nhóm */
-export const ICON_CHOICES: readonly IconName[] = ICON_GROUPS.flatMap((g) => g.icons.map((i) => i.name));
+export const ICON_CHOICES: readonly (IconName | McIcon)[] = ICON_GROUPS.flatMap((g) => g.icons.map((i) => i.name));
 
 type IndexedEntry = IconEntry & { group: string };
 

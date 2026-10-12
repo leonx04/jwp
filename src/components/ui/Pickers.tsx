@@ -52,6 +52,7 @@ import { createStyles, readableOn, rgba, useTheme } from '@/theme';
 import { AppText } from './AppText';
 import { BankMark } from './BankMark';
 import { Chip } from './Chip';
+import { AppIconGlyph } from './AppIconGlyph';
 import { IconBadge } from './IconBadge';
 import { TextField } from './TextField';
 
@@ -178,12 +179,7 @@ export function IconPicker({
     <View style={{ gap: 12 }}>
       <CompactRow value={value} color={color} title={title} onPress={() => setOpen(true)} />
       {suggestions.length > 0 ? (
-        <SuggestionStrip
-          suggestions={suggestions}
-          value={value}
-          color={color}
-          onPick={onChange}
-        />
+        <SuggestionStrip suggestions={suggestions} value={value} color={color} onPick={onChange} />
       ) : null}
       <Modal
         visible={open}
@@ -289,18 +285,16 @@ function SuggestionStrip({
                 justifyContent: 'center',
                 borderWidth: 1.5,
                 borderColor: selected ? color : 'transparent',
-                backgroundColor: selected ? rgba(color, colors.dark ? 0.28 : 0.14) : colors.glassFill,
+                backgroundColor: selected
+                  ? rgba(color, colors.dark ? 0.28 : 0.14)
+                  : colors.glassFill,
                 opacity: pressed ? 0.7 : 1,
               })}
             >
               {bank ? (
                 <BankMark bank={bank} size={32} />
               ) : (
-                <Ionicons
-                  name={icon as IconName}
-                  size={22}
-                  color={selected ? color : colors.textMuted}
-                />
+                <AppIconGlyph icon={icon} size={22} color={selected ? color : colors.textMuted} />
               )}
             </Pressable>
           );
