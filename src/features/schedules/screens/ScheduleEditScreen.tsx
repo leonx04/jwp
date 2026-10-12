@@ -28,6 +28,7 @@ import {
   formatDate,
   parseDate,
   toVnDate,
+  toVnTime,
   todayVn,
   vnDateToMs,
   WEEKDAY_SHORT,
@@ -93,6 +94,12 @@ export function ScheduleEditScreen() {
     existing?.weekdays ? existing.weekdays.split(',').map(Number) : [],
   );
   const [lastDayOfMonth, setLastDayOfMonth] = useState(existing?.monthDay === -1);
+  // Ngày cố định trong tháng khác ngày bắt đầu (vd lịch nhập từ Ivy): giữ nguyên đến khi đổi ngày bắt đầu
+  const [fixedMonthDay, setFixedMonthDay] = useState<number | null>(
+    existing?.monthDay && existing.monthDay >= 1 && existing.monthDay <= 31
+      ? existing.monthDay
+      : null,
+  );
   const [weekendRule, setWeekendRule] = useState<WeekendRule>(existing?.weekendRule ?? 'none');
   const [endType, setEndType] = useState<EndType>(existing?.endType ?? 'never');
   const [endDate, setEndDate] = useState(existing?.endDate ?? addDays(todayVn(), 365));
@@ -109,7 +116,7 @@ export function ScheduleEditScreen() {
     frequency,
     interval: Math.max(1, interval),
     weekdays: frequency === 'weekly' && weekdays.length ? weekdays : null,
-    monthDay: frequency === 'monthly' && lastDayOfMonth ? -1 : null,
+    monthDay: frequency !== 'monthly' ? null : lastDayOfMonth ? -1 : fixedMonthDay,
     weekendRule,
     endType: frequency === 'once' ? ('never' as const) : endType,
     endDate: endType === 'until' ? endDate : null,
@@ -165,8 +172,14 @@ export function ScheduleEditScreen() {
 
   const pick = async (current: string, set: (value: string) => void) => {
     const value = await pickDateTime(vnDateToMs(current, '12:00'), 'date');
-    if (value) set(toVnDate(value));
+    if (value != null) set(toVnDate(value));
   };
+
+  const pickStartDate = () =>
+    pick(startDate, (value) => {
+      setStartDate(value);
+      setFixedMonthDay(null); // ngày trong tháng theo ngày bắt đầu mới
+    });
 
   return (
     <Screen
@@ -281,7 +294,7 @@ export function ScheduleEditScreen() {
         <Chip
           icon="calendar-outline"
           label={`${frequency === 'once' ? 'Ngày' : 'Bắt đầu'} ${formatDate(startDate)}`}
-          onPress={() => pick(startDate, setStartDate)}
+          onPress={pickStartDate}
         />
         {frequency !== 'once' ? (
           <>
@@ -319,7 +332,7 @@ export function ScheduleEditScreen() {
       {frequency === 'monthly' ? (
         <View style={styles.wrap}>
           <Chip
-            label={`Ngày ${parseDate(startDate).day} hằng tháng`}
+            label={`Ngày ${fixedMonthDay ?? parseDate(startDate).day} hằng tháng`}
             selected={!lastDayOfMonth}
             onPress={() => setLastDayOfMonth(false)}
           />
@@ -400,10 +413,8 @@ export function ScheduleEditScreen() {
           icon="time-outline"
           label={`Lúc ${remindTime}`}
           onPress={async () => {
-            const [h, m] = remindTime.split(':').map(Number);
-            const base = vnDateToMs(todayVn(), `${h}:${m}`);
-            const value = await pickDateTime(base, 'time');
-            if (value) setRemindTime(new Date(value + 7 * 3600e3).toISOString().slice(11, 16));
+            const value = await pickDateTime(vnDateToMs(todayVn(), remindTime), 'time');
+            if (value != null) setRemindTime(toVnTime(value));
           }}
         />
       </View>

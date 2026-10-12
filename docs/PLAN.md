@@ -3,7 +3,7 @@
 > Expo SDK 57 · React Native 0.86 · TypeScript · Expo Router · SQLite (Drizzle)
 > Dự án: `E:\Co-pro\App\JWP` — `Base` chỉ dùng để ghi chú / học.
 > **Local-first**: mọi dữ liệu nằm trên máy (SQLite), không cần backend. Sao lưu bằng file JSON/CSV. Firebase để sau nếu cần đồng bộ nhiều máy.
-> Test: máy ảo Android (Pixel_API36) + Huawei P50 Pro JAD-AL00 (arm64, API 31, không có Google Play Services).
+> Test: máy ảo Android (Pixel_API36) + Huawei JAD-AL00 của người dùng (arm64, API 31, không có Google Play Services).
 > Trạng thái: ✅ Giai đoạn 0–3 xong (+ logo ngân hàng, ví trả sau) · ⏭ đang làm: **Đợt 2 — sửa lỗi, nhẹ & mượt** (mục 15)
 
 ---

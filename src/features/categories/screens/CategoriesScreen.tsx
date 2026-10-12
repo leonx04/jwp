@@ -4,7 +4,7 @@ import { IconButton } from '@/components/glass/IconButton';
 import { Card, EmptyState, ListRow, Screen } from '@/components/ui';
 import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
-import { toAppIcon } from '@/lib/icons';
+import { DEFAULT_CATEGORY_ICON, toAppIcon } from '@/lib/icons';
 
 import { listCategories } from '../repository';
 
@@ -26,7 +26,8 @@ export function CategoriesScreen() {
           categories.map((c) => (
             <ListRow
               key={c.id}
-              icon={toAppIcon(c.icon, 'pricetag-outline')}
+              // Ionicons hoặc logo ngân hàng ('bank:<CODE>') — IconBadge tự hiển thị đúng loại
+              icon={toAppIcon(c.icon, DEFAULT_CATEGORY_ICON)}
               iconColor={c.color}
               title={c.name}
               onPress={() => router.push({ pathname: '/category/edit', params: { id: c.id } })}

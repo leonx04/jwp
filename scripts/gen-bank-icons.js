@@ -1,16 +1,21 @@
 // Sinh icon vuông cho ngân hàng từ logo gốc (assets/banks/source/*.png, 831×311 dạng chữ dài):
-// cắt lấy phần BIỂU TƯỢNG (nếu có) rồi canh giữa vào ô vuông 128px nền trong suốt → assets/banks/icons.
+// cắt lấy phần BIỂU TƯỢNG (nếu có) rồi canh giữa vào ô vuông nền trong suốt → assets/banks/icons/*.webp.
+// Vẽ trung gian 192px rồi thu về 96px (lanczos) cho nét mịn; xuất WebP giữ kênh alpha (nhẹ hơn PNG nhiều).
 // Đồng thời sinh src/lib/banks/logos.ts (require tĩnh để Metro đóng gói ảnh).
+// Ảnh gốc assets/banks/source KHÔNG được đóng gói vào app (không file nào require tới).
 // Chạy: node scripts/gen-bank-icons.js
 const fs = require('fs');
 const path = require('path');
-const { PNG } = require('pngjs');
+const sharp = require('sharp');
 
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'assets/banks/source');
 const OUT = path.join(ROOT, 'assets/banks/icons');
-const SIZE = 128;
-const PAD = 10;
+/** Kích thước icon xuất ra — đủ nét cho ô logo ~40dp trên màn 3x */
+const OUT_SIZE = 96;
+/** Vẽ trung gian gấp đôi rồi mới thu nhỏ → khử răng cưa tốt hơn */
+const SIZE = OUT_SIZE * 2;
+const PAD = 15;
 
 // Khung biểu tượng [x0, x1] hoặc [x0, x1, y0, y1] theo toạ độ ảnh gốc. Không có → dùng cả logo.
 // Chỉ lấy các vùng liên thông nằm TRỌN trong khung → không dính nét chữ bên cạnh.
@@ -109,8 +114,7 @@ function select(p, crop) {
 
 // Thu nhỏ vùng box vào ô SIZE×SIZE (lấy mẫu trung bình có alpha, nền trắng → trong suốt)
 function render(p, { mask, box }) {
-  const out = new PNG({ width: SIZE, height: SIZE });
-  out.data.fill(0);
+  const out = { width: SIZE, height: SIZE, data: Buffer.alloc(SIZE * SIZE * 4) };
   const bw = box.maxX - box.minX + 1;
   const bh = box.maxY - box.minY + 1;
   const scale = (SIZE - PAD * 2) / Math.max(bw, bh);
@@ -143,20 +147,49 @@ function render(p, { mask, box }) {
   return out;
 }
 
-fs.mkdirSync(OUT, { recursive: true });
-const codes = [];
-for (const file of fs.readdirSync(SRC).filter((f) => f.endsWith('.png')).sort()) {
-  const code = file.replace(/\.png$/, '');
-  const png = PNG.sync.read(fs.readFileSync(path.join(SRC, file)));
-  fs.writeFileSync(path.join(OUT, file), PNG.sync.write(render(png, select(png, CROPS[code])), { colorType: 6 }));
-  codes.push(code);
+// Đọc PNG gốc thành mảng RGBA (cùng dạng { width, height, data } mà các hàm trên dùng)
+async function readRgba(file) {
+  const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  return { width: info.width, height: info.height, data };
 }
 
-const lines = codes.map((c) => `  ${c}: require('../../../assets/banks/icons/${c}.png'),`);
-fs.writeFileSync(
-  path.join(ROOT, 'src/lib/banks/logos.ts'),
-  `// Tự sinh bởi scripts/gen-bank-icons.js — không sửa tay.\n` +
-    `// Icon vuông (biểu tượng ngân hàng) — require tĩnh để Metro đóng gói ảnh vào app.\n` +
-    `export const BANK_LOGOS: Record<string, number> = {\n${lines.join('\n')}\n};\n`,
-);
-console.log(`Đã sinh ${codes.length} icon`);
+// RGBA SIZE×SIZE → WebP OUT_SIZE×OUT_SIZE, giữ alpha, chất lượng cao
+function toWebp(img) {
+  return sharp(img.data, { raw: { width: img.width, height: img.height, channels: 4 } })
+    .resize(OUT_SIZE, OUT_SIZE, { kernel: 'lanczos3' })
+    .webp({ quality: 92, alphaQuality: 100, effort: 6, smartSubsample: true })
+    .toBuffer();
+}
+
+async function main() {
+  fs.mkdirSync(OUT, { recursive: true });
+  // Xoá icon cũ (PNG đời trước / WebP lần trước) → không sót file thừa bị đóng gói
+  for (const old of fs.readdirSync(OUT).filter((f) => /\.(png|webp)$/.test(f))) {
+    fs.unlinkSync(path.join(OUT, old));
+  }
+
+  const codes = [];
+  let total = 0;
+  for (const file of fs.readdirSync(SRC).filter((f) => f.endsWith('.png')).sort()) {
+    const code = file.replace(/\.png$/, '');
+    const png = await readRgba(path.join(SRC, file));
+    const webp = await toWebp(render(png, select(png, CROPS[code])));
+    fs.writeFileSync(path.join(OUT, `${code}.webp`), webp);
+    total += webp.length;
+    codes.push(code);
+  }
+
+  const lines = codes.map((c) => `  ${c}: require('../../../assets/banks/icons/${c}.webp'),`);
+  fs.writeFileSync(
+    path.join(ROOT, 'src/lib/banks/logos.ts'),
+    `// Tự sinh bởi scripts/gen-bank-icons.js — không sửa tay.\n` +
+      `// Icon vuông (biểu tượng ngân hàng, WebP ${OUT_SIZE}px) — require tĩnh để Metro đóng gói ảnh vào app.\n` +
+      `export const BANK_LOGOS: Record<string, number> = {\n${lines.join('\n')}\n};\n`,
+  );
+  console.log(`Đã sinh ${codes.length} icon WebP (${(total / 1024).toFixed(1)} KB)`);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

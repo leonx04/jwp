@@ -1,12 +1,12 @@
 // Nhóm "(tabs)": không xuất hiện trong URL, gom các màn dùng chung thanh tab.
 // Thanh tab mặc định bị ẩn; thanh tab kính nổi (GlassTabBar) vẽ BÊN NGOÀI vùng nội dung
 // để làm mờ được nội dung đang cuộn phía sau nó (BlurTargetView).
-import { BlurTargetView } from 'expo-blur';
 import { router } from 'expo-router';
 import { Tabs } from 'expo-router/js-tabs';
 import { useRef } from 'react';
 import { StyleSheet, View, type View as RNView } from 'react-native';
 
+import { BlurTarget } from '@/components/glass/BlurTarget';
 import { GlassTabBar, type TabItem } from '@/components/glass/GlassTabBar';
 
 const TABS: TabItem[] = [
@@ -33,7 +33,7 @@ export default function TabsLayout() {
 
   return (
     <View style={styles.root}>
-      <BlurTargetView ref={blurTarget} style={styles.root}>
+      <BlurTarget ref={blurTarget} style={styles.root}>
         <Tabs
           tabBar={() => null}
           screenOptions={{
@@ -47,7 +47,7 @@ export default function TabsLayout() {
           <Tabs.Screen name="schedule" />
           <Tabs.Screen name="more" />
         </Tabs>
-      </BlurTargetView>
+      </BlurTarget>
       <GlassTabBar
         items={TABS}
         blurTarget={blurTarget}

@@ -44,17 +44,53 @@ export type Occurrence = {
   schedule: ScheduleLike;
 };
 
+/**
+ * Quy tắc lặp của một lịch. Làm sạch dữ liệu (vd lịch nhập từ Ivy): thứ ngoài 1–7 hoặc ngày trong
+ * tháng ngoài 1–31 / -1 khiến bộ sinh kỳ không bao giờ ra kỳ nào → lặp vô tận, treo app.
+ */
 export function scheduleRule(s: ScheduleLike): RecurrenceRule {
+  const weekdays = (s.weekdays ?? '')
+    .split(',')
+    .map(Number)
+    .filter((d) => Number.isInteger(d) && d >= 1 && d <= 7);
+  const monthDay =
+    s.monthDay != null && (s.monthDay === -1 || (s.monthDay >= 1 && s.monthDay <= 31))
+      ? Math.trunc(s.monthDay)
+      : null;
   return {
     startDate: s.startDate,
     frequency: s.frequency,
     interval: s.interval,
-    weekdays: s.weekdays ? s.weekdays.split(',').map(Number) : null,
-    monthDay: s.monthDay,
+    weekdays: weekdays.length ? weekdays : null,
+    monthDay,
     weekendRule: s.weekendRule,
     endType: s.endType,
     endDate: s.endDate,
     endCount: s.endCount,
+  };
+}
+
+/** Một kỳ (theo ngày gốc) + bản ghi trạng thái đã lưu (nếu có) → trạng thái hiện tại */
+function buildOccurrence(
+  s: ScheduleLike,
+  o: ScheduleOccurrence | undefined,
+  dueDate: DateString,
+  today: DateString,
+): Occurrence {
+  const date = o?.status === 'rescheduled' && o.newDate ? o.newDate : dueDate;
+  let status: OccurrenceStatus;
+  if (o?.status === 'paid') status = 'paid';
+  else if (o?.status === 'skipped') status = 'skipped';
+  else status = date < today ? 'overdue' : date === today ? 'due' : 'upcoming';
+  return {
+    scheduleId: s.id,
+    dueDate,
+    date,
+    amount: o?.amount ?? s.amount,
+    type: s.type,
+    status,
+    transactionId: o?.transactionId ?? null,
+    schedule: s,
   };
 }
 
@@ -86,30 +122,35 @@ export function expandOccurrences(
     const scanFrom = [from, lookback].sort()[0];
     const scanTo = addDays(to, 62);
     for (const dueDate of generateOccurrences(scheduleRule(s), scanFrom, scanTo)) {
-      const o = byKey.get(`${s.id}|${dueDate}`);
-      const date = o?.status === 'rescheduled' && o.newDate ? o.newDate : dueDate;
-      let status: OccurrenceStatus;
-      if (o?.status === 'paid') status = 'paid';
-      else if (o?.status === 'skipped') status = 'skipped';
-      else status = date < today ? 'overdue' : date === today ? 'due' : 'upcoming';
-
+      const occurrence = buildOccurrence(s, byKey.get(`${s.id}|${dueDate}`), dueDate, today);
+      const { date, status } = occurrence;
       const resolved = status === 'paid' || status === 'skipped';
       const inRange = date >= from && date <= to;
       if (resolved ? !(includeResolved && inRange) : !(inRange || status === 'overdue')) continue;
-
-      result.push({
-        scheduleId: s.id,
-        dueDate,
-        date,
-        amount: o?.amount ?? s.amount,
-        type: s.type,
-        status,
-        transactionId: o?.transactionId ?? null,
-        schedule: s,
-      });
+      result.push(occurrence);
     }
   }
   return result.sort(
     (a, b) => a.date.localeCompare(b.date) || a.scheduleId.localeCompare(b.scheduleId),
   );
+}
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Tìm một kỳ theo ngày gốc (khoá lưu trạng thái), bất kể đã dời sang ngày nào.
+ * Trả null nếu ngày gốc không hợp lệ, hoặc không thuộc quy tắc (vd lịch đã bị sửa) mà cũng không có
+ * bản ghi trạng thái.
+ */
+export function findOccurrence(
+  schedule: ScheduleLike,
+  overrides: readonly ScheduleOccurrence[],
+  dueDate: string | undefined,
+  today: DateString,
+): Occurrence | null {
+  if (!dueDate || !DATE_RE.test(dueDate)) return null;
+  const override = overrides.find((o) => o.scheduleId === schedule.id && o.dueDate === dueDate);
+  const inRule = generateOccurrences(scheduleRule(schedule), dueDate, dueDate).includes(dueDate);
+  if (!inRule && !override) return null;
+  return buildOccurrence(schedule, override, dueDate, today);
 }

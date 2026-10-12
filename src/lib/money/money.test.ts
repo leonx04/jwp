@@ -70,26 +70,59 @@ describe('formatCompact', () => {
     [0, '0 ₫'],
     [850, '850 ₫'],
     [999, '999 ₫'],
-    [1_000, '1 N'],
-    [1_500, '1,5 N'],
-    [150_000, '150 N'],
-    [999_994, '999,99 N'],
-    [999_999, '1 Tr'],
-    [1_000_000, '1 Tr'],
-    [1_500_000, '1,5 Tr'],
-    [1_250_000, '1,25 Tr'],
-    [1_005_000, '1,01 Tr'],
+    [999.4, '999 ₫'],
+    [999.6, '1k'],
+    [1_000, '1k'],
+    [1_500, '1,5k'],
+    [1_234, '1,23k'],
+    [15_000, '15k'],
+    [150_000, '150k'],
+    [999_994, '999,99k'],
+    [999_999, '1Tr'],
+    [1_000_000, '1Tr'],
+    [1_500_000, '1,5Tr'],
+    [1_250_000, '1,25Tr'],
+    [1_005_000, '1,01Tr'],
+    [15_000_000, '15Tr'],
+    [150_000_000, '150Tr'],
+    [999_999_999, '1 Tỷ'],
+    [1_000_000_000, '1 Tỷ'],
     [2_350_000_000, '2,35 Tỷ'],
     [1_234_000_000_000, '1.234 Tỷ'],
-    [-1_500_000, '−1,5 Tr'],
+    [-1_500, '−1,5k'],
+    [-1_500_000, '−1,5Tr'],
+    [-2_350_000_000, '−2,35 Tỷ'],
   ])('%d → %s', (amount, expected) => {
     expect(formatCompact(amount)).toBe(nb(expected));
   });
 
-  it('không bao giờ có ",0" thừa', () => {
-    for (const amount of [1_000, 2_000_000, 10_000_000, 3_000_000_000]) {
-      expect(formatCompact(amount)).not.toMatch(/,0?\s/);
+  it('k / Tr viết liền, Tỷ cách bằng khoảng trắng không ngắt dòng', () => {
+    expect(formatCompact(150_000)).toBe('150k');
+    expect(formatCompact(1_500_000)).toBe('1,5Tr');
+    expect(formatCompact(2_000_000_000)).toBe('2 Tỷ');
+  });
+
+  it('dấu: sign=always thêm "+", sign=never bỏ dấu', () => {
+    expect(formatCompact(150_000, { sign: 'always' })).toBe('+150k');
+    expect(formatCompact(-1_500_000, { sign: 'never' })).toBe('1,5Tr');
+    expect(formatCompact(0, { sign: 'always' })).toBe(nb('0 ₫'));
+  });
+
+  it('dưới 1.000 vẫn kèm ký hiệu người dùng chọn, từ 1k trở lên thì không', () => {
+    expect(formatCompact(850, { symbol: 'đ' })).toBe(nb('850 đ'));
+    expect(formatCompact(1_500, { symbol: 'VND' })).toBe('1,5k');
+  });
+
+  it('không bao giờ có ",0" thừa, tối đa 2 số lẻ', () => {
+    for (const amount of [1_000, 20_000, 2_000_000, 10_000_000, 3_000_000_000, 1_234_567, 98_765]) {
+      const text = formatCompact(amount);
+      expect(text).not.toMatch(/,\d?0(?!\d)/);
+      expect(text).not.toMatch(/,\d{3}/);
     }
+  });
+
+  it('không còn đơn vị cũ "N"', () => {
+    expect(formatCompact(150_000)).not.toContain('N');
   });
 });
 
@@ -113,6 +146,11 @@ describe('parseMoney', () => {
     ['1.5tr', 1_500_000],
     ['1,5tr', 1_500_000],
     ['1,5 Tr', 1_500_000],
+    ['1,5Tr', 1_500_000],
+    ['150Tr', 150_000_000],
+    ['1,5k', 1_500],
+    ['15k', 15_000],
+    ['150 N', 150_000],
     ['1.15tr', 1_150_000],
     ['2 triệu', 2_000_000],
     ['1tr5', 1_500_000],
@@ -148,8 +186,14 @@ describe('parseMoney', () => {
       expect(parseMoney(formatMoney(amount))).toBe(amount);
       expect(parseMoney(formatMoney(-amount))).toBe(-amount);
     }
-    expect(parseMoney(formatCompact(1_500_000))).toBe(1_500_000);
-    expect(parseMoney(formatCompact(2_350_000_000))).toBe(2_350_000_000);
+    for (const amount of [850, 1_000, 1_500, 15_000, 150_000, 1_000_000, 1_250_000, 150_000_000]) {
+      expect(parseMoney(formatCompact(amount))).toBe(amount);
+      expect(parseMoney(formatCompact(-amount))).toBe(-amount);
+    }
+    for (const amount of [1_000_000_000, 2_350_000_000]) {
+      expect(parseMoney(formatCompact(amount))).toBe(amount);
+      expect(parseMoney(formatCompact(-amount))).toBe(-amount);
+    }
   });
 });
 

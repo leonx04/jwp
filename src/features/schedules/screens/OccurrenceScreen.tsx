@@ -13,7 +13,8 @@ import { useMoneyFormat } from '@/features/settings';
 import { formatDate, formatRelativeDue, toVnDate, todayVn, vnDateToMs } from '@/lib/date';
 import { describeRule } from '@/lib/recurrence';
 
-import { expandOccurrences, scheduleRule } from '../occurrences';
+import { occurrenceTitle } from '../components/OccurrenceRow';
+import { findOccurrence, scheduleRule } from '../occurrences';
 import {
   clearOccurrence,
   getSchedule,
@@ -21,7 +22,6 @@ import {
   rescheduleOccurrence,
   skipOccurrence,
 } from '../repository';
-import { occurrenceTitle } from '../components/OccurrenceRow';
 
 const STATUS_TEXT = {
   upcoming: 'Sắp tới',
@@ -37,15 +37,18 @@ export function OccurrenceScreen() {
   const { data } = useLiveData(
     ['schedules', 'schedule_occurrences'],
     () => {
+      if (!scheduleId) return null;
       const schedule = getSchedule(db, scheduleId);
       if (!schedule) return null;
-      const occurrence = expandOccurrences([schedule], listOverrides(db, scheduleId), {
-        from: dueDate,
-        to: dueDate,
-        today: todayVn(),
-        includeResolved: true,
-      }).find((o) => o.dueDate === dueDate);
-      return { schedule, occurrence: occurrence ?? null };
+      // Tìm theo ngày gốc: kỳ đã dời sang ngày khác vẫn mở được (trước đây tìm theo khoảng
+      // [dueDate, dueDate] → dời xong màn hình báo "Không tìm thấy kỳ này")
+      const occurrence = findOccurrence(
+        schedule,
+        listOverrides(db, scheduleId),
+        dueDate,
+        todayVn(),
+      );
+      return { schedule, occurrence };
     },
     [scheduleId, dueDate],
   );
@@ -54,7 +57,9 @@ export function OccurrenceScreen() {
   );
   const { data: categories = [] } = useLiveData(['categories'], () => listCategories(db));
 
-  if (!data?.occurrence) {
+  // Đang tải lần đầu → chưa kết luận "không tìm thấy" (tránh nháy thông báo lỗi)
+  if (data === undefined) return <Screen title="Kỳ thanh toán">{null}</Screen>;
+  if (!data?.occurrence || !dueDate) {
     return (
       <Screen title="Kỳ thanh toán">
         <Card>
@@ -87,28 +92,55 @@ export function OccurrenceScreen() {
       },
     });
 
+  /** Đặt ngày thực tế của kỳ: về đúng ngày gốc thì xoá bản ghi dời ngày thay vì lưu "dời sang chính nó" */
+  const moveTo = (date: string) =>
+    date === dueDate
+      ? clearOccurrence(db, scheduleId, dueDate)
+      : rescheduleOccurrence(db, scheduleId, dueDate, date);
+
   const skip = () => {
+    const previous = o.date;
     skipOccurrence(db, scheduleId, dueDate);
     showSnackbar({
-      text: `Đã bỏ qua kỳ ${formatDate(o.date, false)}`,
+      text: `Đã bỏ qua kỳ ${formatDate(previous, false)}`,
       actionLabel: 'Hoàn tác',
-      onAction: () => clearOccurrence(db, scheduleId, dueDate),
+      // Hoàn tác giữ lại ngày đã dời (nếu có)
+      onAction: () => moveTo(previous),
     });
-    router.back();
+    if (router.canGoBack()) router.back();
   };
 
   const reschedule = async () => {
-    const picked = await pickDateTime(vnDateToMs(o.date, '12:00'), 'date');
-    if (!picked) return;
-    rescheduleOccurrence(db, scheduleId, dueDate, toVnDate(picked));
-    showSnackbar({ text: `Đã dời sang ${formatDate(toVnDate(picked), false)}`, tone: 'success' });
+    const previous = o.date;
+    const picked = await pickDateTime(vnDateToMs(previous, '12:00'), 'date');
+    if (picked == null) return;
+    const next = toVnDate(picked);
+    if (next === previous) return;
+    try {
+      moveTo(next);
+    } catch (error) {
+      showSnackbar({
+        text: `Chưa dời được: ${error instanceof Error ? error.message : String(error)}`,
+        tone: 'error',
+      });
+      return;
+    }
+    showSnackbar({
+      text:
+        next === dueDate
+          ? `Đã đưa về ngày gốc ${formatDate(next, false)}`
+          : `Đã dời sang ${formatDate(next, false)}`,
+      tone: 'success',
+      actionLabel: 'Hoàn tác',
+      onAction: () => moveTo(previous),
+    });
   };
 
   return (
     <Screen title={title}>
       <Card style={{ alignItems: 'center', gap: 4 }}>
         <AppText variant="label" color="textMuted">
-          {STATUS_TEXT[o.status].toUpperCase()}
+          {STATUS_TEXT[o.status]}
         </AppText>
         <AppText
           variant="hero"
@@ -165,6 +197,14 @@ export function OccurrenceScreen() {
               variant="secondary"
               onPress={reschedule}
             />
+            {o.date !== o.dueDate ? (
+              <Button
+                title={`Về ngày gốc ${formatDate(o.dueDate, false)}`}
+                icon="arrow-undo-outline"
+                variant="secondary"
+                onPress={() => clearOccurrence(db, scheduleId, dueDate)}
+              />
+            ) : null}
             <Button
               title="Bỏ qua kỳ này"
               icon="play-skip-forward-outline"

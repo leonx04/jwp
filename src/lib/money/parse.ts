@@ -1,4 +1,4 @@
-// Đọc số tiền người dùng gõ / dán: '1.500.000', '1,500,000', '1.5tr', '150k', '2 tỷ', '1tr5'...
+// Đọc số tiền người dùng gõ / dán: '1.500.000', '1,500,000', '1.5tr', '150k', '2 tỷ', '1tr5', '1,5Tr'...
 import { removeDiacritics } from '@/lib/text';
 
 import { MAX_AMOUNT, type Money } from './constants';
@@ -9,7 +9,7 @@ const UNIT_MULTIPLIER: Record<string, number> = {
   ngan: 1_000,
   ng: 1_000,
   k: 1_000,
-  n: 1_000,
+  n: 1_000, // đơn vị rút gọn cũ ('150 N') — vẫn đọc được dữ liệu / thói quen cũ
   trieu: 1_000_000,
   tr: 1_000_000,
   m: 1_000_000,

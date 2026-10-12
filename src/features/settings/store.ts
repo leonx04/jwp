@@ -27,7 +27,12 @@ export type NotificationPrefs = {
   overdue: boolean;
   debts: boolean;
   budgets: boolean;
+  /** (cũ, chưa dùng) — thay bằng morningBriefing */
   morningSummary: boolean;
+  /** Báo cáo buổi sáng: số dư từng ví, hôm nay được tiêu bao nhiêu, còn mấy ngày tới lương, bill */
+  morningBriefing: boolean;
+  /** Giờ gửi báo cáo buổi sáng 'HH:mm' */
+  morningBriefingTime: string;
   dailyLog: boolean;
   dailyLogTime: string;
   /** Giờ yên lặng: không gửi thông báo trong khoảng này */
@@ -73,6 +78,8 @@ export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
   debts: true,
   budgets: true,
   morningSummary: false,
+  morningBriefing: true,
+  morningBriefingTime: '07:30',
   dailyLog: false,
   dailyLogTime: '21:00',
   quietStart: '22:00',

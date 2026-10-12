@@ -3,6 +3,17 @@
 import { addDatabaseChangeListener } from 'expo-sqlite';
 import { useEffect, useRef, useState, type DependencyList } from 'react';
 
+/** Kết quả giống hệt lần trước thì giữ nguyên tham chiếu → không vẽ lại màn hình */
+function sameData(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
+}
+
 type LiveState<T> = { data: T | undefined; error: Error | undefined };
 
 /** Gộp nhiều thay đổi liên tiếp (vd import 500 dòng) thành một lần tải lại */
@@ -29,7 +40,11 @@ export function useLiveData<T>(
       Promise.resolve()
         .then(() => loadRef.current())
         .then(
-          (data) => active && setState({ data, error: undefined }),
+          (data) =>
+            active &&
+            setState((prev) =>
+              prev.error === undefined && sameData(prev.data, data) ? prev : { data, error: undefined },
+            ),
           (error: unknown) =>
             active &&
             setState((prev) => ({
