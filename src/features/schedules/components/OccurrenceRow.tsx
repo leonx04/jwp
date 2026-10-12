@@ -1,4 +1,7 @@
 import { router } from 'expo-router';
+import { db } from '@/db';
+import { tryPayCreditCharge } from '@/features/credit/payCharge';
+import { useMoneyFormat } from '@/features/settings';
 import { Pressable, View } from 'react-native';
 
 import { IconButton } from '@/components/glass/IconButton';
@@ -35,6 +38,7 @@ export function OccurrenceRow({
   lookup: OccurrenceLookup;
 }) {
   const { colors } = useTheme();
+  const format = useMoneyFormat();
   const category = lookup.category(o.schedule.categoryId);
   // Kỳ bill ví trả sau: không phải lịch thật → mở chi tiết ví, "đã trả" = ghi chuyển khoản trả bill
   const creditBill = isCreditBill(o.scheduleId);
@@ -83,7 +87,9 @@ export function OccurrenceRow({
         size={34}
         accessibilityLabel="Đã thanh toán"
         color={colors.income}
-        onPress={() =>
+        onPress={() => {
+          // Khoản chi từ ví trả sau: bấm ✓ = trả nợ
+          if (tryPayCreditCharge(db, o, format.money)) return;
           router.push({
             pathname: '/transaction/new',
             params: {
@@ -96,8 +102,8 @@ export function OccurrenceRow({
               scheduleId: creditBill ? undefined : o.scheduleId,
               scheduleDueDate: creditBill ? undefined : o.dueDate,
             },
-          })
-        }
+          });
+        }}
       />
     </Pressable>
   );

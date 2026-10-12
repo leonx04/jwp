@@ -9,6 +9,7 @@ import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 import { listAccounts } from '@/features/accounts/repository';
 import { listCategories } from '@/features/categories/repository';
+import { tryPayCreditCharge } from '@/features/credit/payCharge';
 import { useMoneyFormat } from '@/features/settings';
 import { formatDate, formatRelativeDue, toVnDate, todayVn, vnDateToMs } from '@/lib/date';
 import { describeRule } from '@/lib/recurrence';
@@ -76,7 +77,9 @@ export function OccurrenceScreen() {
   const title = occurrenceTitle(o, lookup);
   const resolved = o.status === 'paid' || o.status === 'skipped';
 
-  const pay = () =>
+  const pay = () => {
+    // Khoản chi từ ví trả sau: bấm thanh toán = trả nợ
+    if (tryPayCreditCharge(db, o, format.money, () => router.back())) return;
     router.replace({
       pathname: '/transaction/new',
       params: {
@@ -91,6 +94,7 @@ export function OccurrenceScreen() {
         date: String(vnDateToMs(o.date < todayVn() ? todayVn() : o.date, '12:00')),
       },
     });
+  };
 
   /** Đặt ngày thực tế của kỳ: về đúng ngày gốc thì xoá bản ghi dời ngày thay vì lưu "dời sang chính nó" */
   const moveTo = (date: string) =>
