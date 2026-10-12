@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, type Href } from 'expo-router';
+import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { GlassSurface } from '@/components/glass/GlassSurface';
@@ -18,6 +19,12 @@ import { db } from '@/db';
 import { totalBalance, useAccountBalances } from '@/features/accounts';
 import { createDefaultData } from '@/features/onboarding/defaults';
 import { UpcomingCard } from '@/features/schedules/components/UpcomingCard';
+import { useScheduleOverview } from '@/features/schedules/hooks';
+import { TodayCard, useTodayStatus } from '@/features/today';
+import { CreditSection } from '../components/CreditSection';
+import { bnplLoad } from '../bnpl';
+import { getAverageMonthlyIncome } from '../queries';
+import { useLiveData } from '@/db/useLiveData';
 import { useMoneyFormat, useSettings } from '@/features/settings';
 import { TransactionRow } from '@/features/transactions/components/TransactionRow';
 import { usePeriodSummary, useTransactions } from '@/features/transactions/hooks';
@@ -73,6 +80,22 @@ export function OverviewScreen() {
     transfersAsIncomeExpense,
   });
   const { data: recent } = useTransactions({ limit: 6 });
+  const { data: overview } = useScheduleOverview(30);
+  const todayStatus = useTodayStatus(overview);
+  const { data: avgIncome = null } = useLiveData(['transactions'], () =>
+    getAverageMonthlyIncome(db, todayVn(), startDayOfMonth),
+  );
+  const load = useMemo(
+    () =>
+      overview
+        ? bnplLoad({
+            occurrences: overview.occurrences,
+            today: overview.today,
+            avgMonthlyIncome: avgIncome,
+          })
+        : null,
+    [overview, avgIncome],
+  );
 
   const total = balances ? totalBalance(balances) : 0;
   const hasAccounts = (balances?.length ?? 0) > 0;
@@ -190,6 +213,8 @@ export function OverviewScreen() {
         })}
       </View>
 
+      {todayStatus ? <TodayCard status={todayStatus} /> : null}
+      {overview?.credit.length ? <CreditSection credit={overview.credit} load={load} /> : null}
       <UpcomingCard />
 
       {/* Ví */}

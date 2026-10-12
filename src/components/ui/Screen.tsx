@@ -2,7 +2,15 @@
 // - Màn trong stack: truyền `title` → header gọn có nút quay lại / đóng.
 // - Màn tab: `largeTitle` → tiêu đề lớn nằm trong nội dung, header gọn chỉ hiện khi cuộn xuống.
 import { router } from 'expo-router';
-import { createContext, useCallback, useContext, useRef, useState, type ReactNode, type RefObject } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import {
   StyleSheet,
   View,
@@ -105,7 +113,11 @@ export function Screen({
   const lead = leading ?? (title && !largeTitle ? 'back' : 'none');
   const showHeader = !!title || lead !== 'none' || !!headerRight;
   const headerHeight = insets.top + HEADER_BAR;
-  const top = largeTitle ? insets.top + spacing.sm : showHeader ? headerHeight : insets.top;
+  const top = largeTitle
+    ? insets.top + spacing.sm
+    : showHeader
+      ? headerHeight + spacing.md
+      : insets.top + spacing.sm;
   const bottom = tabBar
     ? insets.bottom + TAB_BAR_HEIGHT + spacing.xl + spacing.md
     : footer

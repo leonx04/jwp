@@ -195,12 +195,12 @@ describe('đã tiêu hôm nay (DB)', () => {
 
   it('chỉ tính khoản chi ngoài lịch; trả góp tính 1 kỳ; ví trả sau có tính nhưng không trừ số dư', () => {
     const db = createTestDb();
-    const cash = saveAccount(db, { name: 'Tiền mặt', color: '#000', icon: null, includeInBalance: true });
-    const fund = saveAccount(db, { name: 'Quỹ', color: '#000', icon: null, includeInBalance: false });
+    const cash = saveAccount(db, { name: 'Tiền mặt', color: '#000', icon: 'wallet-outline', includeInBalance: true });
+    const fund = saveAccount(db, { name: 'Quỹ', color: '#000', icon: 'wallet-outline', includeInBalance: false });
     const spay = saveAccount(db, {
       name: 'SPayLater',
       color: '#EE4D2D',
-      icon: null,
+      icon: 'wallet-outline',
       includeInBalance: false,
       credit: { limit: 5_000_000, statementDay: 31, dueDay: 10, paymentAccountId: cash },
     });
