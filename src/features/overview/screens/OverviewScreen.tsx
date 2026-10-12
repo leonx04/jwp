@@ -97,6 +97,11 @@ export function OverviewScreen() {
     [overview, avgIncome],
   );
 
+  // Ví trả sau: hiện DƯ NỢ (dương, gồm cả khoản theo lịch) thay vì số dư âm
+  const owedById = useMemo(
+    () => new Map((overview?.credit ?? []).map((c) => [c.account.id, c.status.owed])),
+    [overview],
+  );
   const total = balances ? totalBalance(balances) : 0;
   const hasAccounts = (balances?.length ?? 0) > 0;
   const mask = (text: string) => (hideBalance ? '••••••' : text);
@@ -254,15 +259,19 @@ export function OverviewScreen() {
                       size={36}
                     />
                     <AppText variant="caption" color="textMuted" numberOfLines={1}>
-                      {account.name}
+                      {owedById.has(account.id) ? `${account.name} · dư nợ` : account.name}
                     </AppText>
                     <AppText
                       variant="heading"
                       numberOfLines={1}
-                      color={account.balance < 0 ? 'expense' : 'text'}
+                      color={!owedById.has(account.id) && account.balance < 0 ? 'expense' : 'text'}
                       style={{ fontVariant: ['tabular-nums'] }}
                     >
-                      {mask(format.money(account.balance))}
+                      {mask(
+                        format.money(
+                          owedById.has(account.id) ? owedById.get(account.id)! : account.balance,
+                        ),
+                      )}
                     </AppText>
                   </GlassSurface>
                 )}
