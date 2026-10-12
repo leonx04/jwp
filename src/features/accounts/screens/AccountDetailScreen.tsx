@@ -16,10 +16,11 @@ import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 import { CreditCard, InstallmentPlanList } from '@/features/credit/components';
 import { getCreditSummary } from '@/features/credit/queries';
-import { useSettings } from '@/features/settings';
+import { useScheduleOverview } from '@/features/schedules/hooks';
+import { useMoneyFormat, useSettings } from '@/features/settings';
 import { TransactionRow } from '@/features/transactions/components/TransactionRow';
 import { useTransactions } from '@/features/transactions/hooks';
-import { todayVn } from '@/lib/date';
+import { formatDate, todayVn } from '@/lib/date';
 import { toAppIcon, type IconName } from '@/lib/icons';
 import { createStyles, rgba, useTheme } from '@/theme';
 
@@ -30,6 +31,9 @@ export function AccountDetailScreen() {
   const styles = useStyles();
   const { colors } = useTheme();
   const hideBalance = useSettings((s) => s.hideBalance);
+  const format = useMoneyFormat();
+  // Lịch chi sắp tới (45 ngày) lấy từ ví này — chưa là giao dịch nên chưa tính vào dư nợ
+  const { data: overview } = useScheduleOverview(45);
   const { data: account } = useLiveData(
     ['accounts'],
     () => listAccounts(db, { includeArchived: true }).find((a) => a.id === id) ?? null,
@@ -48,6 +52,18 @@ export function AccountDetailScreen() {
     },
     [id],
   );
+
+  const planned =
+    credit && overview
+      ? overview.occurrences.filter(
+          (o) =>
+            o.type === 'expense' &&
+            o.schedule.accountId === id &&
+            !o.scheduleId.startsWith('credit:') &&
+            o.status !== 'paid' &&
+            o.status !== 'skipped',
+        )
+      : [];
 
   if (account === null) {
     return (
@@ -150,6 +166,43 @@ export function AccountDetailScreen() {
           <SectionTitle tone="section">Trả góp</SectionTitle>
           <InstallmentPlanList installments={credit.installments} />
         </>
+      ) : null}
+
+      {planned.length ? (
+        <View style={{ gap: 12 }}>
+          <SectionTitle tone="section">Khoản theo lịch (đã tính vào dư nợ)</SectionTitle>
+          <Card style={{ gap: 10 }}>
+            {planned.map((o) => (
+              <Pressable
+                key={`${o.scheduleId}-${o.dueDate}`}
+                accessibilityRole="button"
+                onPress={() =>
+                  router.push({
+                    pathname: '/schedule/occurrence',
+                    params: { scheduleId: o.scheduleId, dueDate: o.dueDate },
+                  })
+                }
+                style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}
+              >
+                <View style={{ flex: 1 }}>
+                  <AppText variant="bodyMedium" numberOfLines={1}>
+                    {o.schedule.title || 'Khoản chi theo lịch'}
+                  </AppText>
+                  <AppText variant="caption" color="textMuted">
+                    {formatDate(o.date, false)}
+                  </AppText>
+                </View>
+                <AppText variant="bodyMedium" color="expense">
+                  {hideBalance ? '••••' : format.money(o.amount)}
+                </AppText>
+              </Pressable>
+            ))}
+            <AppText variant="caption" color="textMuted">
+              Các khoản này đã cộng vào dư nợ. Bấm vào một khoản rồi chọn "Đã thanh toán" để trả nợ
+              (tiền trừ từ ví thanh toán, dư nợ giảm).
+            </AppText>
+          </Card>
+        </View>
       ) : null}
 
       <View style={styles.sectionRow}>

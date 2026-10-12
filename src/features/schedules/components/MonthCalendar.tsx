@@ -5,7 +5,16 @@ import { Pressable, View } from 'react-native';
 import { IconButton } from '@/components/glass/IconButton';
 import { AppText, Card, SectionTitle } from '@/components/ui';
 import { useMoneyFormat } from '@/features/settings';
-import { WEEKDAY_SHORT, formatDate, todayVn, type DateString } from '@/lib/date';
+import { TransactionRow } from '@/features/transactions/components/TransactionRow';
+import { useTransactions } from '@/features/transactions/hooks';
+import {
+  WEEKDAY_SHORT,
+  addDays,
+  formatDate,
+  todayVn,
+  vnDateToMs,
+  type DateString,
+} from '@/lib/date';
 import { rgba, useTheme } from '@/theme';
 
 import { formatMonthTitle, shiftMonth, type CalendarDay } from '../calendar';
@@ -27,6 +36,11 @@ export function MonthCalendar({ lookup }: { lookup: OccurrenceLookup }) {
     return Array.from({ length: 6 }, (_, i) => data.days.slice(i * 7, i * 7 + 7));
   }, [data]);
   const day = data?.days.find((d) => d.date === selected);
+  // Giao dịch thật của ngày chọn (bấm vào để sửa)
+  const { data: dayTransactions = [] } = useTransactions({
+    from: vnDateToMs(selected),
+    to: vnDateToMs(addDays(selected, 1)),
+  });
 
   const go = (offset: number) => {
     const next = shiftMonth(data?.grid.month ?? month, offset);
@@ -112,6 +126,13 @@ export function MonthCalendar({ lookup }: { lookup: OccurrenceLookup }) {
               <AppText color="textMuted">Không có giao dịch</AppText>
             )}
           </Card>
+          {dayTransactions.length ? (
+            <Card style={{ gap: 0, paddingVertical: 4 }}>
+              {dayTransactions.map((item) => (
+                <TransactionRow key={item.id} item={item} />
+              ))}
+            </Card>
+          ) : null}
           {day.planned.length ? (
             <Card style={{ gap: 0, paddingVertical: 4 }}>
               {day.planned.map((o) => (
