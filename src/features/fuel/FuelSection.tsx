@@ -2,7 +2,7 @@
 // → số lít + so với lần trước.
 import { View } from 'react-native';
 
-import { AppText, Card, Chip, IconBadge, KeypadField } from '@/components/ui';
+import { AppText, Card, Chip, KeypadField } from '@/components/ui';
 import { useMoneyFormat } from '@/features/settings';
 import { diffDays, toVnDate, todayVn } from '@/lib/date';
 import { groupThousands } from '@/lib/money';
@@ -34,14 +34,10 @@ export function FuelSection({
   const daysAgo = last ? diffDays(toVnDate(last.date), todayVn()) : 0;
 
   return (
-    <Card style={{ gap: 10 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <IconBadge icon="mci:gas-station" color="#DC2626" size={32} />
-        <AppText variant="bodyMedium">Giá xăng hôm nay</AppText>
-      </View>
+    <Card style={{ gap: 8, padding: 10 }}>
       <KeypadField
         icon="mci:gas-station"
-        label="Đồng / lít (nhập bằng bàn phím số bên dưới)"
+        label="Giá xăng hôm nay (đồng / lít)"
         text={price ? groupThousands(price) : ''}
         placeholder="Chạm để nhập, vd 21.350"
         active={active}
