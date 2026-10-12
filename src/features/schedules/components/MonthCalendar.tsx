@@ -1,6 +1,6 @@
 // Lịch tháng: lưới 6 tuần, chấm màu thu / chi / bill, âm lịch nhỏ; bấm ngày để xem chi tiết.
-import { usePathname } from 'expo-router';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -31,9 +31,8 @@ export function MonthCalendar({ lookup }: { lookup: OccurrenceLookup }) {
   const [selected, setSelected] = useState<DateString>(() => todayVn());
   // Popup xem nhanh các giao dịch của ngày vừa bấm
   const [sheetOpen, setSheetOpen] = useState(false);
-  const pathname = usePathname();
   // Bấm vào một giao dịch / kỳ trong popup sẽ chuyển màn → đóng popup
-  useEffect(() => setSheetOpen(false), [pathname]);
+  useFocusEffect(useCallback(() => () => setSheetOpen(false), []));
   const { data } = useCalendarMonth(month);
   const format = useMoneyFormat();
   const { colors } = useTheme();
@@ -45,10 +44,16 @@ export function MonthCalendar({ lookup }: { lookup: OccurrenceLookup }) {
   }, [data]);
   const day = data?.days.find((d) => d.date === selected);
   // Giao dịch thật của ngày chọn (bấm vào để sửa)
-  const { data: dayTransactions = [] } = useTransactions({
-    from: vnDateToMs(selected),
-    to: vnDateToMs(addDays(selected, 1)),
-  });
+  const dayFrom = vnDateToMs(selected);
+  const dayTo = vnDateToMs(addDays(selected, 1));
+  const { data: dayData } = useTransactions({ from: dayFrom, to: dayTo });
+  // Hook giữ dữ liệu cũ tới khi truy vấn mới xong → lọc theo đúng ngày để không hiện nhầm ngày trước
+  const dayTransactions = useMemo(
+    () => (dayData ?? []).filter((t) => t.date >= dayFrom && t.date < dayTo),
+    [dayData, dayFrom, dayTo],
+  );
+  // Ngày không có giao dịch thì dữ liệu cũ luôn bị lọc sạch → chỉ tin là đã tải khi ngày đó có dấu hiệu giao dịch khớp
+  const dayLoaded = dayData !== undefined && (dayTransactions.length > 0 || !day?.totals?.count);
 
   const go = (offset: number) => {
     const next = shiftMonth(data?.grid.month ?? month, offset);
@@ -129,6 +134,7 @@ export function MonthCalendar({ lookup }: { lookup: OccurrenceLookup }) {
         visible={sheetOpen && !!day}
         day={day}
         transactions={dayTransactions}
+        loaded={dayLoaded}
         lookup={lookup}
         onClose={() => setSheetOpen(false)}
       />
@@ -210,12 +216,15 @@ function DaySheet({
   visible,
   day,
   transactions,
+  loaded,
   lookup,
   onClose,
 }: {
   visible: boolean;
   day: CalendarDay | undefined;
   transactions: readonly TransactionListItem[];
+  /** Đã tải xong giao dịch của ngày — tránh hiện "trống" thoáng qua */
+  loaded: boolean;
   lookup: OccurrenceLookup;
   onClose: () => void;
 }) {
@@ -223,15 +232,15 @@ function DaySheet({
   const format = useMoneyFormat();
   const insets = useSafeAreaInsets();
   if (!day) return null;
-  const empty = !transactions.length && !day.planned.length;
+  const empty = loaded && !transactions.length && !day.planned.length;
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable
-        accessibilityLabel="Đóng"
-        onPress={onClose}
-        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }}
-      />
+          accessibilityLabel="Đóng"
+          onPress={onClose}
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }}
+        />
       <View
         style={{
           position: 'absolute',
@@ -282,9 +291,11 @@ function DaySheet({
               ) : null}
             </View>
           ) : null}
+          <View style={{ width: 8 }} />
           <IconButton icon="close" accessibilityLabel="Đóng" onPress={onClose} />
         </View>
         <ScrollView
+          style={{ flexShrink: 1 }}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8, gap: 12 }}
           showsVerticalScrollIndicator
         >
