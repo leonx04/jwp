@@ -103,6 +103,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#7C3AED',
       },
       {
+        icon: 'mail-unread-outline',
+        title: 'Tự đọc thông báo ngân hàng',
+        subtitle: 'Gợi ý ghi giao dịch từ thông báo / SMS biến động số dư',
+        href: '/settings/capture',
+        color: '#7C3AED',
+      },
+      {
         icon: 'notifications-outline',
         title: 'Thông báo',
         subtitle: 'Thử popup, nút hành động, hướng dẫn Huawei',

@@ -21,6 +21,7 @@ import { createDefaultData } from '@/features/onboarding/defaults';
 import { UpcomingCard } from '@/features/schedules/components/UpcomingCard';
 import { useScheduleOverview } from '@/features/schedules/hooks';
 import { BudgetsCard } from '@/features/budgets/components/BudgetsCard';
+import { InboxBanner } from '@/features/capture/components/InboxBanner';
 import { DebtsCard } from '@/features/debts/components/DebtsCard';
 import { GoalsCard } from '@/features/goals/components/GoalsCard';
 import { TodayCard, useTodayStatus } from '@/features/today';
@@ -196,6 +197,8 @@ export function OverviewScreen() {
           />
         </Card>
       ) : null}
+
+      <InboxBanner />
 
       {/* Thao tác nhanh */}
       <View style={styles.actions}>

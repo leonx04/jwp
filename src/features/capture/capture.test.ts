@@ -1,6 +1,5 @@
-import { saveAccount } from '@/features/accounts/repository';
+import { listAccounts, saveAccount } from '@/features/accounts/repository';
 import { saveTransaction } from '@/features/transactions/repository';
-import { listAccounts } from '@/features/accounts/repository';
 import { createTestDb } from '@/test/testDb';
 
 import type { RawCapture } from './parse';
