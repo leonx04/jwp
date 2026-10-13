@@ -182,6 +182,68 @@ function NotificationTester() {
         />
       </Card>
 
+      <SectionTitle>Nhắc hạn</SectionTitle>
+      <Card style={{ gap: 12 }}>
+        <SwitchRow
+          icon="card-outline"
+          title="Khoản phải trả & bill trả sau"
+          subtitle="Nhắc trước hạn và đúng ngày, có nút Đã thanh toán"
+          value={prefs.payments}
+          onValueChange={(on) => updateNotifications({ payments: on })}
+        />
+        <SwitchRow
+          icon="cash-outline"
+          title="Khoản thu dự kiến"
+          subtitle="Lương, tiền nhận định kỳ"
+          value={prefs.income}
+          onValueChange={(on) => updateNotifications({ income: on })}
+        />
+        <SwitchRow
+          icon="people-outline"
+          title="Hạn trả / đòi nợ"
+          subtitle="Khoản trong Sổ nợ có đặt hạn"
+          value={prefs.debts}
+          onValueChange={(on) => updateNotifications({ debts: on })}
+        />
+        <SwitchRow
+          icon="alert-circle-outline"
+          title="Khoản quá hạn"
+          subtitle="Một thông báo gộp mỗi ngày"
+          value={prefs.overdue}
+          onValueChange={(on) => updateNotifications({ overdue: on })}
+        />
+        <AppText variant="label" color="textMuted">
+          NHẮC TRƯỚC HẠN
+        </AppText>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {[0, 1, 2, 3, 5].map((d) => (
+            <Chip
+              key={d}
+              label={d === 0 ? 'Chỉ đúng ngày' : `${d} ngày`}
+              selected={prefs.daysBefore === d}
+              onPress={() => updateNotifications({ daysBefore: d })}
+            />
+          ))}
+        </View>
+        <AppText variant="label" color="textMuted">
+          GIỜ NHẮC
+        </AppText>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {['08:00', '09:00', '12:00', '18:00', '20:00'].map((t) => (
+            <Chip
+              key={t}
+              label={t}
+              selected={prefs.time === t}
+              onPress={() => updateNotifications({ time: t })}
+            />
+          ))}
+        </View>
+        <AppText variant="caption" color="textMuted">
+          Không gửi trong {prefs.quietStart}–{prefs.quietEnd}. Khoản trong Lịch có thể đặt riêng số
+          ngày và giờ nhắc.
+        </AppText>
+      </Card>
+
       <SectionTitle>Thử nghiệm</SectionTitle>
       <Card>
         <AppText color="textMuted">
