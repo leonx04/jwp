@@ -24,6 +24,7 @@ import { Snackbar } from '@/components/feedback/Snackbar';
 import { DatabaseProvider } from '@/db';
 import { useNotificationResponses } from '@/features/notifications';
 import { AppThemeProvider } from '@/features/settings';
+import { useAutoBackup } from '@/features/backup/hooks';
 import { useCaptureSync } from '@/features/capture/hooks';
 import { useMorningBriefingSync } from '@/features/notifications/hooks/useMorningBriefingSync';
 import { useStartupTasks } from '@/features/startup/useStartupTasks';
@@ -62,6 +63,7 @@ function RootNavigator() {
   useStartupTasks();
   useMorningBriefingSync();
   useCaptureSync();
+  useAutoBackup();
 
   // Theme của thanh điều hướng / hiệu ứng chuyển màn theo theme của app
   const navigationTheme = useMemo(() => {

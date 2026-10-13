@@ -8,6 +8,7 @@ import { Card, ListRow, Screen, SectionTitle } from '@/components/ui';
 import { db } from '@/db';
 import { getSettings, useSettings } from '@/features/settings';
 
+import { AutoBackupSection } from '../components/AutoBackupSection';
 import { transactionsToCsv } from '../csv';
 import { backupDirectory, pickFile, shareFile, writeTextFile } from '../fileIO';
 import { collectBackupData, createJwpBackup, serializeJwpBackup } from '../jwp/export';
@@ -15,7 +16,8 @@ import { settingsPatchFromBackup } from '../jwp/format';
 import { readJwpBackup } from '../jwp/read';
 import { previewRestore, restoreBackup, type RestoreMode } from '../jwp/restore';
 
-const stamp = () => new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 16).replace(/[-:T]/g, '');
+const stamp = () =>
+  new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 16).replace(/[-:T]/g, '');
 
 export function BackupScreen() {
   const [busy, setBusy] = useState<string | null>(null);
@@ -36,7 +38,10 @@ export function BackupScreen() {
   const exportJson = () =>
     run('json', async () => {
       const data = collectBackupData(db, getSettings());
-      const file = writeTextFile(`JWP-backup-${stamp()}.json`, serializeJwpBackup(createJwpBackup(data)));
+      const file = writeTextFile(
+        `JWP-backup-${stamp()}.json`,
+        serializeJwpBackup(createJwpBackup(data)),
+      );
       await shareFile(file, 'application/json', 'Sao lưu JWP');
     });
 
@@ -60,7 +65,11 @@ export function BackupScreen() {
           restoreBackup(db, backup, mode, {
             beforeReplace: () => {
               const current = createJwpBackup(collectBackupData(db, getSettings()));
-              writeTextFile(`truoc-khi-khoi-phuc-${stamp()}.json`, serializeJwpBackup(current), backupDirectory());
+              writeTextFile(
+                `truoc-khi-khoi-phuc-${stamp()}.json`,
+                serializeJwpBackup(current),
+                backupDirectory(),
+              );
             },
           });
           if (mode === 'replace') update(settingsPatchFromBackup(backup.data.settings));
@@ -98,6 +107,7 @@ export function BackupScreen() {
           onPress={exportCsv}
         />
       </Card>
+      <AutoBackupSection />
       <SectionTitle tone="section">Khôi phục</SectionTitle>
       <Card style={{ gap: 0, paddingVertical: 6 }}>
         <ListRow
