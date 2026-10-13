@@ -321,3 +321,31 @@ describe('dữ liệu mặc định', () => {
     expect(getAccountBalances(db)).toHaveLength(1);
   });
 });
+
+describe('chuyển khoản có số nhận khác số chuyển (trả bill ví trả sau)', () => {
+  it('lưu toAmount, mặc định bằng số chuyển, sửa giữ nguyên số nhận khi truyền lại', () => {
+    const { db, cash, bank } = setup();
+    const base = {
+      type: 'transfer' as const,
+      accountId: bank,
+      toAccountId: cash,
+      date: at('2026-09-24'),
+    };
+    const same = saveTransaction(db, { ...base, amount: 1_000 });
+    expect(getTransaction(db, same)?.toAmount).toBe(1_000);
+
+    const id = saveTransaction(db, { ...base, amount: 1_110_000, toAmount: 1_110_238 });
+    expect(getTransaction(db, id)?.toAmount).toBe(1_110_238);
+    saveTransaction(db, {
+      ...base,
+      id,
+      amount: 1_110_000,
+      toAmount: 1_110_238,
+      title: 'Trả SEasy',
+    });
+    expect(getTransaction(db, id)?.toAmount).toBe(1_110_238);
+    // Không truyền → bằng số chuyển (hành vi cũ)
+    saveTransaction(db, { ...base, id, amount: 5_000 });
+    expect(getTransaction(db, id)?.toAmount).toBe(5_000);
+  });
+});

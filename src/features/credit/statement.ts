@@ -71,13 +71,17 @@ function dayOfMonth(date: DateString, day: number): DateString {
 /** Ngày chốt gần nhất ≤ today */
 export function lastCloseDate(today: DateString, statementDay: number): DateString {
   const thisMonth = dayOfMonth(today, statementDay);
-  return thisMonth <= today ? thisMonth : dayOfMonth(addMonths(dayOfMonth(today, 1), -1), statementDay);
+  return thisMonth <= today
+    ? thisMonth
+    : dayOfMonth(addMonths(dayOfMonth(today, 1), -1), statementDay);
 }
 
 /** Ngày đến hạn đầu tiên SAU ngày chốt */
 export function dueDateAfter(closeDate: DateString, dueDay: number): DateString {
   const sameMonth = dayOfMonth(closeDate, dueDay);
-  return sameMonth > closeDate ? sameMonth : dayOfMonth(addMonths(dayOfMonth(closeDate, 1), 1), dueDay);
+  return sameMonth > closeDate
+    ? sameMonth
+    : dayOfMonth(addMonths(dayOfMonth(closeDate, 1), 1), dueDay);
 }
 
 /**
@@ -93,7 +97,11 @@ function balanceBefore(movements: readonly AccountMovement[], date: DateString):
 }
 
 /** Phần trả góp chưa tới hạn (sau `after`) của các khoản mua trước / trong ngày `purchasedBy` */
-function installmentsNotDue(plans: readonly InstallmentPlan[], after: DateString, purchasedBy: DateString) {
+function installmentsNotDue(
+  plans: readonly InstallmentPlan[],
+  after: DateString,
+  purchasedBy: DateString,
+) {
   return plans
     .filter((p) => p.purchaseDate <= purchasedBy)
     .reduce((sum, p) => sum + p.amount * p.dueDates.filter((d) => d > after).length, 0);
@@ -128,7 +136,10 @@ export function computeCreditStatus({
 
   const nextClose = dayOfMonth(addMonths(dayOfMonth(closeDate, 1), 1), statementDay);
   const nextDue = dueDateAfter(nextClose, dueDay);
-  const estimatedAmount = Math.max(0, owed - dueAmount - installmentsNotDue(installments, nextDue, today));
+  const estimatedAmount = Math.max(
+    0,
+    owed - dueAmount - installmentsNotDue(installments, nextDue, today),
+  );
 
   return {
     owed,

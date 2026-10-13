@@ -70,6 +70,8 @@ type Draft = {
   amount: number;
   accountId: string | null;
   toAccountId: string | null;
+  /** Số ví nhận khi khác số chuyển (giữ nguyên nếu không đổi số tiền) */
+  toAmount: number | null;
   categoryId: string | null;
   title: string;
   note: string;
@@ -123,6 +125,7 @@ export function TransactionEditorScreen() {
         amount: existing.amount,
         accountId: existing.accountId,
         toAccountId: existing.toAccountId,
+        toAmount: existing.toAmount,
         categoryId: existing.categoryId,
         title: existing.title,
         note: stripFuelNote(existing.note),
@@ -140,6 +143,7 @@ export function TransactionEditorScreen() {
       amount: params.amount ? Number(params.amount) || 0 : 0,
       accountId: params.accountId ?? null,
       toAccountId: params.toAccountId ?? null,
+      toAmount: null,
       categoryId: params.categoryId ?? null,
       title: params.title ?? '',
       note: '',
@@ -185,7 +189,7 @@ export function TransactionEditorScreen() {
   const onKeypad = (value: number) => {
     if (activeTarget === 'fuel') setFuelPrice(value);
     else if (activeTarget === 'fee') set({ feeText: value ? String(value) : '' });
-    else set({ amount: value });
+    else set({ amount: value, toAmount: null });
   };
   const previousFuel = useMemo(
     () => (showFuel ? lastFuel(db, editingId) : null),
@@ -271,6 +275,7 @@ export function TransactionEditorScreen() {
         amount: installmentToSave(plan, draft.amount).amount,
         accountId: accountId ?? '',
         toAccountId: draft.toAccountId,
+        toAmount: draft.toAmount,
         categoryId: draft.categoryId,
         title: draft.title,
         note: mergeFuelNote(

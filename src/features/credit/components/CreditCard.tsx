@@ -6,6 +6,8 @@ import { memo, type ComponentProps } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { AppText, Button, Card, IconBadge, type TextColor } from '@/components/ui';
+import { db } from '@/db';
+import { setAccountArchived } from '@/features/accounts/repository';
 import { useMoneyFormat, useSettings } from '@/features/settings';
 import { ProgressBar } from '@/features/today/components/ProgressBar';
 import { formatDate } from '@/lib/date';
@@ -173,6 +175,18 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
         <AppText variant="caption" color="textMuted" style={styles.tabular}>
           {extras.join('  ·  ')}
         </AppText>
+      ) : null}
+
+      {/* Khoản vay (không hạn mức) đã trả hết → đề nghị lưu trữ ví cho gọn */}
+      {status.owed === 0 && !account.creditLimit ? (
+        <Button
+          size="sm"
+          icon="archive-outline"
+          variant="secondary"
+          title="Đã trả hết · Lưu trữ ví"
+          onPress={() => setAccountArchived(db, account.id, true)}
+          style={styles.pay}
+        />
       ) : null}
 
       {current && current.dueAmount > 0 ? (

@@ -9,7 +9,8 @@ import type { CreditStatus } from './statement';
 export const CREDIT_BILL_PREFIX = 'credit:';
 
 export const isCreditBill = (scheduleId: string) => scheduleId.startsWith(CREDIT_BILL_PREFIX);
-export const creditAccountOfBill = (scheduleId: string) => scheduleId.slice(CREDIT_BILL_PREFIX.length);
+export const creditAccountOfBill = (scheduleId: string) =>
+  scheduleId.slice(CREDIT_BILL_PREFIX.length);
 
 export type CreditBillSource = {
   account: { id: string; name: string; paymentAccountId: string | null };
