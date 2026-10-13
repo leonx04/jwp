@@ -20,6 +20,7 @@ import { totalBalance, useAccountBalances } from '@/features/accounts';
 import { createDefaultData } from '@/features/onboarding/defaults';
 import { UpcomingCard } from '@/features/schedules/components/UpcomingCard';
 import { useScheduleOverview } from '@/features/schedules/hooks';
+import { BudgetsCard } from '@/features/budgets/components/BudgetsCard';
 import { DebtsCard } from '@/features/debts/components/DebtsCard';
 import { TodayCard, useTodayStatus } from '@/features/today';
 import { CreditSection } from '../components/CreditSection';
@@ -285,6 +286,7 @@ export function OverviewScreen() {
       {todayStatus ? <TodayCard status={todayStatus} /> : null}
       {overview?.credit.length ? <CreditSection credit={overview.credit} load={load} /> : null}
       <UpcomingCard />
+      <BudgetsCard />
       <DebtsCard />
 
       {/* Giao dịch gần đây */}
