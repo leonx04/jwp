@@ -355,3 +355,11 @@ Mỗi phase nhỏ: `tsc` + jest đúng thư mục + commit; thử trên máy qua
 | **N3** | Bảng `pending_imports` (migration), hộp "Chờ xác nhận": xác nhận → mở form giao dịch điền sẵn; bỏ qua; chống trùng bằng `externalRef` | `src/features/capture/*`, `/inbox` |
 | **N4** | Cài đặt "Tự đọc thông báo": bật, chọn app ↔ ví, hướng dẫn Huawei (khởi chạy tự động); số dư sau GD dùng làm gợi ý đối chiếu | settings, reconcile |
 | **QA** | `tsc` + `jest` + `expo lint`, build debug (N) → thử máy → build release → báo cáo | — |
+
+### 16.1. Bổ sung sau phân tích liên kết ngân hàng (13/10/2026)
+- Không có API ngân hàng chính thức cho cá nhân (Thông tư 64/2024 dành cho đối tác có hợp đồng); không cào đăng nhập internet banking (vi phạm điều khoản + rủi ro).
+- **N1 mở rộng**: đọc **cả thông báo (MB, TPBank, Techcombank, MoMo, ShopeePay) lẫn SMS biến động số dư** (quyền READ/RECEIVE_SMS, ổn định hơn trên Huawei).
+- SePay (webhook) không phủ Techcombank / MoMo, MB chỉ tiền vào, gói free 50 giao dịch/tháng → chỉ là bổ sung. SQLite vẫn là nơi lưu chính (không thay bằng Firestore).
+- Tùy chọn sau cùng, cần bạn tạo project Firebase + bật thanh toán Blaze:
+  - **C1** Cloud Function nhận webhook SePay (xác thực API key) → Firestore `users/{uid}/inbox` → app kéo về `pending_imports`.
+  - **C2** Sao lưu mã hóa / đồng bộ nhiều máy qua Firestore (SQLite vẫn là nguồn chính).
