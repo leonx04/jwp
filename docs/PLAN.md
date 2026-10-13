@@ -363,3 +363,16 @@ Mỗi phase nhỏ: `tsc` + jest đúng thư mục + commit; thử trên máy qua
 - Tùy chọn sau cùng, cần bạn tạo project Firebase + bật thanh toán Blaze:
   - **C1** Cloud Function nhận webhook SePay (xác thực API key) → Firestore `users/{uid}/inbox` → app kéo về `pending_imports`.
   - **C2** Sao lưu mã hóa / đồng bộ nhiều máy qua Firestore (SQLite vẫn là nguồn chính).
+
+### 16.2. Tiến độ (13/10/2026)
+| Phase | Trạng thái |
+|---|---|
+| D1–D3 Sổ nợ (lõi, màn hình, Tổng quan, nhắc hạn trong báo cáo sáng, gợi ý từ giao dịch cũ) | ✅ xong, test pass — chưa thử UI trên máy (máy chưa kết nối) |
+| R1 Đối chiếu số dư (nguyên nhân: trùng / nhầm ví / nhầm loại / phí) | ✅ xong, test pass — chưa thử UI |
+| B1–B2 Ngân sách (tiến độ, dự báo vượt, cảnh báo 80% / vượt khi lưu khoản chi) | ✅ xong, test pass — chưa thử UI |
+| G1 Quỹ tiết kiệm (bảng `goals`, migration 0003, sao lưu) | ✅ xong, test pass — chưa thử UI |
+| N2 Parser thông báo / SMS | ✅ test mẫu (định dạng thật cần chỉnh khi có nhật ký) |
+| N3 Hộp chờ xác nhận + bảng `captures` (migration 0004) + đồng bộ | ✅ xong, test pass |
+| N1 Module native `jwp-notif` | ⏳ đã viết, đang build kiểm tra biên dịch |
+| N4 Cài đặt tự đọc + nhật ký + liên kết đối chiếu | ✅ (màn `/settings/capture`, nhật ký chép được) |
+| C1 / C2 Firebase | chưa làm — chờ bạn quyết |
