@@ -1,0 +1,216 @@
+// Ghi sổ nợ. Mỗi lần cho vay / vay / trả có chọn ví sẽ sinh một giao dịch ví gắn `debt_id`
+// (giao dịch này không tính vào thống kê chi tiêu). Mọi thao tác ghi chạy trong một transaction SQLite.
+import { eq, inArray } from 'drizzle-orm';
+
+import {
+  debtRecords,
+  debts,
+  people,
+  transactions,
+  type DebtDirection,
+  type DebtRecordType,
+} from '@/db/schema';
+import type { AppDatabase } from '@/db/types';
+import { deleteTransactions, saveTransaction } from '@/features/transactions/repository';
+import type { DateString } from '@/lib/date';
+import { createId } from '@/lib/id';
+import { MAX_AMOUNT } from '@/lib/money';
+import { normalizeForSearch } from '@/lib/text';
+
+import { walletFlow } from './compute';
+
+export class DebtValidationError extends Error {}
+
+const checkAmount = (amount: number) => {
+  if (!Number.isInteger(amount) || amount <= 0) {
+    throw new DebtValidationError('Số tiền phải lớn hơn 0.');
+  }
+  if (amount > MAX_AMOUNT) throw new DebtValidationError('Số tiền quá lớn.');
+};
+
+/** Tìm người theo tên (không phân biệt hoa thường / dấu); chưa có thì tạo mới */
+export function ensurePerson(db: AppDatabase, rawName: string): string {
+  const name = rawName.trim();
+  if (!name) throw new DebtValidationError('Chưa nhập tên người.');
+  const nameKey = normalizeForSearch(name) || 'khong-ten';
+  const existing = db.select().from(people).where(eq(people.nameKey, nameKey)).get();
+  if (existing) return existing.id;
+  const id = createId();
+  db.insert(people).values({ id, name, nameKey }).run();
+  return id;
+}
+
+function titleFor(direction: DebtDirection, kind: 'open' | DebtRecordType, name: string): string {
+  const lent = direction === 'lent';
+  switch (kind) {
+    case 'open':
+      return lent ? `Cho ${name} vay` : `Vay ${name}`;
+    case 'increase':
+      return lent ? `Cho ${name} vay thêm` : `Vay thêm ${name}`;
+    case 'repay':
+      return lent ? `${name} trả nợ` : `Trả nợ ${name}`;
+    default:
+      return `Lãi ${name}`;
+  }
+}
+
+export type DebtInput = {
+  id?: string;
+  personName: string;
+  direction: DebtDirection;
+  /** Số tiền gốc */
+  amount: number;
+  title?: string;
+  /** Thời điểm (ms) */
+  date: number;
+  dueDate?: DateString | null;
+  note?: string | null;
+  /** Ví cho vay đi ra / vay về vào. Trống = không động vào ví */
+  accountId?: string | null;
+};
+
+/** Thêm khoản nợ mới (không có id) hoặc sửa. Trả về id khoản nợ. */
+export function saveDebt(db: AppDatabase, input: DebtInput): string {
+  checkAmount(input.amount);
+  return db.transaction((tx) => {
+    const personId = ensurePerson(tx, input.personName);
+    const name = input.personName.trim();
+    const id = input.id ?? createId();
+    const existing = input.id ? tx.select().from(debts).where(eq(debts.id, id)).get() : undefined;
+    if (input.id && !existing) throw new DebtValidationError('Không tìm thấy khoản nợ.');
+
+    // Giao dịch ví của lần ghi đầu tiên. Khoản nợ phải có trước vì giao dịch tham chiếu tới nó.
+    const values = {
+      personId,
+      direction: input.direction,
+      amount: input.amount,
+      title: (input.title ?? '').trim(),
+      date: input.date,
+      dueDate: input.dueDate ?? null,
+      note: input.note?.trim() || null,
+      accountId: input.accountId ?? null,
+    };
+    if (existing) {
+      tx.update(debts)
+        .set({ ...values, updatedAt: Date.now() })
+        .where(eq(debts.id, id))
+        .run();
+    } else {
+      tx.insert(debts)
+        .values({ id, ...values })
+        .run();
+    }
+
+    const flow = walletFlow(input.direction, 'open');
+    let transactionId = existing?.transactionId ?? null;
+    if (input.accountId && flow) {
+      transactionId = saveTransaction(tx, {
+        id: transactionId ?? undefined,
+        type: flow,
+        amount: input.amount,
+        accountId: input.accountId,
+        title: titleFor(input.direction, 'open', name),
+        note: input.note ?? null,
+        date: input.date,
+        debtId: id,
+      });
+    } else if (transactionId) {
+      deleteTransactions(tx, [transactionId]);
+      transactionId = null;
+    }
+    tx.update(debts).set({ transactionId }).where(eq(debts.id, id)).run();
+    return id;
+  });
+}
+
+export type DebtRecordInput = {
+  debtId: string;
+  type: DebtRecordType;
+  amount: number;
+  date: number;
+  note?: string | null;
+  /** Ví trả / nhận tiền. Bỏ trống với tiền lãi (không động vào ví) */
+  accountId?: string | null;
+};
+
+export function addDebtRecord(db: AppDatabase, input: DebtRecordInput): string {
+  checkAmount(input.amount);
+  return db.transaction((tx) => {
+    const debt = tx.select().from(debts).where(eq(debts.id, input.debtId)).get();
+    if (!debt) throw new DebtValidationError('Không tìm thấy khoản nợ.');
+    const person = tx.select().from(people).where(eq(people.id, debt.personId)).get();
+    const flow = walletFlow(debt.direction, input.type);
+    let transactionId: string | null = null;
+    if (input.accountId && flow) {
+      transactionId = saveTransaction(tx, {
+        type: flow,
+        amount: input.amount,
+        accountId: input.accountId,
+        title: titleFor(debt.direction, input.type, person?.name ?? ''),
+        note: input.note ?? null,
+        date: input.date,
+        debtId: debt.id,
+      });
+    }
+    const id = createId();
+    tx.insert(debtRecords)
+      .values({
+        id,
+        debtId: debt.id,
+        type: input.type,
+        amount: input.amount,
+        date: input.date,
+        note: input.note?.trim() || null,
+        accountId: transactionId ? input.accountId! : null,
+        transactionId,
+      })
+      .run();
+    return id;
+  });
+}
+
+export function deleteDebtRecord(db: AppDatabase, recordId: string): void {
+  db.transaction((tx) => {
+    const record = tx.select().from(debtRecords).where(eq(debtRecords.id, recordId)).get();
+    if (!record) return;
+    if (record.transactionId) deleteTransactions(tx, [record.transactionId]);
+    tx.delete(debtRecords).where(eq(debtRecords.id, recordId)).run();
+  });
+}
+
+/** Đóng (lưu trữ) / mở lại một khoản nợ */
+export function setDebtClosed(db: AppDatabase, debtId: string, closed: boolean): void {
+  db.update(debts)
+    .set({ closedAt: closed ? Date.now() : null, updatedAt: Date.now() })
+    .where(eq(debts.id, debtId))
+    .run();
+}
+
+/** Xoá khoản nợ cùng mọi lần trả và giao dịch ví đã sinh ra; người không còn khoản nào thì dọn luôn */
+export function deleteDebt(db: AppDatabase, debtId: string): void {
+  db.transaction((tx) => {
+    const txIds = tx
+      .select({ id: transactions.id })
+      .from(transactions)
+      .where(eq(transactions.debtId, debtId))
+      .all()
+      .map((r) => r.id);
+    if (txIds.length) deleteTransactions(tx, txIds);
+    tx.delete(debtRecords).where(eq(debtRecords.debtId, debtId)).run();
+    tx.delete(debts).where(eq(debts.id, debtId)).run();
+    const used = new Set(
+      tx
+        .select({ p: debts.personId })
+        .from(debts)
+        .all()
+        .map((r) => r.p),
+    );
+    const gone = tx
+      .select({ id: people.id })
+      .from(people)
+      .all()
+      .map((o) => o.id)
+      .filter((id) => !used.has(id));
+    if (gone.length) tx.delete(people).where(inArray(people.id, gone)).run();
+  });
+}
