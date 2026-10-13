@@ -52,7 +52,10 @@ export function saveAccount(db: AppDatabase, input: AccountInput): string {
     creditLimit: credit?.limit && credit.limit > 0 ? Math.round(credit.limit) : null,
     statementDay: validDay(credit?.statementDay),
     dueDay: validDay(credit?.dueDay),
-    paymentAccountId: credit?.paymentAccountId && credit.paymentAccountId !== input.id ? credit.paymentAccountId : null,
+    paymentAccountId:
+      credit?.paymentAccountId && credit.paymentAccountId !== input.id
+        ? credit.paymentAccountId
+        : null,
   };
   if (input.id) {
     db.update(accounts).set(values).where(eq(accounts.id, input.id)).run();
@@ -167,7 +170,9 @@ export function hasAnyAccount(db: AppDatabase): boolean {
 }
 
 /** Ví có tên là ngân hàng / ví điện tử ("MB bank", "Ví Shoppe") nhưng chưa dùng logo */
-export function bankLogoCandidates<T extends Pick<Account, 'id' | 'name' | 'icon'>>(list: readonly T[]) {
+export function bankLogoCandidates<T extends Pick<Account, 'id' | 'name' | 'icon'>>(
+  list: readonly T[],
+) {
   return list.flatMap((account) => {
     if (bankFromIcon(account.icon)) return [];
     const bank = detectBank(account.name);
@@ -182,7 +187,10 @@ export function applyBankLogos(db: AppDatabase, ids?: readonly string[]): number
   );
   db.transaction((tx) => {
     for (const { account, bank } of candidates) {
-      tx.update(accounts).set({ icon: bankIcon(bank.code) }).where(eq(accounts.id, account.id)).run();
+      tx.update(accounts)
+        .set({ icon: bankIcon(bank.code) })
+        .where(eq(accounts.id, account.id))
+        .run();
     }
   });
   return candidates.length;

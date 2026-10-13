@@ -95,7 +95,7 @@ export function AccountDetailScreen() {
       tone: colors.primary,
     },
     {
-      label: 'Điều chỉnh',
+      label: 'Đối chiếu',
       icon: 'options',
       href: `/account/adjust?id=${id}`,
       tone: colors.primary,
@@ -198,7 +198,7 @@ export function AccountDetailScreen() {
               </Pressable>
             ))}
             <AppText variant="caption" color="textMuted">
-              Các khoản này đã cộng vào dư nợ. Bấm vào một khoản rồi chọn "Đã thanh toán" để trả nợ
+              Các khoản này đã cộng vào dư nợ. Bấm vào một khoản rồi chọn “Đã thanh toán” để trả nợ
               (tiền trừ từ ví thanh toán, dư nợ giảm).
             </AppText>
           </Card>

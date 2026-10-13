@@ -31,7 +31,10 @@ export function AccountsScreen() {
   const logoCandidates = bankLogoCandidates(balances);
 
   const applyLogos = () => {
-    const changed = applyBankLogos(db, logoCandidates.map((c) => c.account.id));
+    const changed = applyBankLogos(
+      db,
+      logoCandidates.map((c) => c.account.id),
+    );
     showSnackbar({ text: `Đã gắn logo cho ${changed} ví`, tone: 'success' });
   };
 
