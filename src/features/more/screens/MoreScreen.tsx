@@ -37,6 +37,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#F59E0B',
       },
       {
+        icon: 'repeat-outline',
+        title: 'Khoản lặp phát hiện được',
+        subtitle: 'Tiền nhà, đăng ký, lương… gợi ý tạo lịch nhắc',
+        href: '/recurring',
+        color: '#0EA5E9',
+      },
+      {
         icon: 'flag-outline',
         title: 'Quỹ tiết kiệm',
         subtitle: 'Mục tiêu, tiến độ, cần góp mỗi tháng',

@@ -19,6 +19,7 @@ import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 import { listAccounts } from '@/features/accounts/repository';
 import { listCategories } from '@/features/categories/repository';
+import { RecurringBanner } from '@/features/recurring';
 import { useMoneyFormat, useSettings } from '@/features/settings';
 import { addDays, formatDate, formatRelativeDue } from '@/lib/date';
 import { rgba, useTheme } from '@/theme';
@@ -102,7 +103,7 @@ export function ScheduleScreen() {
   return (
     <Screen tabBar largeTitle title="Lịch thu chi" headerRight={headerRight}>
       <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={setView} />
-      {view === 'month' ? <MonthCalendar lookup={lookup} /> : null}
+      {view === 'month' ? <MonthCalendar lookup={lookup} /> : <RecurringBanner />}
       {view === 'month' ? null : (
         <SegmentedControl options={RANGE_OPTIONS} value={range} onChange={setRange} />
       )}
