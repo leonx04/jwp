@@ -95,6 +95,7 @@ export function DebtDetailScreen() {
             numberOfLines={1}
             adjustsFontSizeToFit
             style={{ fontVariant: ['tabular-nums'] }}
+            minimumFontScale={0.6}
           >
             {format.money(item.remaining)}
           </AppText>
@@ -174,7 +175,13 @@ export function DebtDetailScreen() {
           title="Khoản gốc"
           subtitle={formatDate(toVnDate(debt.date))}
           right={
-            <AppText variant="bodyMedium" style={{ fontVariant: ['tabular-nums'] }}>
+            <AppText
+              variant="bodyMedium"
+              style={{ fontVariant: ['tabular-nums'] }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.6}
+            >
               {format.money(debt.amount)}
             </AppText>
           }

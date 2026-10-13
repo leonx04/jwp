@@ -44,6 +44,8 @@ export function AmountText({
       // Chữ số đều độ rộng → số không "nhảy" khi thay đổi
       style={[{ fontVariant: ['tabular-nums'] }, style]}
       numberOfLines={1}
+      adjustsFontSizeToFit
+      minimumFontScale={0.6}
     >
       {text}
     </AppText>

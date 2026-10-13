@@ -26,7 +26,14 @@ export function BudgetBar({ item }: { item: BudgetItem }) {
         <AppText variant="bodyMedium" numberOfLines={1} style={{ flex: 1 }}>
           {item.name}
         </AppText>
-        <AppText variant="caption" color="textMuted" style={{ fontVariant: ['tabular-nums'] }}>
+        <AppText
+          variant="caption"
+          color="textMuted"
+          style={{ fontVariant: ['tabular-nums'] }}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.6}
+        >
           {mask(`${format.money(item.spent)} / ${format.money(item.amount)}`)}
         </AppText>
       </View>

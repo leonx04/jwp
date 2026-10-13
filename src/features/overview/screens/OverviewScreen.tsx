@@ -142,6 +142,7 @@ export function OverviewScreen() {
           style={{ fontVariant: ['tabular-nums'] }}
           numberOfLines={1}
           adjustsFontSizeToFit
+          minimumFontScale={0.6}
         >
           {mask(format.money(total))}
         </AppText>
@@ -274,6 +275,8 @@ export function OverviewScreen() {
                       numberOfLines={1}
                       color={!owedById.has(account.id) && account.balance < 0 ? 'expense' : 'text'}
                       style={{ fontVariant: ['tabular-nums'] }}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.6}
                     >
                       {mask(
                         format.money(

@@ -47,7 +47,13 @@ export function MoneyField({
         }}
       />
       {text.trim() ? (
-        <AppText variant="caption" color={invalid ? 'expense' : 'textMuted'}>
+        <AppText
+          variant="caption"
+          color={invalid ? 'expense' : 'textMuted'}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.6}
+        >
           {invalid ? 'Không đọc được số tiền' : `= ${format.money(parsed ?? 0)}`}
         </AppText>
       ) : null}

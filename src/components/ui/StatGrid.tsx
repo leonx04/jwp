@@ -13,7 +13,13 @@ export function StatGrid({ items, columns = 3 }: { items: Stat[]; columns?: 2 | 
     <View style={styles.grid}>
       {items.map((item) => (
         <View key={item.label} style={[styles.cell, { width: `${100 / columns}%` }]}>
-          <AppText variant="heading" style={{ fontVariant: ['tabular-nums'] }}>
+          <AppText
+            variant="heading"
+            style={{ fontVariant: ['tabular-nums'] }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
             {item.value}
           </AppText>
           <AppText variant="caption" color="textMuted" numberOfLines={1}>

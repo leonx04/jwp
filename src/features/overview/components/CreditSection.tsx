@@ -42,7 +42,14 @@ export const CreditSection = memo(function CreditSection({ credit, load }: Credi
             <AppText variant="bodyMedium">
               Bill trả sau 30 ngày tới ≈ {Math.round(load.ratio * 100)}% thu nhập tháng
             </AppText>
-            <AppText variant="caption" color="textMuted" style={{ fontVariant: ['tabular-nums'] }}>
+            <AppText
+              variant="caption"
+              color="textMuted"
+              style={{ fontVariant: ['tabular-nums'] }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.6}
+            >
               {hideBalance
                 ? 'Cân nhắc trước khi mua trả sau thêm.'
                 : `Phải trả ${format.compact(load.billsTotal)} · thu nhập TB ${format.compact(load.avgMonthlyIncome)}/tháng. Cân nhắc trước khi mua trả sau thêm.`}

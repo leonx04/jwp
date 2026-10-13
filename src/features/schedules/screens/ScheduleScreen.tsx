@@ -127,6 +127,9 @@ export function ScheduleScreen() {
                   variant="display"
                   color={forecast.endBalance < 0 ? 'expense' : 'text'}
                   style={{ fontVariant: ['tabular-nums'] }}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.6}
                 >
                   {format.money(forecast.endBalance)}
                 </AppText>

@@ -147,6 +147,9 @@ function DebtRow({ item, showPerson = false }: { item: DebtItem; showPerson?: bo
           variant="bodyMedium"
           color={item.status === 'overdue' ? 'expense' : 'text'}
           style={{ fontVariant: ['tabular-nums'] }}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.6}
         >
           {format.money(item.remaining)}
         </AppText>

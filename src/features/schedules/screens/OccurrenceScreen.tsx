@@ -149,6 +149,9 @@ export function OccurrenceScreen() {
         <AppText
           variant="hero"
           color={o.type === 'income' ? 'income' : o.type === 'expense' ? 'expense' : 'text'}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.6}
         >
           {format.money(o.amount)}
         </AppText>

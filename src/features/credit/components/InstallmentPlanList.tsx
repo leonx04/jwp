@@ -77,7 +77,13 @@ function PlanRow({ plan }: { plan: InstallmentInfo }) {
           <AppText variant="label" color="textMuted">
             {done ? 'Đã xong' : 'Còn lại'}
           </AppText>
-          <AppText variant="bodyMedium" style={styles.tabular}>
+          <AppText
+            variant="bodyMedium"
+            style={styles.tabular}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
             {done ? '—' : mask(format.money(remaining))}
           </AppText>
         </View>

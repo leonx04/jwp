@@ -44,7 +44,14 @@ export function GoalCard({ item, actions = false }: GoalCardProps) {
           <AppText variant="bodyMedium" numberOfLines={1}>
             {goal.name}
           </AppText>
-          <AppText variant="caption" color="textMuted" style={{ fontVariant: ['tabular-nums'] }}>
+          <AppText
+            variant="caption"
+            color="textMuted"
+            style={{ fontVariant: ['tabular-nums'] }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
             {mask(`${format.money(item.saved)} / ${format.money(item.target)}`)}
           </AppText>
         </View>
