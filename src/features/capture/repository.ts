@@ -106,7 +106,7 @@ function prune(db: AppDatabase) {
 export type PendingCapture = { capture: Capture; duplicateOf: string | null };
 
 /** Giao dịch đã ghi tay trùng với thông báo (cùng loại, cùng số tiền, cùng ví nếu biết, gần thời điểm) */
-function findDuplicate(db: AppDatabase, c: Capture): string | null {
+export function findDuplicate(db: AppDatabase, c: Capture): string | null {
   if (!c.type || !c.amount) return null;
   const row = db
     .select({ id: transactions.id })

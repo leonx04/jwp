@@ -13,6 +13,7 @@ import { z } from 'zod';
 import {
   accounts,
   budgets,
+  captureRules,
   categories,
   debtRecords,
   debts,
@@ -44,6 +45,7 @@ export const BACKUP_TABLES = {
   debtRecords,
   budgets,
   goals,
+  captureRules,
 } as const;
 
 export type BackupTableKey = keyof typeof BACKUP_TABLES;
@@ -63,6 +65,7 @@ export const DATA_KEYS: BackupTableKey[] = [
   'debtRecords',
   'budgets',
   'goals',
+  'captureRules',
 ];
 
 export const TABLE_LABELS: Record<BackupTableKey, string> = {
@@ -78,6 +81,7 @@ export const TABLE_LABELS: Record<BackupTableKey, string> = {
   debtRecords: 'Lần trả / vay thêm',
   budgets: 'Ngân sách',
   goals: 'Quỹ tiết kiệm',
+  captureRules: 'Quy tắc phân loại tự đọc',
 };
 
 type RowOf<K extends BackupTableKey> = (typeof BACKUP_TABLES)[K]['$inferSelect'];

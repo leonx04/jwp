@@ -4,6 +4,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { budgetAlert, budgetSnapshot } from '@/features/budgets/alerts';
 import { acceptCapture } from '@/features/capture/repository';
+import { matchRule, MIN_PATTERN_LENGTH, patternKey } from '@/features/capture/rules';
+import { listRules } from '@/features/capture/rulesRepository';
 import { FuelSection } from '@/features/fuel/FuelSection';
 import {
   isFuelText,
@@ -299,11 +301,31 @@ export function TransactionEditorScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       const saved = editingId ? 'Đã lưu thay đổi' : 'Đã thêm giao dịch';
       const alert = budgetsBefore ? budgetAlert(budgetsBefore, budgetSnapshot(db)) : null;
-      showSnackbar(
-        alert
+      // Ghi từ hộp chờ có danh mục mà chưa có quy tắc nào khớp → mời tạo quy tắc cho lần sau
+      const ruleType = draft.type === 'income' || draft.type === 'expense' ? draft.type : null;
+      const rulePattern = draft.title.trim();
+      const offerRule =
+        !!params.captureId &&
+        !!ruleType &&
+        !!draft.categoryId &&
+        patternKey(rulePattern).length >= MIN_PATTERN_LENGTH &&
+        !matchRule(listRules(db), { type: ruleType, content: rulePattern, counterparty: null });
+      const categoryForRule = draft.categoryId;
+      showSnackbar({
+        ...(alert
           ? { text: `${saved} · ${alert.text}`, tone: alert.over ? 'error' : 'default' }
-          : { text: saved, tone: 'success' },
-      );
+          : { text: saved, tone: 'success' }),
+        ...(offerRule
+          ? {
+              actionLabel: 'Tạo quy tắc',
+              onAction: () =>
+                router.push({
+                  pathname: '/capture-rule/edit',
+                  params: { pattern: rulePattern, categoryId: categoryForRule!, type: ruleType! },
+                }),
+            }
+          : {}),
+      });
       router.back();
     } catch (error) {
       const message =

@@ -7,17 +7,14 @@ import {
   setAllowedPackages,
   setSmsEnabled,
 } from '../../../modules/jwp-notif';
+import { showSnackbar } from '@/components/feedback/snackbarStore';
 import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 import { listAccounts } from '@/features/accounts/repository';
 
 import { getCaptureConfig } from './config';
-import {
-  countPendingCaptures,
-  ingestCaptures,
-  listPendingCaptures,
-  listRecentCaptures,
-} from './repository';
+import { countPendingCaptures, ingestCaptures, listRecentCaptures } from './repository';
+import { autoAcceptCaptures, listPendingWithGuess } from './rulesRepository';
 import type { RawCapture } from './parse';
 
 /** Kéo các thông báo / SMS service nền đã bắt được vào DB (khi mở app và mỗi lần quay lại app) */
@@ -35,7 +32,12 @@ export function syncCaptures(): number {
     postedAt: n.postedAt,
   }));
   if (!raws.length) return 0;
-  return ingestCaptures(db, raws, listAccounts(db)).pending;
+  const { pending } = ingestCaptures(db, raws, listAccounts(db));
+  const auto = autoAcceptCaptures(db);
+  if (auto > 0) {
+    showSnackbar({ text: `Đã tự ghi ${auto} giao dịch theo quy tắc`, tone: 'success' });
+  }
+  return pending - auto;
 }
 
 /** Gắn một lần ở gốc app */
@@ -56,7 +58,7 @@ export function useCaptureSync() {
 }
 
 export function usePendingCaptures() {
-  return useLiveData(['captures', 'transactions'], () => listPendingCaptures(db));
+  return useLiveData(['captures', 'transactions', 'capture_rules'], () => listPendingWithGuess(db));
 }
 
 export function usePendingCaptureCount() {
