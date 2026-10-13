@@ -344,6 +344,46 @@ export const goals = sqliteTable(
   (t) => [check('goals_target_positive', sql`${t.targetAmount} > 0`)],
 );
 
+// ─── Giao dịch tự đọc từ thông báo / SMS ngân hàng ─────────────────────────────
+
+export const CAPTURE_STATUSES = ['pending', 'accepted', 'dismissed', 'unparsed'] as const;
+export type CaptureStatus = (typeof CAPTURE_STATUSES)[number];
+
+/** Mỗi dòng là một thông báo / SMS đã bắt được. Chỉ lưu cục bộ, không đưa vào file sao lưu. */
+export const captures = sqliteTable(
+  'captures',
+  {
+    id: text('id').primaryKey(),
+    /** Dấu vân tay chống trùng (người gửi + nội dung + phút) */
+    fingerprint: text('fingerprint').notNull(),
+    source: text('source', { enum: ['notification', 'sms'] }).notNull(),
+    sender: text('sender').notNull(),
+    title: text('title').notNull().default(''),
+    body: text('body').notNull().default(''),
+    /** Thời điểm thông báo (ms) */
+    postedAt: integer('posted_at').notNull(),
+    type: text('type', { enum: ['income', 'expense'] }),
+    amount: integer('amount'),
+    balanceAfter: integer('balance_after'),
+    content: text('content').notNull().default(''),
+    counterparty: text('counterparty'),
+    bankCode: text('bank_code'),
+    /** Ví đoán theo ngân hàng */
+    accountId: text('account_id').references(() => accounts.id, { onDelete: 'set null' }),
+    status: text('status', { enum: CAPTURE_STATUSES }).notNull().default('pending'),
+    transactionId: text('transaction_id').references((): AnySQLiteColumn => transactions.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: integer('created_at')
+      .notNull()
+      .$defaultFn(() => Date.now()),
+  },
+  (t) => [
+    uniqueIndex('captures_fingerprint_unique').on(t.fingerprint),
+    index('captures_status_idx').on(t.status),
+  ],
+);
+
 // ─── Kiểu dữ liệu suy ra từ bảng ────────────────────────────────────────────
 
 export type Account = typeof accounts.$inferSelect;
@@ -365,6 +405,8 @@ export type Debt = typeof debts.$inferSelect;
 export type NewDebt = typeof debts.$inferInsert;
 export type DebtRecord = typeof debtRecords.$inferSelect;
 export type NewDebtRecord = typeof debtRecords.$inferInsert;
+export type Capture = typeof captures.$inferSelect;
+export type NewCapture = typeof captures.$inferInsert;
 export type Goal = typeof goals.$inferSelect;
 export type NewGoal = typeof goals.$inferInsert;
 export type Budget = typeof budgets.$inferSelect;
