@@ -36,6 +36,13 @@
       "when": 1791855576618,
       "tag": "0004_captures",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791889554563,
+      "tag": "0005_capture_rules",
+      "breakpoints": true
     }
   ]
 }

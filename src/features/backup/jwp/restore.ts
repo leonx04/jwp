@@ -9,6 +9,7 @@ import type { SQLiteTable } from 'drizzle-orm/sqlite-core';
 import {
   accounts,
   budgets,
+  captureRules,
   categories,
   debtRecords,
   debts,
@@ -54,6 +55,7 @@ const NOUNS: Record<BackupTableKey, string> = {
   debtRecords: 'lần trả / vay thêm',
   budgets: 'ngân sách',
   goals: 'quỹ tiết kiệm',
+  captureRules: 'quy tắc phân loại',
 };
 
 // ─── Khoá & khoá ngoại ──────────────────────────────────────────────────────
@@ -83,6 +85,7 @@ const REFS: Ref[] = [
   { table: 'schedules', column: 'toAccountId', target: 'accounts', onMissing: 'null' },
   { table: 'schedules', column: 'categoryId', target: 'categories', onMissing: 'null' },
   { table: 'goals', column: 'accountId', target: 'accounts', onMissing: 'null' },
+  { table: 'captureRules', column: 'categoryId', target: 'categories', onMissing: 'drop' },
   { table: 'debts', column: 'personId', target: 'people', onMissing: 'error' },
   { table: 'debts', column: 'accountId', target: 'accounts', onMissing: 'null' },
   { table: 'debts', column: 'transactionId', target: 'transactions', onMissing: 'null' },
@@ -219,6 +222,7 @@ function wipeAll(tx: Tx) {
   tx.delete(debtRecords).run();
   tx.delete(budgets).run();
   tx.delete(goals).run();
+  tx.delete(captureRules).run();
   tx.update(debts).set({ transactionId: null }).run();
   tx.delete(transactions).run();
   tx.delete(debts).run();

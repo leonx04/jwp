@@ -166,6 +166,15 @@ export function CaptureSettingsScreen() {
         onPress={() => router.push('/inbox')}
       />
 
+      <Card style={{ gap: 0, paddingVertical: 6 }}>
+        <ListRow
+          icon="funnel-outline"
+          title="Quy tắc phân loại"
+          subtitle="Tự gán danh mục theo nội dung, tuỳ chọn tự ghi luôn"
+          onPress={() => router.push('/capture-rules')}
+        />
+      </Card>
+
       <SectionTitle>App được đọc</SectionTitle>
       <Card style={{ gap: 0, paddingVertical: 6 }}>
         {Object.entries(KNOWN_PACKAGES).map(([pkg, code]) => (

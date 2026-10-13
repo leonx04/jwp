@@ -344,6 +344,27 @@ export const goals = sqliteTable(
   (t) => [check('goals_target_positive', sql`${t.targetAmount} > 0`)],
 );
 
+// ─── Quy tắc phân loại cho giao dịch tự đọc ───────────────────────────────────
+
+/** "Nội dung chứa <pattern> → danh mục X"; có thể bật tự ghi (không cần xác nhận). */
+export const captureRules = sqliteTable(
+  'capture_rules',
+  {
+    id: text('id').primaryKey(),
+    /** Cụm từ cần có trong nội dung / người gửi tiền (không phân biệt hoa thường, dấu) */
+    pattern: text('pattern').notNull(),
+    /** Chỉ áp dụng cho loại này; trống = cả thu và chi */
+    type: text('type', { enum: ['income', 'expense'] }),
+    categoryId: text('category_id')
+      .notNull()
+      .references(() => categories.id, { onDelete: 'cascade' }),
+    /** Khớp là ghi luôn, không chờ xác nhận */
+    autoAccept: integer('auto_accept', { mode: 'boolean' }).notNull().default(false),
+    ...timestamps,
+  },
+  (t) => [check('capture_rules_pattern_not_empty', sql`length(trim(${t.pattern})) > 0`)],
+);
+
 // ─── Giao dịch tự đọc từ thông báo / SMS ngân hàng ─────────────────────────────
 
 export const CAPTURE_STATUSES = ['pending', 'accepted', 'dismissed', 'unparsed'] as const;
@@ -386,6 +407,8 @@ export const captures = sqliteTable(
 
 // ─── Kiểu dữ liệu suy ra từ bảng ────────────────────────────────────────────
 
+export type CaptureRule = typeof captureRules.$inferSelect;
+export type NewCaptureRule = typeof captureRules.$inferInsert;
 export type Account = typeof accounts.$inferSelect;
 export type NewAccount = typeof accounts.$inferInsert;
 export type Category = typeof categories.$inferSelect;

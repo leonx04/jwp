@@ -7,17 +7,20 @@ import { BankMark } from '@/components/ui/BankMark';
 import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 import { getAccountBalance, listAccounts } from '@/features/accounts/repository';
+import { listCategories } from '@/features/categories/repository';
 import { useMoneyFormat } from '@/features/settings';
 import { BANKS } from '@/lib/banks';
 import { formatDate, toVnDate, toVnTime } from '@/lib/date';
 import { toAppIcon } from '@/lib/icons';
 
 import { usePendingCaptures } from '../hooks';
-import { dismissCapture, setCaptureAccount, type PendingCapture } from '../repository';
+import { dismissCapture, setCaptureAccount } from '../repository';
+import type { PendingWithGuess } from '../rulesRepository';
 
 export function InboxScreen() {
   const { data: pending } = usePendingCaptures();
   const { data: accounts = [] } = useLiveData(['accounts'], () => listAccounts(db));
+  const { data: categories = [] } = useLiveData(['categories'], () => listCategories(db));
 
   return (
     <Screen title="Chờ xác nhận">
@@ -45,7 +48,7 @@ export function InboxScreen() {
       ) : null}
 
       {pending?.map((p) => (
-        <CaptureCard key={p.capture.id} item={p} accounts={accounts} />
+        <CaptureCard key={p.capture.id} item={p} accounts={accounts} categories={categories} />
       ))}
     </Screen>
   );
@@ -54,12 +57,15 @@ export function InboxScreen() {
 function CaptureCard({
   item,
   accounts,
+  categories,
 }: {
-  item: PendingCapture;
+  item: PendingWithGuess;
   accounts: { id: string; name: string; color: string; icon: string | null; isCredit: boolean }[];
+  categories: { id: string; name: string }[];
 }) {
   const format = useMoneyFormat();
-  const { capture: c, duplicateOf } = item;
+  const { capture: c, duplicateOf, guess } = item;
+  const guessedCategory = guess ? categories.find((x) => x.id === guess.categoryId) : undefined;
   const bank = BANKS.find((b) => b.code === c.bankCode) ?? null;
   const income = c.type === 'income';
   const accountId = c.accountId;
@@ -76,6 +82,7 @@ function CaptureCard({
         amount: String(c.amount ?? 0),
         ...(accountId ? { accountId } : {}),
         title: c.content || c.counterparty || '',
+        ...(guessedCategory ? { categoryId: guessedCategory.id } : {}),
         date: String(c.postedAt),
         captureId: c.id,
       },
@@ -123,6 +130,14 @@ function CaptureCard({
           ))}
       </ScrollView>
 
+      {guessedCategory && guess ? (
+        <AppText variant="caption" color="textMuted">
+          Danh mục: <AppText variant="caption">{guessedCategory.name}</AppText>{' '}
+          {guess.source === 'rule'
+            ? `(theo quy tắc “${guess.rule?.pattern ?? ''}”${guess.rule?.autoAccept ? ', tự ghi' : ''})`
+            : '(trước giờ hay dùng cho nội dung này)'}
+        </AppText>
+      ) : null}
       {duplicateOf ? (
         <AppText variant="caption" color="warning">
           Có vẻ bạn đã ghi giao dịch này rồi (cùng số tiền, cùng giờ).
