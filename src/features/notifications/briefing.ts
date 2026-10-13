@@ -56,7 +56,10 @@ const MAX_ITEMS = 3;
 /** Nhắc bill ví trả sau khi còn ≤ N ngày tới hạn */
 const BILL_LOOKAHEAD_DAYS = 5;
 
-function walletLine(wallets: readonly BriefingWallet[], money: BriefingInput['money']): string | null {
+function walletLine(
+  wallets: readonly BriefingWallet[],
+  money: BriefingInput['money'],
+): string | null {
   const shown = wallets.filter((w) => w.balance !== 0);
   if (!shown.length) return null;
   const head = shown.slice(0, MAX_WALLETS).map((w) => `${w.name} ${money(w.balance)}`);
@@ -82,15 +85,18 @@ function itemsLine(input: BriefingInput, date: DateString): string | null {
 }
 
 function billLines(input: BriefingInput, date: DateString): string[] {
-  return input.bills
-    // Quá hạn (kể cả bill tới ngày đó mới quá hạn) hoặc còn ≤ N ngày
-    .filter((b) => b.amount > 0 && diffDays(date, b.dueDate) <= BILL_LOOKAHEAD_DAYS)
-    .map((b) => {
-      const amount = `${b.estimate ? '~' : ''}${input.money(b.amount)}`;
-      if (b.overdue || b.dueDate < date) return `Bill ${b.name} ${amount} đã quá hạn ${formatDate(b.dueDate, false)}`;
-      if (b.dueDate === date) return `Bill ${b.name} ${amount} hạn hôm nay`;
-      return `Bill ${b.name} ${amount} hạn ${formatDate(b.dueDate, false)}`;
-    });
+  return (
+    input.bills
+      // Quá hạn (kể cả bill tới ngày đó mới quá hạn) hoặc còn ≤ N ngày
+      .filter((b) => b.amount > 0 && diffDays(date, b.dueDate) <= BILL_LOOKAHEAD_DAYS)
+      .map((b) => {
+        const amount = `${b.estimate ? '~' : ''}${input.money(b.amount)}`;
+        if (b.overdue || b.dueDate < date)
+          return `Bill ${b.name} ${amount} đã quá hạn ${formatDate(b.dueDate, false)}`;
+        if (b.dueDate === date) return `Bill ${b.name} ${amount} hạn hôm nay`;
+        return `Bill ${b.name} ${amount} hạn ${formatDate(b.dueDate, false)}`;
+      })
+  );
 }
 
 /** Nội dung báo cáo cho ngày thứ `index` (0 = hôm nay) */

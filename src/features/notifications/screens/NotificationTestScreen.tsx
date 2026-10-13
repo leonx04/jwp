@@ -60,7 +60,6 @@ export function NotificationTestScreen() {
 
 /** Expo Go Android không chạy được expo-notifications (SDK 53+) */
 function UnsupportedNotice() {
-
   return (
     <Screen title="Thông báo">
       <Card>

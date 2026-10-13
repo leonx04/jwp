@@ -8,6 +8,7 @@ import type { AppDatabase } from '@/db/types';
 import { getAccountBalances, totalBalance } from '@/features/accounts/queries';
 import { creditBillOccurrences, isCreditBill } from '@/features/credit/bills';
 import { getCreditSummaries } from '@/features/credit/queries';
+import { listDebts } from '@/features/debts/queries';
 import { computeForecast } from '@/features/forecast/forecast';
 import { expandOccurrences } from '@/features/schedules/occurrences';
 import { listOverrides, listSchedules } from '@/features/schedules/repository';
@@ -102,6 +103,22 @@ export function loadBriefingInput(
     }
   }
 
+  // Khoản nợ tới hạn (đòi / trả) trong thời gian tới → coi như khoản theo lịch trong báo cáo
+  const debtItems = listDebts(db, today)
+    .filter(
+      (d) =>
+        (d.status === 'overdue' || d.status === 'due-soon' || d.status === 'open') &&
+        d.debt.dueDate &&
+        d.debt.dueDate <= to,
+    )
+    .map((d) => ({
+      date: d.status === 'overdue' ? today : d.debt.dueDate!,
+      title: d.direction === 'lent' ? `${d.person.name} trả nợ` : `Trả nợ ${d.person.name}`,
+      amount: d.remaining,
+      type: d.direction === 'lent' ? ('income' as const) : ('expense' as const),
+      overdue: d.status === 'overdue',
+    }));
+
   const symbol = settings.currencySymbol;
   return {
     now,
@@ -112,15 +129,18 @@ export function loadBriefingInput(
       .filter((b) => !creditIds.has(b.id))
       .map((b) => ({ name: b.name, balance: b.balance })),
     days,
-    items: occurrences
-      .filter((o) => !isCreditBill(o.scheduleId))
-      .map((o) => ({
-        date: o.date,
-        title: o.schedule.title || TYPE_FALLBACK[o.type],
-        amount: o.amount,
-        type: o.type,
-        overdue: o.status === 'overdue',
-      })),
+    items: [
+      ...occurrences
+        .filter((o) => !isCreditBill(o.scheduleId))
+        .map((o) => ({
+          date: o.date,
+          title: o.schedule.title || TYPE_FALLBACK[o.type],
+          amount: o.amount,
+          type: o.type,
+          overdue: o.status === 'overdue',
+        })),
+      ...debtItems,
+    ],
     bills,
     money: (amount) => formatCompact(amount, { symbol }),
   };
