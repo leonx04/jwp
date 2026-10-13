@@ -320,6 +320,30 @@ export const budgets = sqliteTable(
   (t) => [check('budgets_amount_non_negative', sql`${t.amount} >= 0`)],
 );
 
+// ─── Quỹ / mục tiêu tiết kiệm ───────────────────────────────────────────────
+
+export const goals = sqliteTable(
+  'goals',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    /** Số tiền cần đạt */
+    targetAmount: integer('target_amount').notNull(),
+    /** Ví làm quỹ: tiến độ = số dư ví. Trống = tiến độ nhập tay (savedAmount) */
+    accountId: text('account_id').references(() => accounts.id, { onDelete: 'set null' }),
+    /** Số đã góp khi không gắn ví */
+    savedAmount: integer('saved_amount').notNull().default(0),
+    /** Hạn đạt mục tiêu 'YYYY-MM-DD' */
+    deadline: text('deadline'),
+    icon: text('icon'),
+    color: text('color').notNull().default('#7C3AED'),
+    note: text('note'),
+    orderNum: real('order_num').notNull().default(0),
+    ...timestamps,
+  },
+  (t) => [check('goals_target_positive', sql`${t.targetAmount} > 0`)],
+);
+
 // ─── Kiểu dữ liệu suy ra từ bảng ────────────────────────────────────────────
 
 export type Account = typeof accounts.$inferSelect;
@@ -341,5 +365,7 @@ export type Debt = typeof debts.$inferSelect;
 export type NewDebt = typeof debts.$inferInsert;
 export type DebtRecord = typeof debtRecords.$inferSelect;
 export type NewDebtRecord = typeof debtRecords.$inferInsert;
+export type Goal = typeof goals.$inferSelect;
+export type NewGoal = typeof goals.$inferInsert;
 export type Budget = typeof budgets.$inferSelect;
 export type NewBudget = typeof budgets.$inferInsert;

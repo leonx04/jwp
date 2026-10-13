@@ -12,6 +12,7 @@ import {
   categories,
   debtRecords,
   debts,
+  goals,
   people,
   scheduleOccurrences,
   schedules,
@@ -52,6 +53,7 @@ const NOUNS: Record<BackupTableKey, string> = {
   debts: 'khoản nợ',
   debtRecords: 'lần trả / vay thêm',
   budgets: 'ngân sách',
+  goals: 'quỹ tiết kiệm',
 };
 
 // ─── Khoá & khoá ngoại ──────────────────────────────────────────────────────
@@ -80,6 +82,7 @@ const REFS: Ref[] = [
   { table: 'schedules', column: 'accountId', target: 'accounts', onMissing: 'error' },
   { table: 'schedules', column: 'toAccountId', target: 'accounts', onMissing: 'null' },
   { table: 'schedules', column: 'categoryId', target: 'categories', onMissing: 'null' },
+  { table: 'goals', column: 'accountId', target: 'accounts', onMissing: 'null' },
   { table: 'debts', column: 'personId', target: 'people', onMissing: 'error' },
   { table: 'debts', column: 'accountId', target: 'accounts', onMissing: 'null' },
   { table: 'debts', column: 'transactionId', target: 'transactions', onMissing: 'null' },
@@ -215,6 +218,7 @@ function wipeAll(tx: Tx) {
   tx.delete(scheduleOccurrences).run();
   tx.delete(debtRecords).run();
   tx.delete(budgets).run();
+  tx.delete(goals).run();
   tx.update(debts).set({ transactionId: null }).run();
   tx.delete(transactions).run();
   tx.delete(debts).run();
@@ -247,14 +251,20 @@ export function restoreReplace(db: AppDatabase, backup: JwpBackup): RestoreResul
     wipeAll(tx);
     for (const key of WRITE_ORDER) {
       const table = BACKUP_TABLES[key];
-      if (key === 'debts') insertRows(tx, table, rows.debts.map((d) => ({ ...d, transactionId: null })));
+      if (key === 'debts')
+        insertRows(
+          tx,
+          table,
+          rows.debts.map((d) => ({ ...d, transactionId: null })),
+        );
       else if (key === 'transactions') insertRows(tx, table, parentFirst(rows.transactions));
       else insertRows(tx, table, rows[key]);
     }
     linkDebtTransactions(tx, rows.debts);
   });
   const tables = {} as Record<BackupTableKey, TableResult>;
-  for (const key of WRITE_ORDER) tables[key] = { inserted: rows[key].length, updated: 0, skipped: 0 };
+  for (const key of WRITE_ORDER)
+    tables[key] = { inserted: rows[key].length, updated: 0, skipped: 0 };
   return { mode: 'replace', tables, warnings };
 }
 
@@ -297,10 +307,7 @@ export function planMerge(db: AppDatabase, backup: JwpBackup): MergePlan {
 
   const existingIds: Partial<Record<BackupTableKey, Set<string>>> = {};
   for (const key of WRITE_ORDER) existingIds[key] = new Set(current[key].map((r) => String(r.id)));
-  const { data, warnings, errors } = checkReferences(
-    input as unknown as BackupRows,
-    existingIds,
-  );
+  const { data, warnings, errors } = checkReferences(input as unknown as BackupRows, existingIds);
   if (tagRemap.size) warnings.push(`${tagRemap.size} tag trùng tên với tag đang có → gộp làm một`);
 
   const tables = {} as Record<BackupTableKey, MergeTablePlan>;
@@ -308,7 +315,11 @@ export function planMerge(db: AppDatabase, backup: JwpBackup): MergePlan {
     const versions = new Map(
       current[key].map((row) => [rowKey(key, row), row.updatedAt as number | undefined]),
     );
-    const plan: MergeTablePlan = { insert: [], update: [], skipped: tagRemapSkipped(key, tagRemap) };
+    const plan: MergeTablePlan = {
+      insert: [],
+      update: [],
+      skipped: tagRemapSkipped(key, tagRemap),
+    };
     for (const row of (data as unknown as Record<BackupTableKey, AnyRow[]>)[key]) {
       const k = rowKey(key, row);
       if (!versions.has(k)) plan.insert.push(row);
@@ -377,7 +388,11 @@ export function restoreMerge(db: AppDatabase, backup: JwpBackup): RestoreResult 
   });
   const tables = {} as Record<BackupTableKey, TableResult>;
   for (const key of WRITE_ORDER) {
-    tables[key] = { inserted: t[key].insert.length, updated: t[key].update.length, skipped: t[key].skipped };
+    tables[key] = {
+      inserted: t[key].insert.length,
+      updated: t[key].update.length,
+      skipped: t[key].skipped,
+    };
   }
   return { mode: 'merge', tables, warnings: plan.warnings };
 }
