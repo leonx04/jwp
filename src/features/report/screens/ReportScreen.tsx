@@ -150,7 +150,13 @@ function Flow({
       <AppText variant="caption" color="textMuted">
         {label}
       </AppText>
-      <AppText variant="heading" style={{ fontVariant: ['tabular-nums'] }}>
+      <AppText
+        variant="heading"
+        style={{ fontVariant: ['tabular-nums'] }}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.6}
+      >
         {format.money(amount)}
       </AppText>
       {change !== null && Math.round(change) !== 0 ? (
@@ -203,7 +209,13 @@ function Categories({ report: r }: { report: MonthlyReport }) {
                 ) : null}
               </View>
               <View style={{ alignItems: 'flex-end' }}>
-                <AppText variant="bodyMedium" style={{ fontVariant: ['tabular-nums'] }}>
+                <AppText
+                  variant="bodyMedium"
+                  style={{ fontVariant: ['tabular-nums'] }}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.6}
+                >
                   {format.money(c.amount)}
                 </AppText>
                 <AppText variant="caption" color="textMuted">

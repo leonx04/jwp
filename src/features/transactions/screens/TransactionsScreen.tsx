@@ -291,7 +291,13 @@ function SummaryCell({ label, value, color }: { label: string; value: string; co
       <AppText variant="label" color="textMuted">
         {label}
       </AppText>
-      <AppText variant="heading" style={{ color, fontVariant: ['tabular-nums'] }} numberOfLines={1}>
+      <AppText
+        variant="heading"
+        style={{ color, fontVariant: ['tabular-nums'] }}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.6}
+      >
         {value}
       </AppText>
     </View>

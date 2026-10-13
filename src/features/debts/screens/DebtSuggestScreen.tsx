@@ -77,6 +77,9 @@ export function DebtSuggestScreen() {
                   p.remaining > 0 ? (p.direction === 'lent' ? 'income' : 'expense') : 'textMuted'
                 }
                 style={{ fontVariant: ['tabular-nums'] }}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.6}
               >
                 {p.remaining > 0 ? `Còn ${format.money(p.remaining)}` : 'Đã xong'}
               </AppText>

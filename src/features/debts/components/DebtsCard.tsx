@@ -42,7 +42,14 @@ export function DebtsCard() {
           <AppText variant="caption" color="textMuted">
             Tôi nợ
           </AppText>
-          <AppText variant="bodyMedium" color="expense" style={{ fontVariant: ['tabular-nums'] }}>
+          <AppText
+            variant="bodyMedium"
+            color="expense"
+            style={{ fontVariant: ['tabular-nums'] }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
             {mask(format.money(summary.owe))}
           </AppText>
         </View>
@@ -50,7 +57,14 @@ export function DebtsCard() {
           <AppText variant="caption" color="textMuted">
             Nợ tôi
           </AppText>
-          <AppText variant="bodyMedium" color="income" style={{ fontVariant: ['tabular-nums'] }}>
+          <AppText
+            variant="bodyMedium"
+            color="income"
+            style={{ fontVariant: ['tabular-nums'] }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
             {mask(format.money(summary.owed))}
           </AppText>
         </View>
@@ -69,6 +83,9 @@ export function DebtsCard() {
                 variant="bodyMedium"
                 color={d.status === 'overdue' ? 'expense' : 'text'}
                 style={{ fontVariant: ['tabular-nums'] }}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.6}
               >
                 {mask(format.money(d.remaining))}
               </AppText>

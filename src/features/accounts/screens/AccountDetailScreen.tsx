@@ -192,7 +192,13 @@ export function AccountDetailScreen() {
                     {formatDate(o.date, false)}
                   </AppText>
                 </View>
-                <AppText variant="bodyMedium" color="expense">
+                <AppText
+                  variant="bodyMedium"
+                  color="expense"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.6}
+                >
                   {hideBalance ? '••••' : format.money(o.amount)}
                 </AppText>
               </Pressable>

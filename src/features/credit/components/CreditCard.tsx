@@ -118,7 +118,13 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
           <AppText variant="heading" numberOfLines={1}>
             {account.name}
           </AppText>
-          <AppText variant="caption" color="textMuted" numberOfLines={1}>
+          <AppText
+            variant="caption"
+            color="textMuted"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
             {account.creditLimit
               ? `Hạn mức ${compact(account.creditLimit)} · còn ${compact(Math.max(0, status.available ?? 0))}`
               : 'Chưa đặt hạn mức'}
@@ -128,7 +134,13 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
           <AppText variant="label" color="textMuted">
             Dư nợ
           </AppText>
-          <AppText variant="heading" style={styles.tabular} numberOfLines={1}>
+          <AppText
+            variant="heading"
+            style={styles.tabular}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
             {mask(format.money(status.owed))}
           </AppText>
         </View>

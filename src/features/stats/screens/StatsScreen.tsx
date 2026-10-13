@@ -212,7 +212,13 @@ export function StatsScreen() {
         <AppText variant="label" color="textMuted">
           {periodTitle(mode, period).toUpperCase()} · {periodRangeLabel(period)}
         </AppText>
-        <AppText variant="display" color={type === 'expense' ? 'expense' : 'income'}>
+        <AppText
+          variant="display"
+          color={type === 'expense' ? 'expense' : 'income'}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.6}
+        >
           {format.money(view?.total ?? 0)}
         </AppText>
         <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
@@ -250,7 +256,12 @@ export function StatsScreen() {
                   <AppText variant="label" color="textMuted">
                     {selected ? (view.slices.find((s) => s.key === selected)?.label ?? '') : 'Tổng'}
                   </AppText>
-                  <AppText variant="heading">
+                  <AppText
+                    variant="heading"
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.6}
+                  >
                     {format.compact(
                       selected
                         ? (view.slices.find((s) => s.key === selected)?.value ?? 0)
@@ -283,7 +294,13 @@ export function StatsScreen() {
                         : ''}
                     </AppText>
                   </View>
-                  <AppText variant="bodyMedium" style={{ fontVariant: ['tabular-nums'] }}>
+                  <AppText
+                    variant="bodyMedium"
+                    style={{ fontVariant: ['tabular-nums'] }}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.6}
+                  >
                     {format.compact(c.amount)}
                   </AppText>
                 </Pressable>
