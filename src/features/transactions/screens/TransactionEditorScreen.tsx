@@ -2,6 +2,7 @@
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { budgetAlert, budgetSnapshot } from '@/features/budgets/alerts';
 import { FuelSection } from '@/features/fuel/FuelSection';
 import {
   isFuelText,
@@ -257,6 +258,7 @@ export function TransactionEditorScreen() {
       return;
     }
     try {
+      const budgetsBefore = draft.type === 'expense' ? budgetSnapshot(db) : null;
       const plan = draft.type === 'expense' ? installment : null;
       const savedId = saveTransaction(db, {
         id: editingId,
@@ -291,7 +293,13 @@ export function TransactionEditorScreen() {
         });
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      showSnackbar({ text: editingId ? 'Đã lưu thay đổi' : 'Đã thêm giao dịch', tone: 'success' });
+      const saved = editingId ? 'Đã lưu thay đổi' : 'Đã thêm giao dịch';
+      const alert = budgetsBefore ? budgetAlert(budgetsBefore, budgetSnapshot(db)) : null;
+      showSnackbar(
+        alert
+          ? { text: `${saved} · ${alert.text}`, tone: alert.over ? 'error' : 'default' }
+          : { text: saved, tone: 'success' },
+      );
       router.back();
     } catch (error) {
       const message =

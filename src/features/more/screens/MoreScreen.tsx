@@ -30,6 +30,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
     title: 'Quản lý',
     items: [
       {
+        icon: 'speedometer-outline',
+        title: 'Ngân sách',
+        subtitle: 'Hạn mức chi mỗi tháng, cảnh báo sắp hết',
+        href: '/budgets',
+        color: '#F59E0B',
+      },
+      {
         icon: 'people-outline',
         title: 'Sổ nợ',
         subtitle: 'Ai nợ bạn, bạn nợ ai, nhắc hạn trả',
