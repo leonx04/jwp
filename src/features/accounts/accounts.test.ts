@@ -56,8 +56,17 @@ describe('ví trả sau', () => {
       name: 'Thẻ',
       credit: { limit: -1, statementDay: 40, dueDay: 0, paymentAccountId: null },
     });
-    expect(listAccounts(db)[0]).toMatchObject({ isCredit: true, creditLimit: null, statementDay: null, dueDay: null });
+    expect(listAccounts(db)[0]).toMatchObject({
+      isCredit: true,
+      creditLimit: null,
+      statementDay: null,
+      dueDay: null,
+    });
     saveAccount(db, { ...base, id, name: 'Thẻ', credit: null });
-    expect(listAccounts(db)[0]).toMatchObject({ isCredit: false, creditLimit: null, statementDay: null });
+    expect(listAccounts(db)[0]).toMatchObject({
+      isCredit: false,
+      creditLimit: null,
+      statementDay: null,
+    });
   });
 });
