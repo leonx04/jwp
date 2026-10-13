@@ -23,6 +23,7 @@ import { useScheduleOverview } from '@/features/schedules/hooks';
 import { BudgetsCard } from '@/features/budgets/components/BudgetsCard';
 import { InboxBanner } from '@/features/capture/components/InboxBanner';
 import { DebtsCard } from '@/features/debts/components/DebtsCard';
+import { ReportBanner } from '@/features/report/components/ReportBanner';
 import { GoalsCard } from '@/features/goals/components/GoalsCard';
 import { TodayCard, useTodayStatus } from '@/features/today';
 import { CreditSection } from '../components/CreditSection';
@@ -199,6 +200,7 @@ export function OverviewScreen() {
       ) : null}
 
       <InboxBanner />
+      <ReportBanner />
 
       {/* Thao tác nhanh */}
       <View style={styles.actions}>
