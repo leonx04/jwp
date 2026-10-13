@@ -18,6 +18,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#7C3AED',
       },
       {
+        icon: 'document-text-outline',
+        title: 'Báo cáo tháng',
+        subtitle: 'Còn lại bao nhiêu, so tháng trước, khoản chi lớn, chia sẻ',
+        href: '/report',
+        color: '#7C3AED',
+      },
+      {
         icon: 'scan-outline',
         title: 'Nhập từ ảnh biên lai',
         subtitle: 'Chụp màn hình chuyển khoản, đọc ngay trên máy',
