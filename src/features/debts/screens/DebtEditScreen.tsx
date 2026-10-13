@@ -62,7 +62,7 @@ function Form({
   const [amount, setAmount] = useState(existing?.debt.amount ?? Number(params.amount) ?? 0);
   const [title, setTitle] = useState(existing?.debt.title ?? params.title ?? '');
   const [accountId, setAccountId] = useState<string | null>(existing?.debt.accountId ?? null);
-  const [date, setDate] = useState(existing?.debt.date ?? Date.now());
+  const [date, setDate] = useState(() => existing?.debt.date ?? Date.now());
   const [dueDate, setDueDate] = useState<DateString | null>(existing?.debt.dueDate ?? null);
   const [note, setNote] = useState(existing?.debt.note ?? '');
 
