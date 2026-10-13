@@ -17,7 +17,7 @@ import {
 import { useMoneyFormat } from '@/features/settings';
 
 import { statusText } from '../components/display';
-import { useDebts } from '../hooks';
+import { useDebtProposals, useDebts } from '../hooks';
 import type { DebtItem } from '../queries';
 
 type Filter = 'all' | 'borrowed' | 'lent';
@@ -33,6 +33,7 @@ const ACTIVE = (d: DebtItem) => d.status !== 'closed' && d.status !== 'settled';
 export function DebtsScreen() {
   const format = useMoneyFormat();
   const { items, groups, summary, loaded } = useDebts();
+  const { data: proposals } = useDebtProposals();
   const [filter, setFilter] = useState<Filter>('all');
   const [showDone, setShowDone] = useState(false);
 
@@ -62,6 +63,19 @@ export function DebtsScreen() {
           ]}
         />
       </Card>
+
+      {proposals?.length ? (
+        <Pressable accessibilityRole="button" onPress={() => router.push('/debts/suggest')}>
+          <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <AppText style={{ flex: 1 }} variant="bodyMedium">
+              Tìm thấy {proposals.length} khoản nợ trong giao dịch cũ
+            </AppText>
+            <AppText variant="label" color="primary">
+              Xem ›
+            </AppText>
+          </Card>
+        </Pressable>
+      ) : null}
 
       <SegmentedControl options={FILTERS} value={filter} onChange={setFilter} />
 

@@ -4,8 +4,16 @@ import { createTestDb } from '@/test/testDb';
 import { vnDateToMs } from '@/lib/date';
 
 import { amountsOf, debtStatus, summarize, walletFlow } from './compute';
-import { groupByPerson, listDebts } from './queries';
-import { addDebtRecord, deleteDebt, deleteDebtRecord, saveDebt, setDebtClosed } from './repository';
+import { groupByPerson, listDebtProposals, listDebts } from './queries';
+import { saveTransaction } from '@/features/transactions/repository';
+import {
+  adoptProposal,
+  addDebtRecord,
+  deleteDebt,
+  deleteDebtRecord,
+  saveDebt,
+  setDebtClosed,
+} from './repository';
 
 const TODAY = '2026-10-12';
 const at = (d: string) => vnDateToMs(d, '12:00');
@@ -208,5 +216,33 @@ describe('repository', () => {
     expect(() =>
       saveDebt(db, { personName: '  ', direction: 'lent', amount: 5, date: 1 }),
     ).toThrow();
+  });
+});
+
+describe('adoptProposal', () => {
+  it('liên kết giao dịch cũ vào khoản nợ mà không đổi số dư ví', () => {
+    const db = createTestDb();
+    const wallet = saveAccount(db, {
+      name: 'MB',
+      color: '#6B4DFF',
+      icon: 'bank:MB',
+      includeInBalance: true,
+    });
+    const t = (type: 'income' | 'expense', amount: number, title: string, d: string) =>
+      saveTransaction(db, { type, amount, accountId: wallet, title, date: at(d) });
+    t('income', 200_000, 'Mượn a Quý', '2026-07-16');
+    t('expense', 150_000, 'Nợ a Quý', '2026-07-17');
+    const before = getAccountBalances(db).find((a) => a.id === wallet)!.balance;
+
+    const proposals = listDebtProposals(db);
+    expect(proposals).toHaveLength(1);
+    expect(proposals[0].remaining).toBe(50_000);
+    adoptProposal(db, proposals[0]);
+
+    expect(getAccountBalances(db).find((a) => a.id === wallet)!.balance).toBe(before);
+    const [item] = listDebts(db, TODAY);
+    expect(item.remaining).toBe(50_000);
+    expect(item.records).toHaveLength(1);
+    expect(listDebtProposals(db)).toHaveLength(0);
   });
 });
