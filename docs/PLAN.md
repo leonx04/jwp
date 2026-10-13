@@ -334,3 +334,24 @@ Phản hồi sau khi cài APK lên máy thật (11/10/2026): app văng khi **d�
 | **Sau cùng · QA** | Build lại dev build, chạy máy ảo kiểm tra mọi luồng, sửa lỗi tích hợp, build APK release mới | — |
 
 Quy tắc chung cho agent: không sửa file ngoài phần sở hữu (cần thì ghi vào báo cáo); không cài thêm package; không chạy Metro / máy ảo / Gradle; không git commit; chỉ chạy `npx tsc --noEmit` (bỏ qua lỗi ở file của agent khác) và `npx jest <thư mục của mình>`.
+
+## 16. Đợt 3 — Sổ nợ · Đối chiếu · Ngân sách · Quỹ · Tự đọc thông báo
+
+Hiện trạng: bảng `people / debts / debt_records / budgets` **đã có** (migration 0001, backup/restore đã xử lý) nhưng chưa có repository / màn hình nào → làm tiếp trên nền đó. Giao dịch gắn `debt_id` **không tính vào thống kê** (đã loại ở `stats`, `today`, `calendar`).
+Thứ tự làm (theo độ phụ thuộc & rủi ro): **1 Sổ nợ → 3 Đối chiếu → 4 Ngân sách → 5 Quỹ → 2 Tự đọc thông báo** (mục 2 cần module native + build riêng nên để cuối).
+Mỗi phase nhỏ: `tsc` + jest đúng thư mục + commit; thử trên máy qua Metro (JS) — riêng phase N cần build debug mới.
+
+| Phase | Việc | File chính |
+|---|---|---|
+| **D1** | Sổ nợ — lõi: `compute.ts` (còn lại = gốc − trả + vay thêm + lãi, trạng thái quá hạn / sắp hạn, tổng "tôi nợ" / "họ nợ tôi") + `repository.ts` (tạo nợ + giao dịch ví gắn `debt_id`, trả bớt, vay thêm, lãi, đóng/xoá) + `queries.ts` + test | `src/features/debts/*` |
+| **D2** | Màn **Sổ nợ** `/debts` (gom theo người, 2 tổng), chi tiết `/debt/[id]` (lịch sử, nút Trả / Vay thêm / Lãi / Đóng), thêm-sửa `/debt/edit` | `src/app/debt*`, `src/features/debts/screens/*` |
+| **D3** | Nối vào app: mục ở tab Thêm, thẻ tóm tắt ở Tổng quan, nhắc hạn trả (thông báo), gợi ý biến giao dịch cũ ("Nợ a Quý", "Mượn a Toàn"…) thành khoản nợ | Overview, More, notifications |
+| **R1** | **Đối chiếu số dư**: nhập số dư thật → chênh lệch + gợi ý nguyên nhân (giao dịch đúng bằng số chênh, phí chuyển khoản, giao dịch thiếu gần nhất) → tạo điều chỉnh / thêm giao dịch thiếu; lưu ngày đối chiếu gần nhất mỗi ví | `src/features/reconcile/*`, `src/app/account/reconcile.tsx` |
+| **B1** | Ngân sách — lõi: chi theo kỳ (`startDayOfMonth`), lọc danh mục / ví, % dùng, tốc độ chi → dự báo vượt + test | `src/features/budgets/*` |
+| **B2** | Màn `/budgets` (thanh tiến độ), thêm-sửa; thẻ ngân sách gần vượt ở Tổng quan; cảnh báo 80% / 100% sau khi lưu giao dịch | screens + Overview |
+| **G1** | Quỹ / mục tiêu tiết kiệm: bảng `goals` (migration mới) gắn ví (tiến độ = số dư ví), hạn, số cần góp mỗi tháng; màn `/goals` + thẻ Tổng quan | `src/features/goals/*` |
+| **N1** | Module native `jwp-notif` (NotificationListenerService, chỉ app ngân hàng / ví trong danh sách, lưu hàng đợi trên máy, không mạng); quyền truy cập thông báo | `modules/jwp-notif/*` |
+| **N2** | Parser thông báo biến động số dư (số tiền, +/−, nội dung, số dư sau GD) + test; màn nhật ký để gửi mẫu thật chỉnh parser | `src/features/capture/parse.ts` |
+| **N3** | Bảng `pending_imports` (migration), hộp "Chờ xác nhận": xác nhận → mở form giao dịch điền sẵn; bỏ qua; chống trùng bằng `externalRef` | `src/features/capture/*`, `/inbox` |
+| **N4** | Cài đặt "Tự đọc thông báo": bật, chọn app ↔ ví, hướng dẫn Huawei (khởi chạy tự động); số dư sau GD dùng làm gợi ý đối chiếu | settings, reconcile |
+| **QA** | `tsc` + `jest` + `expo lint`, build debug (N) → thử máy → build release → báo cáo | — |
