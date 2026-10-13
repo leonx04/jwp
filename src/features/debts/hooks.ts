@@ -5,7 +5,7 @@ import { useLiveData } from '@/db/useLiveData';
 import { todayVn } from '@/lib/date';
 
 import { summarize } from './compute';
-import { getDebtItem, groupByPerson, listDebts } from './queries';
+import { getDebtItem, groupByPerson, listDebtProposals, listDebts } from './queries';
 
 const TABLES = ['debts', 'debt_records', 'people'] as const;
 
@@ -24,4 +24,8 @@ export function useDebts() {
 
 export function useDebt(id: string | undefined) {
   return useLiveData(TABLES, () => (id ? getDebtItem(db, id, todayVn()) : null), [id]);
+}
+
+export function useDebtProposals() {
+  return useLiveData(['transactions', 'debts', 'categories'], () => listDebtProposals(db));
 }

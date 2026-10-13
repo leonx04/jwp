@@ -1,9 +1,19 @@
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, isNull, ne } from 'drizzle-orm';
 
-import { debtRecords, debts, people, type Debt, type DebtRecord, type Person } from '@/db/schema';
+import {
+  categories,
+  debtRecords,
+  debts,
+  people,
+  transactions,
+  type Debt,
+  type DebtRecord,
+  type Person,
+} from '@/db/schema';
 import type { AppDatabase } from '@/db/types';
 import type { DateString } from '@/lib/date';
 
+import { suggestDebts, type DebtProposal, type SuggestTx } from './suggest';
 import { amountsOf, debtStatus, summarize, type DebtAmounts, type DebtStatus } from './compute';
 
 export type DebtItem = DebtAmounts & {
@@ -86,4 +96,30 @@ export function groupByPerson(items: readonly DebtItem[]): PersonGroup[] {
         a.person.name.localeCompare(b.person.name, 'vi')
       );
     });
+}
+
+/** Gợi ý khoản nợ dựng từ giao dịch cũ chưa gắn vào sổ nợ */
+export function listDebtProposals(db: AppDatabase): DebtProposal[] {
+  const rows = db
+    .select({
+      id: transactions.id,
+      type: transactions.type,
+      amount: transactions.amount,
+      date: transactions.date,
+      title: transactions.title,
+      categoryName: categories.name,
+      accountId: transactions.accountId,
+    })
+    .from(transactions)
+    .leftJoin(categories, eq(categories.id, transactions.categoryId))
+    .where(
+      and(
+        ne(transactions.type, 'transfer'),
+        isNull(transactions.debtId),
+        isNull(transactions.parentId),
+        eq(transactions.isAdjustment, false),
+      ),
+    )
+    .all();
+  return suggestDebts(rows as SuggestTx[]);
 }

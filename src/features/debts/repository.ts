@@ -18,6 +18,7 @@ import { MAX_AMOUNT } from '@/lib/money';
 import { normalizeForSearch } from '@/lib/text';
 
 import { walletFlow } from './compute';
+import type { DebtProposal } from './suggest';
 
 export class DebtValidationError extends Error {}
 
@@ -212,5 +213,43 @@ export function deleteDebt(db: AppDatabase, debtId: string): void {
       .map((o) => o.id)
       .filter((id) => !used.has(id));
     if (gone.length) tx.delete(people).where(inArray(people.id, gone)).run();
+  });
+}
+
+/**
+ * Nhận một gợi ý (suggest.ts): tạo khoản nợ rồi LIÊN KẾT các giao dịch cũ vào nó (không tạo giao dịch mới,
+ * số dư ví không đổi). Giao dịch đã liên kết không còn tính vào thống kê chi tiêu.
+ */
+export function adoptProposal(db: AppDatabase, p: DebtProposal): string {
+  return db.transaction((tx) => {
+    const personId = ensurePerson(tx, p.personName);
+    const id = createId();
+    tx.insert(debts)
+      .values({
+        id,
+        personId,
+        direction: p.direction,
+        amount: p.opening.amount,
+        date: p.opening.date,
+        accountId: p.opening.accountId,
+        transactionId: p.opening.id,
+      })
+      .run();
+    tx.update(transactions).set({ debtId: id }).where(eq(transactions.id, p.opening.id)).run();
+    for (const r of p.records) {
+      tx.insert(debtRecords)
+        .values({
+          id: createId(),
+          debtId: id,
+          type: r.type,
+          amount: r.amount,
+          date: r.date,
+          accountId: r.accountId,
+          transactionId: r.txId,
+        })
+        .run();
+      tx.update(transactions).set({ debtId: id }).where(eq(transactions.id, r.txId)).run();
+    }
+    return id;
   });
 }
