@@ -37,6 +37,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#F59E0B',
       },
       {
+        icon: 'flag-outline',
+        title: 'Quỹ tiết kiệm',
+        subtitle: 'Mục tiêu, tiến độ, cần góp mỗi tháng',
+        href: '/goals',
+        color: '#7C3AED',
+      },
+      {
         icon: 'people-outline',
         title: 'Sổ nợ',
         subtitle: 'Ai nợ bạn, bạn nợ ai, nhắc hạn trả',

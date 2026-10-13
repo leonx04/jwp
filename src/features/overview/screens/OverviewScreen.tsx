@@ -22,6 +22,7 @@ import { UpcomingCard } from '@/features/schedules/components/UpcomingCard';
 import { useScheduleOverview } from '@/features/schedules/hooks';
 import { BudgetsCard } from '@/features/budgets/components/BudgetsCard';
 import { DebtsCard } from '@/features/debts/components/DebtsCard';
+import { GoalsCard } from '@/features/goals/components/GoalsCard';
 import { TodayCard, useTodayStatus } from '@/features/today';
 import { CreditSection } from '../components/CreditSection';
 import { bnplLoad } from '../bnpl';
@@ -288,6 +289,7 @@ export function OverviewScreen() {
       <UpcomingCard />
       <BudgetsCard />
       <DebtsCard />
+      <GoalsCard />
 
       {/* Giao dịch gần đây */}
       {recent && recent.length > 0 ? (
