@@ -1,0 +1,27 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!-- Chỉ dùng để NHẬN tin nhắn mới từ ngân hàng (tên chữ như MBBANK); không đọc hộp thư cũ -->
+  <uses-permission android:name="android.permission.RECEIVE_SMS" />
+
+  <application>
+    <!-- Đọc thông báo biến động số dư của app ngân hàng / ví điện tử (người dùng tự bật trong Cài đặt hệ thống) -->
+    <service
+      android:name="expo.modules.jwpnotif.JwpNotificationListener"
+      android:exported="true"
+      android:label="JWP đọc thông báo ngân hàng"
+      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+      <intent-filter>
+        <action android:name="android.service.notification.NotificationListenerService" />
+      </intent-filter>
+    </service>
+
+    <receiver
+      android:name="expo.modules.jwpnotif.SmsCaptureReceiver"
+      android:exported="true"
+      android:permission="android.permission.BROADCAST_SMS">
+      <intent-filter android:priority="999">
+        <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+      </intent-filter>
+    </receiver>
+  </application>
+</manifest>
