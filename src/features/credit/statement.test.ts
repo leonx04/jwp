@@ -8,7 +8,10 @@ import {
   type AccountMovement,
 } from './statement';
 
-const m = (date: string, delta: number): AccountMovement => ({ date: vnDateToMs(date, '12:00'), delta });
+const m = (date: string, delta: number): AccountMovement => ({
+  date: vnDateToMs(date, '12:00'),
+  delta,
+});
 
 describe('chu kỳ sao kê', () => {
   it.each([
@@ -34,7 +37,11 @@ describe('SPayLater: chốt cuối tháng, hạn ngày 10', () => {
   const base = { statementDay: 31, dueDay: 10, creditLimit: 5_000_000 };
 
   it('mua tháng 9, chưa trả: kỳ này cần trả đủ, mua tháng 10 sang kỳ sau', () => {
-    const movements = [m('2026-09-05', -300_000), m('2026-09-20', -1_196_000), m('2026-10-03', -250_000)];
+    const movements = [
+      m('2026-09-05', -300_000),
+      m('2026-09-20', -1_196_000),
+      m('2026-10-03', -250_000),
+    ];
     const s = computeCreditStatus({ ...base, today: '2026-10-05', movements });
     expect(s.owed).toBe(1_746_000);
     expect(s.available).toBe(3_254_000);
@@ -46,12 +53,18 @@ describe('SPayLater: chốt cuối tháng, hạn ngày 10', () => {
       daysUntilDue: 5,
       overdue: false,
     });
-    expect(s.next).toEqual({ closeDate: '2026-10-31', dueDate: '2026-11-10', estimatedAmount: 250_000 });
+    expect(s.next).toEqual({
+      closeDate: '2026-10-31',
+      dueDate: '2026-11-10',
+      estimatedAmount: 250_000,
+    });
   });
 
   it('trả một phần rồi trả hết', () => {
     const movements = [m('2026-09-20', -1_496_000), m('2026-10-06', 1_000_000)];
-    expect(computeCreditStatus({ ...base, today: '2026-10-07', movements }).current!.dueAmount).toBe(496_000);
+    expect(
+      computeCreditStatus({ ...base, today: '2026-10-07', movements }).current!.dueAmount,
+    ).toBe(496_000);
     movements.push(m('2026-10-09', 496_000));
     const s = computeCreditStatus({ ...base, today: '2026-10-09', movements });
     expect(s.current!.dueAmount).toBe(0);
@@ -59,7 +72,11 @@ describe('SPayLater: chốt cuối tháng, hạn ngày 10', () => {
   });
 
   it('quá hạn nếu qua ngày 10 mà chưa trả', () => {
-    const s = computeCreditStatus({ ...base, today: '2026-10-12', movements: [m('2026-09-20', -500_000)] });
+    const s = computeCreditStatus({
+      ...base,
+      today: '2026-10-12',
+      movements: [m('2026-09-20', -500_000)],
+    });
     expect(s.current).toMatchObject({ overdue: true, dueAmount: 500_000, daysUntilDue: -2 });
   });
 
@@ -70,7 +87,14 @@ describe('SPayLater: chốt cuối tháng, hạn ngày 10', () => {
     const plan = {
       purchaseDate: '2026-09-15',
       amount: perMonth,
-      dueDates: ['2026-10-10', '2026-11-10', '2026-12-10', '2027-01-10', '2027-02-10', '2027-03-10'],
+      dueDates: [
+        '2026-10-10',
+        '2026-11-10',
+        '2026-12-10',
+        '2027-01-10',
+        '2027-02-10',
+        '2027-03-10',
+      ],
     };
     const s = computeCreditStatus({
       ...base,
@@ -85,8 +109,17 @@ describe('SPayLater: chốt cuối tháng, hạn ngày 10', () => {
   });
 
   it('ví không cài ngày chốt / hạn: chỉ có dư nợ và hạn mức', () => {
-    const s = computeCreditStatus({ today: '2026-10-05', creditLimit: 2_000_000, movements: [m('2026-10-01', -500_000)] });
-    expect(s).toMatchObject({ owed: 500_000, available: 1_500_000, utilization: 0.25, current: null });
+    const s = computeCreditStatus({
+      today: '2026-10-05',
+      creditLimit: 2_000_000,
+      movements: [m('2026-10-01', -500_000)],
+    });
+    expect(s).toMatchObject({
+      owed: 500_000,
+      available: 1_500_000,
+      utilization: 0.25,
+      current: null,
+    });
   });
 });
 

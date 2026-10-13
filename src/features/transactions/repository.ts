@@ -23,6 +23,8 @@ export type TransactionInput = {
   amount: number;
   accountId: string;
   toAccountId?: string | null;
+  /** Số tiền ví nhận (chỉ chuyển khoản); trống = bằng `amount`. Khác nhau khi trả bill ví trả sau có chênh lệch. */
+  toAmount?: number | null;
   categoryId?: string | null;
   title?: string;
   note?: string | null;
@@ -60,8 +62,11 @@ function validate(input: TransactionInput) {
 /** Id giao dịch đã nhập từ cùng một mã biên lai (null nếu chưa có) */
 export function findByExternalRef(db: AppDatabase, ref: string): string | null {
   return (
-    db.select({ id: transactions.id }).from(transactions).where(eq(transactions.externalRef, ref)).get()?.id ??
-    null
+    db
+      .select({ id: transactions.id })
+      .from(transactions)
+      .where(eq(transactions.externalRef, ref))
+      .get()?.id ?? null
   );
 }
 
@@ -75,7 +80,7 @@ export function saveTransaction(db: AppDatabase, input: TransactionInput): strin
     amount: input.amount,
     accountId: input.accountId,
     toAccountId: isTransfer ? input.toAccountId! : null,
-    toAmount: isTransfer ? input.amount : null,
+    toAmount: isTransfer ? (input.toAmount ?? input.amount) : null,
     categoryId: isTransfer ? null : (input.categoryId ?? null),
     title,
     titleKey: normalizeForSearch(title),

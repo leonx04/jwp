@@ -13,11 +13,7 @@ import { formatDate, toVnDate } from '@/lib/date';
 import { createStyles } from '@/theme';
 
 import { firstInstallmentDue, installmentAmounts } from '../statement';
-import {
-  DEFAULT_INSTALLMENT,
-  INSTALLMENT_MONTHS,
-  type InstallmentValue,
-} from './installmentDraft';
+import { DEFAULT_INSTALLMENT, INSTALLMENT_MONTHS, type InstallmentValue } from './installmentDraft';
 
 type InstallmentSectionProps = {
   /** Ví đang chọn — mục chỉ hiện khi đây là ví trả sau */
@@ -60,7 +56,8 @@ export function InstallmentSection({
 
   if (!isCredit || !account) return null;
 
-  const plan = value && amount > 0 ? installmentAmounts(amount, value.months, value.monthlyFee) : null;
+  const plan =
+    value && amount > 0 ? installmentAmounts(amount, value.months, value.monthlyFee) : null;
   const firstDue = firstInstallmentDue(
     toVnDate(date ?? Date.now()),
     account.statementDay,
@@ -72,7 +69,11 @@ export function InstallmentSection({
       <SwitchRow
         icon="layers-outline"
         title="Trả góp"
-        subtitle={value ? `Chia thành ${value.months} kỳ trong bill ${account.name}` : 'Chia khoản mua thành nhiều kỳ'}
+        subtitle={
+          value
+            ? `Chia thành ${value.months} kỳ trong bill ${account.name}`
+            : 'Chia khoản mua thành nhiều kỳ'
+        }
         value={!!value}
         onValueChange={(on) => onChange(on ? (value ?? DEFAULT_INSTALLMENT) : null)}
       />
@@ -106,7 +107,11 @@ export function InstallmentSection({
 
           {plan ? (
             <View style={styles.summary}>
-              <Row label="Mỗi kỳ" value={`${format.money(plan.perMonth)} × ${value.months}`} strong />
+              <Row
+                label="Mỗi kỳ"
+                value={`${format.money(plan.perMonth)} × ${value.months}`}
+                strong
+              />
               <Row
                 label="Tổng phải trả"
                 value={
@@ -138,11 +143,7 @@ function Row({ label, value, strong }: { label: string; value: string; strong?: 
       <AppText variant="caption" color="textMuted">
         {label}
       </AppText>
-      <AppText
-        variant={strong ? 'bodyMedium' : 'caption'}
-        style={styles.value}
-        numberOfLines={1}
-      >
+      <AppText variant={strong ? 'bodyMedium' : 'caption'} style={styles.value} numberOfLines={1}>
         {value}
       </AppText>
     </View>
