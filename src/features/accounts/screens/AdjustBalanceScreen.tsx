@@ -30,13 +30,15 @@ const HINT_ICON = {
  * (ghi trùng, nhầm ví, nhầm thu/chi, phí) rồi cho sửa hoặc tạo "Điều chỉnh số dư" (không tính vào thống kê).
  */
 export function AdjustBalanceScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, actual } = useLocalSearchParams<{ id: string; actual?: string }>();
   const format = useMoneyFormat();
   const accounts = listAccounts(db, { includeArchived: true });
   const account = accounts.find((a) => a.id === id);
   const current = getAccountBalance(db, id);
-  const [amount, setAmount] = useState(Math.abs(current));
-  const [negative, setNegative] = useState(current < 0);
+  // Có thể mở sẵn với số dư theo ngân hàng (vd lấy từ thông báo biến động số dư)
+  const preset = actual != null && Number.isFinite(Number(actual)) ? Number(actual) : null;
+  const [amount, setAmount] = useState(Math.abs(preset ?? current));
+  const [negative, setNegative] = useState((preset ?? current) < 0);
   const target = negative ? -amount : amount;
   const diff = target - current;
   const last = getLastReconciled(id);

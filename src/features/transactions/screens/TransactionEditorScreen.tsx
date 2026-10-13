@@ -3,6 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { budgetAlert, budgetSnapshot } from '@/features/budgets/alerts';
+import { acceptCapture } from '@/features/capture/repository';
 import { FuelSection } from '@/features/fuel/FuelSection';
 import {
   isFuelText,
@@ -96,6 +97,8 @@ type Params = {
   scheduleId?: string;
   scheduleDueDate?: string;
   date?: string;
+  /** Giao dịch tự đọc từ thông báo: lưu xong thì đánh dấu đã ghi */
+  captureId?: string;
 };
 
 export function TransactionEditorScreen() {
@@ -282,6 +285,7 @@ export function TransactionEditorScreen() {
         debtId: draft.debtId,
         isAdjustment: draft.isAdjustment,
       });
+      if (params.captureId) acceptCapture(db, params.captureId, savedId);
       if (accountId) {
         applyInstallment(db, {
           transactionId: savedId,
