@@ -16,6 +16,7 @@ import {
   categories,
   debtRecords,
   debts,
+  goals,
   people,
   scheduleOccurrences,
   schedules,
@@ -42,6 +43,7 @@ export const BACKUP_TABLES = {
   scheduleOccurrences,
   debtRecords,
   budgets,
+  goals,
 } as const;
 
 export type BackupTableKey = keyof typeof BACKUP_TABLES;
@@ -60,6 +62,7 @@ export const DATA_KEYS: BackupTableKey[] = [
   'debts',
   'debtRecords',
   'budgets',
+  'goals',
 ];
 
 export const TABLE_LABELS: Record<BackupTableKey, string> = {
@@ -74,6 +77,7 @@ export const TABLE_LABELS: Record<BackupTableKey, string> = {
   debts: 'Khoản nợ',
   debtRecords: 'Lần trả / vay thêm',
   budgets: 'Ngân sách',
+  goals: 'Quỹ tiết kiệm',
 };
 
 type RowOf<K extends BackupTableKey> = (typeof BACKUP_TABLES)[K]['$inferSelect'];
@@ -229,9 +233,7 @@ export function parseJwpBackup(json: unknown): JwpBackup {
   if (!parsed.success) {
     const issues = parsed.error.issues;
     const more = issues.length > 1 ? ` (và ${issues.length - 1} lỗi khác)` : '';
-    throw new BackupReadError(
-      `File sao lưu bị lỗi — ${describeIssue(issues[0], json)}${more}.`,
-    );
+    throw new BackupReadError(`File sao lưu bị lỗi — ${describeIssue(issues[0], json)}${more}.`);
   }
   const { data, ...meta } = parsed.data;
   return {
