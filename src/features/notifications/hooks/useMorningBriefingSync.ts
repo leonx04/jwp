@@ -10,7 +10,14 @@ import { useSettings } from '@/features/settings/store';
 import { notificationsSupported } from '../module';
 import { requestMorningBriefingRefresh } from '../morningBriefing';
 
-const WATCHED = new Set(['transactions', 'accounts', 'schedules', 'schedule_occurrences']);
+const WATCHED = new Set([
+  'transactions',
+  'accounts',
+  'schedules',
+  'schedule_occurrences',
+  'debts',
+  'debt_records',
+]);
 
 export function useMorningBriefingSync() {
   useEffect(() => {
