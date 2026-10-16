@@ -59,8 +59,8 @@ export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
               style={[
                 styles.item,
                 selected
-                  ? { backgroundColor: colors.primary, paddingHorizontal: 16 }
-                  : { width: 44 },
+                  ? { backgroundColor: colors.primary, paddingHorizontal: 12 }
+                  : { width: 40 },
               ]}
               onPress={() => {
                 if (selected) return;
@@ -76,7 +76,7 @@ export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
               {selected ? (
                 <AppText
                   variant="label"
-                  style={{ color: colors.onPrimary, fontSize: 12.5 }}
+                  style={{ color: colors.onPrimary, fontSize: 12 }}
                   numberOfLines={1}
                 >
                   {item.label}
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   dock: {
     flex: 1,
@@ -142,9 +142,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   fab: {
-    width: TAB_BAR_HEIGHT,
-    height: TAB_BAR_HEIGHT,
-    borderRadius: TAB_BAR_HEIGHT / 2,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
