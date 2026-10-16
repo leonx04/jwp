@@ -12,6 +12,10 @@ export type BudgetItem = BudgetProgress & {
   name: string;
   categoryIds: string[];
   accountIds: string[];
+  /** Ngày bắt đầu chu kỳ riêng; null = theo chu kỳ chung */
+  startDay: number | null;
+  periodStart: DateString;
+  periodEnd: DateString;
 };
 
 const inList = (column: SQL, ids: string[]): SQL =>
@@ -45,10 +49,11 @@ export function listBudgets(
   db: AppDatabase,
   { today, startDayOfMonth }: { today: DateString; startDayOfMonth: number },
 ): BudgetItem[] {
-  const period = periodContaining(today, startDayOfMonth);
-  const from = vnDateToMs(period.start);
-  const to = vnDateToMs(addDays(period.end, 1));
   return listBudgetRows(db).map((b) => {
+    // Mỗi ngân sách có thể có chu kỳ riêng; không đặt thì theo ngày bắt đầu tháng chung
+    const period = periodContaining(today, b.startDay ?? startDayOfMonth);
+    const from = vnDateToMs(period.start);
+    const to = vnDateToMs(addDays(period.end, 1));
     const categoryIds = parseIdList(b.categoryIds);
     const accountIds = parseIdList(b.accountIds);
     const spent = spentFor(db, { from, to, categoryIds, accountIds });
@@ -57,6 +62,9 @@ export function listBudgets(
       name: b.name,
       categoryIds,
       accountIds,
+      startDay: b.startDay,
+      periodStart: period.start,
+      periodEnd: period.end,
       ...budgetProgress({
         amount: b.amount,
         spent,

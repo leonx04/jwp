@@ -7,6 +7,15 @@ export const budgets: Record<string, string> = {
   'Hạn mức phải lớn hơn 0.': 'The limit must be greater than 0.',
   'Hạn mức quá lớn.': 'The limit is too large.',
   'Vượt ngân sách': 'Over budget',
+  'Chu kỳ bắt đầu': 'Cycle starts',
+  'Chu kỳ bắt đầu ngày': 'Cycle start day',
+  'Theo cài đặt chung': 'Follow the general setting',
+  'Ngày 31 (cuối tháng)': 'Day 31 (end of month)',
+  'Chu kỳ {start} – {end}': 'Cycle {start} – {end}',
+  'Ngày phải từ 1 đến 31.': 'The day must be between 1 and 31.',
+  'Ngày bắt đầu chu kỳ phải từ 1 đến 31.': 'The cycle start day must be between 1 and 31.',
+  'Chỉ áp dụng cho ngân sách này, ví dụ lương về ngày 5 thì chọn ngày 5 để kỳ chạy từ 5 đến 4 tháng sau. Ngày 31 = cuối tháng.':
+    'Applies to this budget only. For example, if you are paid on the 5th, pick day 5 so the period runs from the 5th to the 4th of next month. Day 31 = end of month.',
   'Đã chi {spent} / {limit}': 'Spent {spent} / {limit}',
   '{spent} / {limit} · tối đa {perDay}/ngày ({daysLeft} ngày)':
     '{spent} / {limit} · up to {perDay}/day ({daysLeft} days)',

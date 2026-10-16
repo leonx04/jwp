@@ -1,4 +1,5 @@
 // Một dòng ngân sách: tên, đã dùng / hạn mức, thanh tiến độ, còn lại + dự báo. Dùng ở màn Ngân sách và Tổng quan.
+import { formatDate } from '@/lib/date';
 import { t } from '@/lib/i18n';
 import { View } from 'react-native';
 
@@ -60,6 +61,14 @@ export function BudgetBar({ item }: { item: BudgetItem }) {
         </AppText>
       </View>
       <ProgressBar value={Math.min(1, item.ratio)} color={tone} height={10} />
+      {item.startDay !== null ? (
+        <AppText variant="caption" color="textMuted">
+          {t('Chu kỳ {start} – {end}', {
+            start: formatDate(item.periodStart, false),
+            end: formatDate(item.periodEnd, false),
+          })}
+        </AppText>
+      ) : null}
       <AppText variant="caption" color={item.willExceed && !over ? 'warning' : 'textMuted'}>
         {mask(
           over

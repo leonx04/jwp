@@ -1,4 +1,5 @@
 // Thêm / sửa ngân sách: tên, hạn mức tháng, danh mục và ví áp dụng (trống = tất cả).
+import { t } from '@/lib/i18n';
 import { goBack } from '@/lib/goBack';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -15,6 +16,17 @@ import { toAppIcon } from '@/lib/icons';
 import { parseIdList } from '../compute';
 import { deleteBudget, listBudgetRows, saveBudget } from '../repository';
 
+const DEFAULT_CYCLE = 'default';
+
+/** Dựng trong lúc vẽ (không để ở mức module) để chữ đổi theo ngôn ngữ */
+const cycleOptions = () => [
+  { id: DEFAULT_CYCLE, label: t('Theo cài đặt chung') },
+  ...Array.from({ length: 31 }, (_, i) => ({
+    id: String(i + 1),
+    label: i === 30 ? t('Ngày 31 (cuối tháng)') : t('Ngày {day} hằng tháng', { day: i + 1 }),
+  })),
+];
+
 export function BudgetEditScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const existing = id ? listBudgetRows(db).find((b) => b.id === id) : undefined;
@@ -25,10 +37,18 @@ export function BudgetEditScreen() {
   const [amount, setAmount] = useState(existing?.amount ?? 0);
   const [categoryIds, setCategoryIds] = useState<string[]>(parseIdList(existing?.categoryIds));
   const [accountIds, setAccountIds] = useState<string[]>(parseIdList(existing?.accountIds));
+  const [startDay, setStartDay] = useState<string>(String(existing?.startDay ?? DEFAULT_CYCLE));
 
   const save = () => {
     try {
-      saveBudget(db, { id, name, amount, categoryIds, accountIds });
+      saveBudget(db, {
+        id,
+        name,
+        amount,
+        categoryIds,
+        accountIds,
+        startDay: startDay === DEFAULT_CYCLE ? null : Number(startDay),
+      });
       showSnackbar({ text: 'Đã lưu ngân sách', tone: 'success' });
       goBack();
     } catch (error) {
@@ -108,6 +128,21 @@ export function BudgetEditScreen() {
       />
       <AppText variant="caption" color="textMuted">
         Không chọn = tính mọi ví.
+      </AppText>
+
+      <SelectField
+        label="Chu kỳ bắt đầu"
+        title="Chu kỳ bắt đầu ngày"
+        placeholder="Theo cài đặt chung"
+        icon="calendar-outline"
+        options={cycleOptions()}
+        value={startDay}
+        onChange={(value) => setStartDay(value ?? DEFAULT_CYCLE)}
+        clearable={false}
+      />
+      <AppText variant="caption" color="textMuted">
+        Chỉ áp dụng cho ngân sách này, ví dụ lương về ngày 5 thì chọn ngày 5 để kỳ chạy từ 5 đến 4
+        tháng sau. Ngày 31 = cuối tháng.
       </AppText>
 
       {existing ? (

@@ -7,6 +7,9 @@ const item = (id: string, spent: number, amount = 1000): BudgetItem => ({
   name: `NS ${id}`,
   categoryIds: [],
   accountIds: [],
+  startDay: null,
+  periodStart: '2026-10-01',
+  periodEnd: '2026-10-31',
   ...budgetProgress({
     amount,
     spent,

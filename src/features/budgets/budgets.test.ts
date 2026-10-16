@@ -148,4 +148,34 @@ describe('listBudgets', () => {
     saveBudget(db, { name: 'T', amount: 100_000 });
     expect(listBudgets(db, { today: '2026-10-12', startDayOfMonth: 15 })[0].spent).toBe(10_000);
   });
+
+  it('mỗi ngân sách có thể có chu kỳ riêng, không ảnh hưởng ngân sách khác', () => {
+    const { db, mb, spend } = setup();
+    spend(mb, null, 10_000, '2026-10-03'); // kỳ chung (ngày 1) và kỳ riêng 05/09–04/10
+    spend(mb, null, 20_000, '2026-10-06'); // chỉ nằm trong kỳ riêng 05/10–04/11 khi hôm nay ≥ 05/10
+    saveBudget(db, { name: 'Chung', amount: 100_000 });
+    saveBudget(db, { name: 'Lương ngày 5', amount: 100_000, startDay: 5 });
+
+    const [common, payday] = listBudgets(db, { today: '2026-10-10', startDayOfMonth: 1 });
+    expect(common).toMatchObject({ spent: 30_000, startDay: null, periodStart: '2026-10-01' });
+    expect(payday).toMatchObject({
+      spent: 20_000,
+      startDay: 5,
+      periodStart: '2026-10-05',
+      periodEnd: '2026-11-04',
+    });
+    // Chưa đến ngày 5: kỳ riêng vẫn là kỳ trước
+    const [, early] = listBudgets(db, { today: '2026-10-04', startDayOfMonth: 1 });
+    expect(early).toMatchObject({ periodStart: '2026-09-05', periodEnd: '2026-10-04' });
+  });
+
+  it('kiểm tra ngày bắt đầu chu kỳ hợp lệ', () => {
+    const { db } = setup();
+    expect(() => saveBudget(db, { name: 'x', amount: 5, startDay: 0 })).toThrow();
+    expect(() => saveBudget(db, { name: 'x', amount: 5, startDay: 32 })).toThrow();
+    expect(() => saveBudget(db, { name: 'x', amount: 5, startDay: 2.5 })).toThrow();
+    const id = saveBudget(db, { name: 'x', amount: 5, startDay: 31 });
+    saveBudget(db, { id, name: 'x', amount: 5, startDay: null });
+    expect(listBudgets(db, opts)[0].startDay).toBeNull();
+  });
 });
