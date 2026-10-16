@@ -38,12 +38,6 @@ function findPhrase(words: string[], phrase: string): number {
   return -1;
 }
 
-function removePhrase(words: string[], phrase: string): string[] {
-  const at = findPhrase(words, phrase);
-  if (at < 0) return words;
-  return [...words.slice(0, at), ...words.slice(at + phrase.split(' ').length)];
-}
-
 /** Từ không mang nội dung tìm kiếm */
 const STOP = new Set(
   (
