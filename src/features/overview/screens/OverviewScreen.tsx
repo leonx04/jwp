@@ -206,8 +206,8 @@ export function OverviewScreen() {
       <InboxBanner />
       <ReportBanner />
 
-      {/* Thao tác nhanh */}
-      <View style={styles.actions}>
+      {/* Thao tác nhanh: một thẻ, bốn nút tròn màu */}
+      <Card style={styles.actions}>
         {QUICK_ACTIONS.map((action) => {
           const tone = colors[action.tone];
           return (
@@ -215,30 +215,23 @@ export function OverviewScreen() {
               key={action.label}
               accessibilityRole="button"
               onPress={() => router.push(action.href)}
-              style={({ pressed }) => [styles.action, pressed && { transform: [{ scale: 0.94 }] }]}
+              style={({ pressed }) => [styles.action, pressed && { opacity: 0.6 }]}
             >
-              <GlassSurface
-                radius={22}
-                shadow={false}
-                style={styles.actionIcon}
-                contentStyle={styles.center}
+              <View
+                style={[
+                  styles.actionDot,
+                  { backgroundColor: rgba(tone, colors.dark ? 0.25 : 0.14) },
+                ]}
               >
-                <View
-                  style={[
-                    styles.actionDot,
-                    { backgroundColor: rgba(tone, colors.dark ? 0.25 : 0.14) },
-                  ]}
-                >
-                  <Ionicons name={action.icon} size={20} color={tone} />
-                </View>
-              </GlassSurface>
-              <AppText variant="label" color="textMuted">
+                <Ionicons name={action.icon} size={22} color={tone} />
+              </View>
+              <AppText variant="label" color="text" numberOfLines={1}>
                 {action.label}
               </AppText>
             </Pressable>
           );
         })}
-      </View>
+      </Card>
 
       {/* Ví */}
       {hasAccounts ? (
@@ -381,25 +374,17 @@ const useStyles = createStyles((t) => ({
   actions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingVertical: t.spacing.md,
   },
   action: {
     alignItems: 'center',
-    gap: 6,
-    width: '23%',
-  },
-  actionIcon: {
-    width: 62,
-    height: 62,
+    gap: 8,
+    width: '25%',
   },
   actionDot: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  center: {
-    flex: 1,
+    width: 52,
+    height: 52,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
