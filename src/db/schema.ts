@@ -316,6 +316,8 @@ export const budgets = sqliteTable(
     accountIds: text('account_ids'),
     /** Ngày bắt đầu chu kỳ riêng của ngân sách (1–31). Trống = theo ngày bắt đầu tháng chung */
     startDay: integer('start_day'),
+    /** Ngày bắt đầu rơi vào cuối tuần: giữ nguyên / lùi về thứ Sáu ('before') / dời sang thứ Hai ('after') */
+    weekendRule: text('weekend_rule', { enum: WEEKEND_RULES }).notNull().default('none'),
     orderNum: real('order_num').notNull().default(0),
     ...timestamps,
   },

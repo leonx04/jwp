@@ -178,4 +178,13 @@ describe('listBudgets', () => {
     saveBudget(db, { id, name: 'x', amount: 5, startDay: null });
     expect(listBudgets(db, opts)[0].startDay).toBeNull();
   });
+
+  it('lương ngày 17 rơi vào cuối tuần thì kỳ bắt đầu từ thứ Hai', () => {
+    const { db, mb, spend } = setup();
+    spend(mb, null, 40_000, '2026-10-18'); // Chủ nhật, vẫn thuộc kỳ trước (lương về thứ Hai 19/10)
+    spend(mb, null, 15_000, '2026-10-19');
+    saveBudget(db, { name: 'Lương 17', amount: 100_000, startDay: 17, weekendRule: 'after' });
+    const [item] = listBudgets(db, { today: '2026-10-20', startDayOfMonth: 1 });
+    expect(item).toMatchObject({ periodStart: '2026-10-19', weekendRule: 'after', spent: 15_000 });
+  });
 });

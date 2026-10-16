@@ -6,17 +6,24 @@ import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
 import { showSnackbar } from '@/components/feedback/snackbarStore';
-import { AppText, Button, MoneyField, Screen, SelectField, TextField } from '@/components/ui';
+import { AppText, Button, Chip, MoneyField, Screen, SelectField, TextField } from '@/components/ui';
 import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 import { listAccounts } from '@/features/accounts/repository';
 import { listCategories } from '@/features/categories/repository';
 import { toAppIcon } from '@/lib/icons';
+import type { WeekendRule } from '@/lib/recurrence';
 
 import { parseIdList } from '../compute';
 import { deleteBudget, listBudgetRows, saveBudget } from '../repository';
 
 const DEFAULT_CYCLE = 'default';
+
+const WEEKEND_OPTIONS: { value: WeekendRule; label: string }[] = [
+  { value: 'none', label: 'Giữ nguyên' },
+  { value: 'before', label: 'Lùi về thứ Sáu' },
+  { value: 'after', label: 'Dời sang thứ Hai' },
+];
 
 /** Dựng trong lúc vẽ (không để ở mức module) để chữ đổi theo ngôn ngữ */
 const cycleOptions = () => [
@@ -37,6 +44,7 @@ export function BudgetEditScreen() {
   const [amount, setAmount] = useState(existing?.amount ?? 0);
   const [categoryIds, setCategoryIds] = useState<string[]>(parseIdList(existing?.categoryIds));
   const [accountIds, setAccountIds] = useState<string[]>(parseIdList(existing?.accountIds));
+  const [weekendRule, setWeekendRule] = useState<WeekendRule>(existing?.weekendRule ?? 'none');
   const [startDay, setStartDay] = useState<string>(String(existing?.startDay ?? DEFAULT_CYCLE));
 
   const save = () => {
@@ -48,6 +56,7 @@ export function BudgetEditScreen() {
         categoryIds,
         accountIds,
         startDay: startDay === DEFAULT_CYCLE ? null : Number(startDay),
+        weekendRule,
       });
       showSnackbar({ text: 'Đã lưu ngân sách', tone: 'success' });
       goBack();
@@ -144,6 +153,23 @@ export function BudgetEditScreen() {
         Chỉ áp dụng cho ngân sách này, ví dụ lương về ngày 5 thì chọn ngày 5 để kỳ chạy từ 5 đến 4
         tháng sau. Ngày 31 = cuối tháng.
       </AppText>
+      {startDay !== DEFAULT_CYCLE ? (
+        <>
+          <AppText variant="label" color="textMuted">
+            Nếu rơi vào cuối tuần
+          </AppText>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {WEEKEND_OPTIONS.map((option) => (
+              <Chip
+                key={option.value}
+                label={option.label}
+                selected={weekendRule === option.value}
+                onPress={() => setWeekendRule(option.value)}
+              />
+            ))}
+          </View>
+        </>
+      ) : null}
 
       {existing ? (
         <Button title="Xoá ngân sách" variant="danger" icon="trash-outline" onPress={remove} />
