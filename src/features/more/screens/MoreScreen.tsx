@@ -28,6 +28,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#0EA5E9',
       },
       {
+        icon: 'sparkles-outline',
+        title: 'Tổng kết',
+        subtitle: 'Kỳ này bạn chi gì nhiều nhất, ngày nào, nơi nào — vuốt từng thẻ',
+        href: '/wrapped',
+        color: '#DB2777',
+      },
+      {
         icon: 'trending-up-outline',
         title: 'Mô phỏng tăng lương',
         subtitle: 'Lương tăng thì tiền dư, tiết kiệm và các quỹ thay đổi ra sao',

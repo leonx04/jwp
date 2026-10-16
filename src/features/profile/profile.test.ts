@@ -1,7 +1,6 @@
 import { saveCategory } from '@/features/categories/repository';
 import { listBudgetRows, saveBudget } from '@/features/budgets/repository';
-import { ensureTag } from '@/features/tags/repository';
-import { listTags } from '@/features/tags/repository';
+import { ensureTag, listTags } from '@/features/tags/repository';
 import { createTestDb } from '@/test/testDb';
 
 import { applyPlan, exportProfile, planProfile } from './profile';

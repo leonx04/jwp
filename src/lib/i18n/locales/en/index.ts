@@ -17,6 +17,7 @@ import { flow } from './flow';
 import { profile } from './profile';
 import { quickadd } from './quickadd';
 import { salary } from './salary';
+import { wrapped } from './wrapped';
 import { common } from './common';
 import { components } from './components';
 import { more } from './more';
@@ -53,4 +54,5 @@ export const en: Record<string, string> = {
   ...quickadd,
   ...profile,
   ...flow,
+  ...wrapped,
 };
