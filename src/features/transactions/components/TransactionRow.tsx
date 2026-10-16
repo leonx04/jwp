@@ -4,6 +4,7 @@ import { Pressable, View } from 'react-native';
 
 import { AmountText, AppText, IconBadge } from '@/components/ui';
 import { toVnTime } from '@/lib/date';
+import { t } from '@/lib/i18n';
 import { DEFAULT_CATEGORY_ICON, UNCATEGORIZED_ICON, toAppIcon, type AppIcon } from '@/lib/icons';
 import { createStyles, useTheme } from '@/theme';
 
@@ -45,7 +46,7 @@ export const TransactionRow = memo(function TransactionRow({
       ? `${item.accountName} → ${item.toAccountName ?? '?'}`
       : item.accountName;
   const secondary = [
-    item.title && item.type !== 'transfer' ? (item.categoryName ?? 'Chưa phân loại') : null,
+    item.title && item.type !== 'transfer' ? t(item.categoryName ?? 'Chưa phân loại') : null,
     accountText,
   ]
     .filter(Boolean)
