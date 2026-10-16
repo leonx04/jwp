@@ -1,7 +1,10 @@
 import { and, eq, isNull, ne } from 'drizzle-orm';
 
-import { tags, transactions } from '@/db/schema';
+import { people, tags, transactions } from '@/db/schema';
 import type { AppDatabase } from '@/db/types';
+import { normalizeForSearch } from '@/lib/text';
+
+import { listDebtProposals } from '@/features/debts/queries';
 
 import { attachTag, ensureTag } from './repository';
 import { proposeTags, type TagProposal } from './suggest';
@@ -27,7 +30,21 @@ export function listTagProposals(db: AppDatabase): TagProposal[] {
       .all()
       .map((t) => t.key),
   );
-  return proposeTags(rows, { existingTagKeys: existing });
+  // Tên người trong Sổ nợ và từ vay / nợ không phải chủ đề chi tiêu
+  const excludeWords = new Set(['no', 'vay', 'muon']);
+  const names = [
+    ...db
+      .select({ name: people.name })
+      .from(people)
+      .all()
+      .map((p) => p.name),
+    // Cả những người app mới phát hiện từ giao dịch cũ nhưng chưa tạo trong Sổ nợ
+    ...listDebtProposals(db).map((d) => d.personName),
+  ];
+  for (const name of names) {
+    for (const w of normalizeForSearch(name).split(' ')) if (w.length >= 2) excludeWords.add(w);
+  }
+  return proposeTags(rows, { existingTagKeys: existing, excludeWords });
 }
 
 /** Tạo tag (hoặc dùng tag cùng tên) và gắn vào các giao dịch của gợi ý */

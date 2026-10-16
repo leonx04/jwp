@@ -108,8 +108,14 @@ export function proposeTags(
   txs: readonly TagTx[],
   {
     existingTagKeys = new Set<string>(),
+    excludeWords = new Set<string>(),
     max = 25,
-  }: { existingTagKeys?: ReadonlySet<string>; max?: number } = {},
+  }: {
+    existingTagKeys?: ReadonlySet<string>;
+    /** Từ (đã bỏ dấu) không được nằm trong tag — tên người, từ vay / nợ… */
+    excludeWords?: ReadonlySet<string>;
+    max?: number;
+  } = {},
 ): TagProposal[] {
   const candidates = new Map<string, Candidate>();
   const titles = new Map<string, string>();
@@ -141,7 +147,8 @@ export function proposeTags(
   }
 
   const all = [...candidates.values()].filter(
-    (c) => c.txIds.size >= MIN_TAG_USES && c.days.size >= 2,
+    (c) =>
+      c.txIds.size >= MIN_TAG_USES && c.days.size >= 2 && !c.words.some((w) => excludeWords.has(w)),
   );
 
   const contains = (long: Candidate, short: Candidate) =>
