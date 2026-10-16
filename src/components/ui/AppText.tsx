@@ -13,12 +13,20 @@ type AppTextProps = TextProps & {
   color?: TextColor;
 };
 
+/** Dịch một đoạn chữ, giữ nguyên khoảng trắng đầu/cuối (đoạn chữ cạnh biểu thức JSX thường có dấu cách) */
+const translateFragment = (text: string): string => {
+  const exact = t(text);
+  if (exact !== text) return exact;
+  const [, lead = '', core = '', tail = ''] = text.match(/^(\s*)([\s\S]*?)(\s*)$/) ?? [];
+  return core ? lead + t(core) + tail : text;
+};
+
 /** Chuỗi tĩnh được dịch tự động theo ngôn ngữ; chuỗi động (có số, tên người dùng) tự dùng t() với tham số. */
 const translate = (node: TextProps['children']): TextProps['children'] =>
   typeof node === 'string'
-    ? t(node)
+    ? translateFragment(node)
     : Array.isArray(node)
-      ? node.map((child) => (typeof child === 'string' ? t(child) : child))
+      ? node.map((child) => (typeof child === 'string' ? translateFragment(child) : child))
       : node;
 
 /** Thay cho <Text>: luôn đúng font Be Vietnam Pro, cỡ chữ và màu theo theme. */

@@ -52,7 +52,7 @@ export const TodayCard = memo(function TodayCard({ status }: { status: TodayStat
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Hôm nay được tiêu, mở lịch thu chi"
+      accessibilityLabel={t('Hôm nay được tiêu, mở lịch thu chi')}
       onPress={() => router.navigate('/schedule')}
       style={({ pressed }) => pressed && styles.pressed}
     >

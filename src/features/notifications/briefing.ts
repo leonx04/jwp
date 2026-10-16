@@ -82,7 +82,7 @@ function itemsLine(input: BriefingInput, date: DateString): string | null {
     `${i.overdue || i.date < date ? 'quá hạn ' : ''}${i.title} ${i.type === 'income' ? '+' : ''}${input.money(i.amount)}`;
   const head = due.slice(0, MAX_ITEMS).map(text);
   const more = due.length - MAX_ITEMS;
-  return `Hôm nay: ${head.join(' · ')}${more > 0 ? t(' · +{more} khoản', { more }) : ''}`;
+  return t('Hôm nay: {join}{more}', { join: head.join(' · '), more: more > 0 ? t(' · +{more} khoản', { more }) : '' });
 }
 
 function billLines(input: BriefingInput, date: DateString): string[] {
@@ -93,9 +93,9 @@ function billLines(input: BriefingInput, date: DateString): string[] {
       .map((b) => {
         const amount = `${b.estimate ? '~' : ''}${input.money(b.amount)}`;
         if (b.overdue || b.dueDate < date)
-          return `Bill ${b.name} ${amount} đã quá hạn ${formatDate(b.dueDate, false)}`;
-        if (b.dueDate === date) return `Bill ${b.name} ${amount} hạn hôm nay`;
-        return `Bill ${b.name} ${amount} hạn ${formatDate(b.dueDate, false)}`;
+          return t('Bill {name} {amount} đã quá hạn {false}', { name: b.name, amount, false: formatDate(b.dueDate, false) });
+        if (b.dueDate === date) return t('Bill {name} {amount} hạn hôm nay', { name: b.name, amount });
+        return t('Bill {name} {amount} hạn {false}', { name: b.name, amount, false: formatDate(b.dueDate, false) });
       })
   );
 }

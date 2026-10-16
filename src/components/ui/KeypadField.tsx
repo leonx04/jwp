@@ -1,4 +1,5 @@
 // Ô hiển thị số tiền nhập bằng bàn phím số có sẵn của màn hình (không mở bàn phím hệ thống).
+import { t } from '@/lib/i18n';
 import { Pressable, View } from 'react-native';
 
 import type { AppIcon } from '@/lib/icons';
@@ -24,7 +25,7 @@ export function KeypadField({ icon, label, text, placeholder, active, onPress }:
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={t(label)}
       onPress={onPress}
       style={{
         flexDirection: 'row',

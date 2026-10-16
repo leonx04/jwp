@@ -1,4 +1,6 @@
 // Định dạng tiền Việt — tự viết thay vì dùng Intl để mọi máy (Hermes, Android cũ, Huawei) ra kết quả y hệt.
+import { t } from '@/lib/i18n';
+
 import { MINUS, NBSP, type CurrencySymbol, type Money, type MoneyFlow } from './constants';
 
 type SignMode = 'auto' | 'always' | 'never';
@@ -54,6 +56,13 @@ const COMPACT_UNITS = [
   { value: 1_000, label: 'k' },
 ] as const;
 
+/** Chữ đơn vị theo ngôn ngữ: Tr → M, Tỷ → B (chữ 'k' giữ nguyên) */
+function unitLabel(label: string): string {
+  const core = label.trim();
+  const translated = t(core);
+  return label.startsWith(NBSP) ? `${NBSP}${translated}` : translated;
+}
+
 /** 150 (phần trăm của đơn vị) → '1,5' · 235 → '2,35' · 100 → '1' */
 function formatHundredths(hundredths: number): string {
   const intPart = Math.floor(hundredths / 100);
@@ -81,7 +90,7 @@ export function formatCompact(
     if (i > 0 && abs >= COMPACT_UNITS[i - 1].value) continue;
     const hundredths = (abs * 100) / unit.value;
     if (Number.isInteger(hundredths)) {
-      return applySign(`${formatHundredths(hundredths)}${unit.label}`, signed, sign);
+      return applySign(`${formatHundredths(hundredths)}${unitLabel(unit.label)}`, signed, sign);
     }
   }
   return applySign(`${groupThousands(abs)}${NBSP}${symbol}`, signed, sign);

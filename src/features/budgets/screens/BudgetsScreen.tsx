@@ -1,4 +1,5 @@
 // Ngân sách theo tháng: thanh tiến độ từng khoản, cảnh báo sắp hết / dự báo vượt.
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { Pressable } from 'react-native';
 
@@ -15,7 +16,7 @@ export function BudgetsScreen() {
   return (
     <Screen
       title="Ngân sách"
-      headerRight={<IconButton icon="add" accessibilityLabel="Thêm ngân sách" onPress={add} />}
+      headerRight={<IconButton icon="add" accessibilityLabel={t('Thêm ngân sách')} onPress={add} />}
     >
       {budgets && budgets.length === 0 ? (
         <Card>

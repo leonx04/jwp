@@ -171,12 +171,12 @@ export function StatsScreen() {
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <IconButton
             icon="chevron-back"
-            accessibilityLabel="Kỳ trước"
+            accessibilityLabel={t('Kỳ trước')}
             onPress={() => setOffset(offset - 1)}
           />
           <IconButton
             icon="chevron-forward"
-            accessibilityLabel="Kỳ sau"
+            accessibilityLabel={t('Kỳ sau')}
             disabled={offset >= 0}
             onPress={() => setOffset(Math.min(0, offset + 1))}
           />

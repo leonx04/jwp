@@ -401,14 +401,14 @@ export function TransactionEditorScreen() {
         editingId ? (
           <IconButton
             icon="trash-outline"
-            accessibilityLabel="Xoá"
+            accessibilityLabel={t('Xoá')}
             color={colors.expense}
             onPress={remove}
           />
         ) : (
           <IconButton
             icon="image-outline"
-            accessibilityLabel="Nhập từ ảnh biên lai"
+            accessibilityLabel={t('Nhập từ ảnh biên lai')}
             onPress={() => router.push('/receipt-scan')}
           />
         )
@@ -516,7 +516,7 @@ export function TransactionEditorScreen() {
           <View style={styles.swapRow}>
             <IconButton
               icon="swap-vertical"
-              accessibilityLabel="Đảo chiều"
+              accessibilityLabel={t('Đảo chiều')}
               onPress={() => set({ accountId: draft.toAccountId, toAccountId: accountId })}
             />
             <AppText variant="caption" color="textMuted">

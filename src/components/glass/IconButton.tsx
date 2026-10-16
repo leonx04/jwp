@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from '@/lib/haptics';
 import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
@@ -33,7 +34,7 @@ export function IconButton({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={t(accessibilityLabel)}
       disabled={disabled}
       hitSlop={6}
       onPress={() => {

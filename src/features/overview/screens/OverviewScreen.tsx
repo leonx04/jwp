@@ -121,7 +121,7 @@ export function OverviewScreen() {
       headerRight={
         <IconButton
           icon={hideBalance ? 'eye-off-outline' : 'eye-outline'}
-          accessibilityLabel={hideBalance ? 'Hiện số dư' : 'Ẩn số dư'}
+          accessibilityLabel={t(hideBalance ? 'Hiện số dư' : 'Ẩn số dư')}
           onPress={() => update({ hideBalance: !hideBalance })}
         />
       }

@@ -44,7 +44,7 @@ export function CategoriesScreen() {
       headerRight={
         <IconButton
           icon="add"
-          accessibilityLabel="Thêm danh mục"
+          accessibilityLabel={t('Thêm danh mục')}
           onPress={() => router.push('/category/edit')}
         />
       }

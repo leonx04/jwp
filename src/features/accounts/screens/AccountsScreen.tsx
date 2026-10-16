@@ -60,13 +60,13 @@ export function AccountsScreen() {
           {balances.length > 1 ? (
             <IconButton
               icon={sorting ? 'checkmark' : 'swap-vertical'}
-              accessibilityLabel={sorting ? 'Xong sắp xếp' : 'Sắp xếp thứ tự ví'}
+              accessibilityLabel={t(sorting ? 'Xong sắp xếp' : 'Sắp xếp thứ tự ví')}
               onPress={() => setSorting((v) => !v)}
             />
           ) : null}
           <IconButton
             icon="add"
-            accessibilityLabel="Thêm ví"
+            accessibilityLabel={t('Thêm ví')}
             onPress={() => router.push('/account/edit')}
           />
         </View>

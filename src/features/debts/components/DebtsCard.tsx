@@ -1,4 +1,5 @@
 // Thẻ tóm tắt Sổ nợ ở Tổng quan: tổng "tôi nợ" / "nợ tôi" + tối đa 2 khoản gấp nhất. Ẩn khi chưa có khoản nợ nào.
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
@@ -76,7 +77,7 @@ export function DebtsCard() {
             icon={d.direction === 'lent' ? 'arrow-up-circle-outline' : 'arrow-down-circle-outline'}
             iconColor={d.direction === 'lent' ? '#16A34A' : '#DC2626'}
             title={d.person.name}
-            subtitle={`${d.direction === 'lent' ? 'Họ nợ bạn' : 'Bạn nợ họ'} · ${statusText(d)}`}
+            subtitle={`${t(d.direction === 'lent' ? 'Họ nợ bạn' : 'Bạn nợ họ')} · ${statusText(d)}`}
             onPress={() => router.push({ pathname: '/debt/[id]', params: { id: d.debt.id } })}
             right={
               <AppText

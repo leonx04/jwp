@@ -1,5 +1,6 @@
 // Dock nổi "Bento Float": viên thuốc màu mực đậm (đảo màu so với nền — sáng ↔ tối) tách khỏi mép màn hình.
 // Mục đang chọn mở rộng thành viên màu chủ đạo kèm nhãn; mục khác chỉ còn icon. Nút ＋ tròn gradient bên phải.
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from '@/lib/haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -55,7 +56,7 @@ export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
               key={item.path}
               accessibilityRole="tab"
               accessibilityState={{ selected }}
-              accessibilityLabel={item.label}
+              accessibilityLabel={t(item.label)}
               style={[
                 styles.item,
                 selected
@@ -89,7 +90,7 @@ export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Thêm giao dịch"
+        accessibilityLabel={t('Thêm giao dịch')}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
           onAdd();

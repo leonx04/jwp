@@ -1,5 +1,6 @@
 // Lịch tháng: lưới 6×7 (tuần bắt đầu thứ Hai, gồm cả ngày tháng trước/sau) + số liệu từng ngày.
 // Hàm thuần / nhận db làm tham số → test được trên Node.
+import { t } from '@/lib/i18n';
 import { sql } from 'drizzle-orm';
 
 import { transactions } from '@/db/schema';
@@ -49,7 +50,7 @@ export const shiftMonth = (month: DateString, offset: number): DateString =>
 /** '2026-10-01' → 'Tháng 10, 2026' */
 export function formatMonthTitle(month: DateString): string {
   const { year, month: m } = parseDate(month);
-  return `Tháng ${m}, ${year}`;
+  return t('Tháng {m}, {year}', { m, year });
 }
 
 export type DayTotals = { income: number; expense: number; count: number };

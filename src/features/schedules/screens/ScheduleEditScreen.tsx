@@ -187,7 +187,7 @@ export function ScheduleEditScreen() {
       title={id ? 'Sửa lịch' : 'Thêm lịch thu chi'}
       headerRight={
         id ? (
-          <IconButton icon="trash-outline" accessibilityLabel="Xoá lịch" onPress={remove} />
+          <IconButton icon="trash-outline" accessibilityLabel={t('Xoá lịch')} onPress={remove} />
         ) : null
       }
       footer={

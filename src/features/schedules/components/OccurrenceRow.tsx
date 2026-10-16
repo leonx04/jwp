@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { db } from '@/db';
 import { useMoneyFormat } from '@/features/settings';
@@ -85,7 +86,7 @@ export function OccurrenceRow({
       <IconButton
         icon="checkmark"
         size={34}
-        accessibilityLabel="Đã thanh toán"
+        accessibilityLabel={t('Đã thanh toán')}
         color={colors.income}
         onPress={() => {
           // Bấm ✓ = ghi luôn theo đúng thông tin của lịch (có Hoàn tác); chỉ khoản ước tính mới mở form

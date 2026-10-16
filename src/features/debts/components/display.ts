@@ -26,16 +26,16 @@ export function statusText(item: Pick<DebtItem, 'status' | 'daysToDue' | 'debt'>
   const { status, daysToDue, debt } = item;
   switch (status) {
     case 'closed':
-      return 'Đã đóng';
+      return t('Đã đóng');
     case 'settled':
-      return 'Đã xong';
+      return t('Đã xong');
     case 'overdue':
-      return `Quá hạn ${-(daysToDue ?? 0)} ngày`;
+      return t('Quá hạn {daysToDue} ngày', { daysToDue: -(daysToDue ?? 0) });
     case 'due-soon':
-      return daysToDue === 0 ? 'Hạn hôm nay' : t('Còn {daysToDue} ngày', { daysToDue });
+      return daysToDue === 0 ? t('Hạn hôm nay') : t('Còn {daysToDue} ngày', { daysToDue });
     default:
       return debt.dueDate
         ? t('Hạn {date}', { date: formatDate(debt.dueDate, false) })
-        : 'Không đặt hạn';
+        : t('Không đặt hạn');
   }
 }

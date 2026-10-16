@@ -21,7 +21,7 @@ export function RulesScreen() {
   return (
     <Screen
       title="Quy tắc phân loại"
-      headerRight={<IconButton icon="add" accessibilityLabel="Thêm quy tắc" onPress={add} />}
+      headerRight={<IconButton icon="add" accessibilityLabel={t('Thêm quy tắc')} onPress={add} />}
     >
       <AppText color="textMuted">
         Giao dịch tự đọc có nội dung chứa cụm từ của quy tắc sẽ được điền sẵn danh mục. Bật “Tự ghi”

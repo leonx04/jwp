@@ -81,12 +81,12 @@ export function ScheduleScreen() {
     <View style={{ flexDirection: 'row', gap: 8 }}>
       <IconButton
         icon="list-outline"
-        accessibilityLabel="Tất cả lịch"
+        accessibilityLabel={t('Tất cả lịch')}
         onPress={() => router.push('/schedules')}
       />
       <IconButton
         icon="add"
-        accessibilityLabel="Thêm lịch"
+        accessibilityLabel={t('Thêm lịch')}
         onPress={() => router.push('/schedule/edit')}
       />
     </View>

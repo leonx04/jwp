@@ -47,7 +47,7 @@ export function SchedulesScreen() {
       headerRight={
         <IconButton
           icon="add"
-          accessibilityLabel="Thêm lịch"
+          accessibilityLabel={t('Thêm lịch')}
           onPress={() => router.push('/schedule/edit')}
         />
       }

@@ -136,7 +136,7 @@ export function describeRule(rule: RecurrenceRule): string {
   let text: string;
   switch (rule.frequency) {
     case 'once':
-      return 'Một lần';
+      return t('Một lần');
     case 'daily':
       text = every('ngày');
       break;
