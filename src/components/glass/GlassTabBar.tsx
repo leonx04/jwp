@@ -1,5 +1,5 @@
-// Thanh điều hướng phẳng, đặc, full-width (khuyến nghị cho app tài chính: dễ đọc, không che nội dung).
-// Mục đang chọn: viên thuốc nhạt sau icon (kiểu Material 3) + nhãn đậm. Nút ＋ nằm giữa thanh.
+// Dock nổi "Bento Float": viên thuốc màu mực đậm (đảo màu so với nền — sáng ↔ tối) tách khỏi mép màn hình.
+// Mục đang chọn mở rộng thành viên màu chủ đạo kèm nhãn; mục khác chỉ còn icon. Nút ＋ tròn gradient bên phải.
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,122 +23,127 @@ export type TabItem = {
 
 type GlassTabBarProps = {
   items: TabItem[];
-  /** Giữ để tương thích; thanh phẳng không làm mờ nên không dùng */
+  /** Giữ để tương thích; dock đặc nên không làm mờ */
   blurTarget?: RefObject<RNView | null>;
   onAdd: () => void;
 };
 
 export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
-  const { colors } = useTheme();
+  const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
-  const half = Math.ceil(items.length / 2);
 
-  const renderItem = (item: TabItem) => {
-    const selected = item.path === pathname;
-    return (
-      <Pressable
-        key={item.path}
-        accessibilityRole="tab"
-        accessibilityState={{ selected }}
-        accessibilityLabel={item.label}
-        style={styles.item}
-        onPress={() => {
-          if (selected) return;
-          Haptics.selectionAsync().catch(() => {});
-          router.navigate(item.href);
-        }}
-      >
-        <View style={[styles.pill, selected && { backgroundColor: colors.primarySoft }]}>
-          <Ionicons
-            name={selected ? item.iconActive : item.icon}
-            size={22}
-            color={selected ? colors.primary : colors.textMuted}
-          />
-        </View>
-        <AppText
-          variant="label"
-          style={{ fontSize: 11, lineHeight: 14 }}
-          color={selected ? 'primary' : 'textMuted'}
-          numberOfLines={1}
-        >
-          {item.label}
-        </AppText>
-      </Pressable>
-    );
-  };
+  // Dock đảo màu: nền sáng → dock tối; nền tối → dock sáng
+  const dockBg = colors.dark ? '#E9EDF5' : '#0E1320';
+  const idle = colors.dark ? '#5F687C' : '#8C97AD';
 
   return (
     <View
-      style={[
-        styles.bar,
-        {
-          paddingBottom: insets.bottom,
-          height: TAB_BAR_HEIGHT + insets.bottom,
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-        },
-      ]}
+      pointerEvents="box-none"
+      style={[styles.wrap, { bottom: insets.bottom + spacing.md, paddingHorizontal: spacing.lg }]}
     >
-      {items.slice(0, half).map(renderItem)}
-      <View style={styles.item}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Thêm giao dịch"
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-            onAdd();
-          }}
-          style={({ pressed }) => [
-            styles.fab,
-            {
-              boxShadow: `0 6px 16px ${rgba(colors.gradient[0], colors.dark ? 0.5 : 0.35)}`,
-              transform: [{ scale: pressed ? 0.92 : 1 }],
-            },
-          ]}
-        >
-          <LinearGradient
-            colors={colors.gradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-          <Ionicons name="add" size={30} color={colors.onGradient} />
-        </Pressable>
+      <View
+        style={[
+          styles.dock,
+          { backgroundColor: dockBg, boxShadow: `0 10px 30px ${rgba('#000000', 0.28)}` },
+        ]}
+      >
+        {items.map((item) => {
+          const selected = item.path === pathname;
+          return (
+            <Pressable
+              key={item.path}
+              accessibilityRole="tab"
+              accessibilityState={{ selected }}
+              accessibilityLabel={item.label}
+              style={[
+                styles.item,
+                selected
+                  ? { backgroundColor: colors.primary, paddingHorizontal: 16, flexGrow: 1.4 }
+                  : { width: 48, flexGrow: 1 },
+              ]}
+              onPress={() => {
+                if (selected) return;
+                Haptics.selectionAsync().catch(() => {});
+                router.navigate(item.href);
+              }}
+            >
+              <Ionicons
+                name={selected ? item.iconActive : item.icon}
+                size={21}
+                color={selected ? colors.onPrimary : idle}
+              />
+              {selected ? (
+                <AppText
+                  variant="label"
+                  style={{ color: colors.onPrimary, fontSize: 12.5 }}
+                  numberOfLines={1}
+                >
+                  {item.label}
+                </AppText>
+              ) : null}
+            </Pressable>
+          );
+        })}
       </View>
-      {items.slice(half).map(renderItem)}
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Thêm giao dịch"
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+          onAdd();
+        }}
+        style={({ pressed }) => [
+          styles.fab,
+          {
+            boxShadow: `0 10px 26px ${rgba(colors.gradient[0], colors.dark ? 0.55 : 0.45)}`,
+            transform: [{ scale: pressed ? 0.92 : 1 }],
+          },
+        ]}
+      >
+        <LinearGradient
+          colors={colors.gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+        <Ionicons name="add" size={32} color={colors.onGradient} />
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bar: {
+  wrap: {
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    borderTopWidth: StyleSheet.hairlineWidth * 2,
+    gap: 12,
+  },
+  dock: {
+    flex: 1,
+    height: TAB_BAR_HEIGHT,
+    borderRadius: TAB_BAR_HEIGHT / 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    gap: 4,
   },
   item: {
-    flex: 1,
+    height: TAB_BAR_HEIGHT - 16,
+    borderRadius: (TAB_BAR_HEIGHT - 16) / 2,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
-    height: TAB_BAR_HEIGHT,
-  },
-  pill: {
-    width: 56,
-    height: 30,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: 6,
   },
   fab: {
-    width: 52,
-    height: 52,
-    borderRadius: 18,
+    width: TAB_BAR_HEIGHT,
+    height: TAB_BAR_HEIGHT,
+    borderRadius: TAB_BAR_HEIGHT / 2,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
