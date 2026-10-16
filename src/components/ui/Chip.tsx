@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import * as Haptics from '@/lib/haptics';
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { bankFromIcon } from '@/lib/banks';

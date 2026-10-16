@@ -1,5 +1,5 @@
 // Sao lưu: xuất JSON (JWP) / CSV, khôi phục từ file JSON (gộp hoặc thay thế).
-import * as Haptics from 'expo-haptics';
+import * as Haptics from '@/lib/haptics';
 import { useState } from 'react';
 import { Alert } from 'react-native';
 
