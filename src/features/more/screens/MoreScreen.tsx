@@ -184,7 +184,7 @@ export function MoreScreen() {
             >
               <Ionicons name={f.icon} size={22} color={f.color} />
             </View>
-            <AppText variant="heading" numberOfLines={1}>
+            <AppText variant="heading">
               {f.title}
             </AppText>
           </Pressable>
