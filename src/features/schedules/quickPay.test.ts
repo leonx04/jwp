@@ -8,6 +8,7 @@ import { quickPay, undoQuickPay } from './quickPay';
 import { listOverrides, listSchedules, saveSchedule } from './repository';
 
 const TODAY = '2026-10-20';
+const NOW = Date.parse('2026-10-20T15:30:00+07:00');
 
 const setup = () => {
   const db = createTestDb();
@@ -56,7 +57,7 @@ describe('quickPay', () => {
       toAccountId: credit,
       title: 'Trả SEasy kỳ 3',
     });
-    const r = quickPay(db, first(id), TODAY);
+    const r = quickPay(db, first(id), TODAY, NOW);
     expect(r.kind).toBe('done');
     expect(listTransactions(db, {})).toHaveLength(1);
     expect(balances(db)).toMatchObject({ TP: -1_131_003, SEasy: 1_131_003 });
@@ -81,7 +82,7 @@ describe('quickPay', () => {
   });
 
   it('khoản chi từ ví trả sau: ghi chi + trả nợ từ ví thanh toán, dư nợ giữ nguyên', () => {
-    const { db, bank, credit, first, base } = setup();
+    const { db, credit, first, base } = setup();
     const id = saveSchedule(db, {
       ...base,
       amount: 500_000,

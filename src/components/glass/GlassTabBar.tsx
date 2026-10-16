@@ -12,7 +12,12 @@ import {
   type LayoutChangeEvent,
   type View as RNView,
 } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
@@ -50,7 +55,7 @@ export function GlassTabBar({ items, blurTarget, onAdd }: GlassTabBarProps) {
   // Chỉ hoạt ảnh vị trí (shared value); chiều rộng đặt bằng style thường sau khi đo layout
   const x = useSharedValue(0);
   useEffect(() => {
-    x.value = withSpring(active * itemWidth, { damping: 18, stiffness: 200 });
+    x.value = withTiming(active * itemWidth, { duration: 200, easing: Easing.out(Easing.cubic) });
   }, [active, itemWidth, x]);
   const indicator = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
 
