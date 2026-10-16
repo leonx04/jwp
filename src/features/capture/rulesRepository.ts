@@ -8,6 +8,7 @@ import { saveTransaction } from '@/features/transactions/repository';
 import { createId } from '@/lib/id';
 import { normalizeForSearch } from '@/lib/text';
 
+import { pairTransfers } from './pairing';
 import {
   acceptCapture,
   findDuplicate,
@@ -125,8 +126,10 @@ export function autoAcceptCaptures(db: AppDatabase): number {
   if (!rules.length) return 0;
   const pending = db.select().from(captures).where(eq(captures.status, 'pending')).all();
   let done = 0;
+  // Hai thông báo ghép thành một lần chuyển giữa ví của bạn thì không tự ghi riêng từng chiều
+  const inPair = new Set(pairTransfers(pending).flatMap((p) => [p.out.id, p.in.id]));
   for (const c of pending) {
-    if (!c.type || !c.amount || !c.accountId) continue;
+    if (!c.type || !c.amount || !c.accountId || inPair.has(c.id)) continue;
     const rule = matchRule(rules, c);
     if (!rule) continue;
     if (findDuplicate(db, c)) continue;

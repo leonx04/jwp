@@ -14,7 +14,8 @@ import { listAccounts } from '@/features/accounts/repository';
 
 import { getCaptureConfig } from './config';
 import { countPendingCaptures, ingestCaptures, listRecentCaptures } from './repository';
-import { autoAcceptCaptures, listPendingWithGuess } from './rulesRepository';
+import { autoAcceptCaptures } from './rulesRepository';
+import { autoAcceptTransfers, listPendingGrouped } from './transfers';
 import type { RawCapture } from './parse';
 
 /** Kéo các thông báo / SMS service nền đã bắt được vào DB (khi mở app và mỗi lần quay lại app) */
@@ -33,11 +34,14 @@ export function syncCaptures(): number {
   }));
   if (!raws.length) return 0;
   const { pending } = ingestCaptures(db, raws, listAccounts(db));
+  // Cặp chuyển giữa ví của bạn xử lý trước để các quy tắc không ghi riêng từng chiều
+  const autoTransfer = config.autoTransfer ? autoAcceptTransfers(db) : 0;
   const auto = autoAcceptCaptures(db);
-  if (auto > 0) {
-    showSnackbar({ text: `Đã tự ghi ${auto} giao dịch theo quy tắc`, tone: 'success' });
+  const total = auto + autoTransfer;
+  if (total > 0) {
+    showSnackbar({ text: `Đã tự ghi ${total} giao dịch`, tone: 'success' });
   }
-  return pending - auto;
+  return pending - auto - autoTransfer * 2;
 }
 
 /** Gắn một lần ở gốc app */
@@ -58,7 +62,9 @@ export function useCaptureSync() {
 }
 
 export function usePendingCaptures() {
-  return useLiveData(['captures', 'transactions', 'capture_rules'], () => listPendingWithGuess(db));
+  return useLiveData(['captures', 'transactions', 'capture_rules'], () =>
+    listPendingGrouped(db, getCaptureConfig().ownerName),
+  );
 }
 
 export function usePendingCaptureCount() {

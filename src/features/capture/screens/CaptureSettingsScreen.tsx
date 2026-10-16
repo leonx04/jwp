@@ -5,7 +5,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert, AppState, PermissionsAndroid, Platform, View } from 'react-native';
 
 import { showSnackbar } from '@/components/feedback/snackbarStore';
-import { AppText, Button, Card, ListRow, Screen, SectionTitle, SwitchRow } from '@/components/ui';
+import {
+  AppText,
+  Button,
+  Card,
+  ListRow,
+  Screen,
+  SectionTitle,
+  SwitchRow,
+  TextField,
+} from '@/components/ui';
 import { db } from '@/db';
 import { listAccounts } from '@/features/accounts/repository';
 import { BANKS } from '@/lib/banks';
@@ -172,6 +181,29 @@ export function CaptureSettingsScreen() {
           title="Quy tắc phân loại"
           subtitle="Tự gán danh mục theo nội dung, tuỳ chọn tự ghi luôn"
           onPress={() => router.push('/capture-rules')}
+        />
+      </Card>
+
+      <SectionTitle>Chuyển tiền giữa ví của bạn</SectionTitle>
+      <Card style={{ gap: 4, paddingVertical: 6 }}>
+        <TextField
+          label="Tên của bạn"
+          icon="person-outline"
+          value={config.ownerName}
+          onChangeText={(ownerName) => update({ ownerName })}
+          placeholder="vd: Nguyễn Xuân Dũng"
+        />
+        <AppText variant="caption" color="textMuted" style={{ paddingHorizontal: 4 }}>
+          Thông báo có tên này được gợi ý là chuyển giữa các ví của bạn. Khi một ngân hàng báo trừ
+          và ngân hàng khác báo cộng đúng số tiền trong vòng 2 phút, app luôn gộp thành một lần
+          chuyển tiền.
+        </AppText>
+        <SwitchRow
+          icon="swap-horizontal-outline"
+          title="Tự ghi khi đã gộp thành chuyển tiền"
+          subtitle="Không cần bấm xác nhận cho các cặp trừ/cộng khớp nhau"
+          value={config.autoTransfer}
+          onValueChange={(autoTransfer) => update({ autoTransfer })}
         />
       </Card>
 

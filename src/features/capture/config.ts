@@ -12,12 +12,18 @@ export type CaptureConfig = {
   packages: string[];
   /** Đọc cả SMS biến động số dư (chỉ tin nhắn từ tên chữ như MBBANK, không đọc số điện thoại cá nhân) */
   sms: boolean;
+  /** Tên của chính bạn: thông báo có tên này được gợi ý là chuyển tiền giữa ví của mình */
+  ownerName: string;
+  /** Tự ghi khi hai thông báo ghép thành đúng một lần chuyển giữa 2 ví của bạn */
+  autoTransfer: boolean;
 };
 
 export const DEFAULT_CAPTURE_CONFIG: CaptureConfig = {
   enabled: false,
   packages: Object.keys(KNOWN_PACKAGES),
   sms: false,
+  ownerName: '',
+  autoTransfer: false,
 };
 
 export function getCaptureConfig(): CaptureConfig {
@@ -31,6 +37,8 @@ export function getCaptureConfig(): CaptureConfig {
         ? parsed.packages.filter((p): p is string => typeof p === 'string')
         : DEFAULT_CAPTURE_CONFIG.packages,
       sms: typeof parsed.sms === 'boolean' ? parsed.sms : DEFAULT_CAPTURE_CONFIG.sms,
+      ownerName: typeof parsed.ownerName === 'string' ? parsed.ownerName : '',
+      autoTransfer: typeof parsed.autoTransfer === 'boolean' ? parsed.autoTransfer : false,
     };
   } catch {
     return DEFAULT_CAPTURE_CONFIG;
