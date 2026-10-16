@@ -1,6 +1,6 @@
 // Gợi ý dựng Sổ nợ từ giao dịch cũ ("Mượn a Quý", "Nợ a Quý", "Cho em Lít Vay"...). Xem lại rồi mới tạo.
+import { goBack } from '@/lib/goBack';
 import { t } from '@/lib/i18n';
-import { router } from 'expo-router';
 import { Alert, View } from 'react-native';
 
 import { showSnackbar } from '@/components/feedback/snackbarStore';
@@ -25,7 +25,7 @@ export function DebtSuggestScreen() {
         text: t('Đã tạo {length} khoản nợ', { length: items.length }),
         tone: 'success',
       });
-      if (items.length === proposals?.length) router.back();
+      if (items.length === proposals?.length) goBack();
     } catch (error) {
       Alert.alert('Chưa tạo được', error instanceof Error ? error.message : String(error));
     }

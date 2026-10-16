@@ -1,5 +1,6 @@
 // Thêm / sửa mục tiêu tiết kiệm.
-import { router, useLocalSearchParams } from 'expo-router';
+import { goBack } from '@/lib/goBack';
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
@@ -49,7 +50,7 @@ export function GoalEditScreen() {
         note,
       });
       showSnackbar({ text: 'Đã lưu mục tiêu', tone: 'success' });
-      router.back();
+      goBack();
     } catch (error) {
       Alert.alert('Chưa lưu được', error instanceof Error ? error.message : String(error));
     }
@@ -63,7 +64,7 @@ export function GoalEditScreen() {
         style: 'destructive',
         onPress: () => {
           if (id) deleteGoal(db, id);
-          router.back();
+          goBack();
         },
       },
     ]);

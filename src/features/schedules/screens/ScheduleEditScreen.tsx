@@ -1,6 +1,7 @@
 // Thêm / sửa lịch thu chi: lương, tiền nhà, trả góp, điện nước, chuyển tiết kiệm...
+import { goBack } from '@/lib/goBack';
 import { t } from '@/lib/i18n';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 
@@ -150,7 +151,7 @@ export function ScheduleEditScreen() {
         weekdays: rule.weekdays ? rule.weekdays.join(',') : null,
       });
       showSnackbar({ text: id ? 'Đã lưu lịch' : 'Đã thêm lịch', tone: 'success' });
-      router.back();
+      goBack();
     } catch (error) {
       Alert.alert('Chưa lưu được', error instanceof Error ? error.message : String(error));
     }
@@ -165,7 +166,7 @@ export function ScheduleEditScreen() {
         style: 'destructive',
         onPress: () => {
           deleteSchedule(db, id);
-          router.back();
+          goBack();
         },
       },
     ]);
@@ -441,7 +442,7 @@ export function ScheduleEditScreen() {
             value={existing?.active ?? true}
             onValueChange={(value) => {
               setScheduleActive(db, id, value);
-              router.back();
+              goBack();
             }}
           />
         ) : null}

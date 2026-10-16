@@ -1,3 +1,4 @@
+import { goBack } from '@/lib/goBack';
 import { t } from '@/lib/i18n';
 import * as Haptics from '@/lib/haptics';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -62,7 +63,7 @@ export function AdjustBalanceScreen() {
     markReconciled(id);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     showSnackbar({ text: diff === 0 ? 'Số dư đã đúng' : 'Đã điều chỉnh số dư', tone: 'success' });
-    router.back();
+    goBack();
   };
 
   const addMissing = () =>

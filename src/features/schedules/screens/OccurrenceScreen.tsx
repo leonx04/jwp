@@ -1,4 +1,5 @@
 // Một kỳ của lịch: đã thanh toán / bỏ qua / dời ngày / sửa lịch.
+import { goBack } from '@/lib/goBack';
 import { t } from '@/lib/i18n';
 import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
@@ -81,7 +82,7 @@ export function OccurrenceScreen() {
   const pay = () => {
     // Ghi luôn theo thông tin của lịch (có Hoàn tác); khoản ước tính mới cần mở form nhập số thật
     if (quickPayWithToast(db, o, title, format.money)) {
-      if (router.canGoBack()) router.back();
+      if (router.canGoBack()) goBack();
       return;
     }
     router.replace({
@@ -115,7 +116,7 @@ export function OccurrenceScreen() {
       // Hoàn tác giữ lại ngày đã dời (nếu có)
       onAction: () => moveTo(previous),
     });
-    if (router.canGoBack()) router.back();
+    if (router.canGoBack()) goBack();
   };
 
   const reschedule = async () => {

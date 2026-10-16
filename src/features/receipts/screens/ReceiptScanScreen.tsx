@@ -1,9 +1,9 @@
 // Nhập giao dịch từ ảnh biên lai: chọn ảnh / dán từ clipboard → OCR trên máy → duyệt → lưu hàng loạt.
+import { goBack } from '@/lib/goBack';
 import { t } from '@/lib/i18n';
 import * as Clipboard from 'expo-clipboard';
 import { File, Paths } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, Pressable, View } from 'react-native';
 
@@ -226,7 +226,7 @@ export function ReceiptScanScreen() {
         text: t('Đã lưu {length} giao dịch', { length: selected.length }),
         tone: 'success',
       });
-      router.back();
+      goBack();
     } catch (error) {
       Alert.alert('Chưa lưu được', error instanceof Error ? error.message : String(error));
     }

@@ -1,4 +1,5 @@
 // Thêm / sửa giao dịch: chi, thu, chuyển tiền giữa ví (có phí), tag, gợi ý theo lịch sử & số tiền.
+import { goBack } from '@/lib/goBack';
 import { t } from '@/lib/i18n';
 import * as Haptics from '@/lib/haptics';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -350,7 +351,7 @@ export function TransactionEditorScreen() {
             }
           : {}),
       });
-      router.back();
+      goBack();
     } catch (error) {
       const message =
         error instanceof TransactionValidationError
@@ -377,7 +378,7 @@ export function TransactionEditorScreen() {
             actionLabel: 'Hoàn tác',
             onAction: () => restoreSnapshot(db, snapshot),
           });
-          router.back();
+          goBack();
         },
       },
     ]);
