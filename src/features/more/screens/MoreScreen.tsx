@@ -127,6 +127,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#7C3AED',
       },
       {
+        icon: 'code-slash-outline',
+        title: 'Cài đặt cá nhân (dán JSON)',
+        subtitle: 'Đặt ngân sách theo ngày lương, dọn tag, tuỳ chọn — dán một lần',
+        href: '/settings/profile',
+        color: '#7C3AED',
+      },
+      {
         icon: 'mail-unread-outline',
         title: 'Tự đọc thông báo ngân hàng',
         subtitle: 'Gợi ý ghi giao dịch từ thông báo / SMS biến động số dư',
