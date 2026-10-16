@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { AppText } from '@/components/ui';
 import { useMoneyFormat, useSettings } from '@/features/settings';
 import { ProgressBar } from '@/features/today/components/ProgressBar';
-import { useTheme } from '@/theme';
+import { rgba, useTheme } from '@/theme';
 
 import type { BudgetItem } from '../queries';
 
@@ -21,33 +21,55 @@ export function BudgetBar({ item }: { item: BudgetItem }) {
         ? colors.warning
         : colors.primary;
 
+  const over = item.state === 'over';
+  const percent = Math.round(item.ratio * 100);
+
   return (
-    <View style={{ gap: 6 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
-        <AppText variant="bodyMedium" numberOfLines={1} style={{ flex: 1 }}>
+    <View style={{ gap: 10 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <AppText variant="heading" numberOfLines={1} style={{ flex: 1 }}>
           {item.name}
         </AppText>
         <AppText
-          variant="caption"
-          color="textMuted"
-          style={{ fontVariant: ['tabular-nums'] }}
+          variant="label"
+          style={{
+            color: tone,
+            backgroundColor: rgba(tone, colors.dark ? 0.2 : 0.12),
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+            borderRadius: 999,
+            overflow: 'hidden',
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {mask(`${percent}%`)}
+        </AppText>
+      </View>
+      <View>
+        <AppText variant="caption" color="textMuted">
+          {over ? 'Vượt ngân sách' : 'Còn lại'}
+        </AppText>
+        <AppText
+          variant="title"
+          style={{ color: over ? colors.expense : colors.text, fontVariant: ['tabular-nums'] }}
           numberOfLines={1}
           adjustsFontSizeToFit
           minimumFontScale={0.6}
         >
-          {mask(`${format.money(item.spent)} / ${format.money(item.amount)}`)}
+          {mask(format.money(Math.abs(item.remaining)))}
         </AppText>
       </View>
-      <ProgressBar value={Math.min(1, item.ratio)} color={tone} height={8} />
-      <AppText
-        variant="caption"
-        color={item.state === 'over' ? 'expense' : item.willExceed ? 'warning' : 'textMuted'}
-      >
+      <ProgressBar value={Math.min(1, item.ratio)} color={tone} height={10} />
+      <AppText variant="caption" color={item.willExceed && !over ? 'warning' : 'textMuted'}>
         {mask(
-          item.state === 'over'
-            ? t('Vượt {remaining}', { remaining: format.money(-item.remaining) })
-            : t('Còn {remaining} · tối đa {perDay}/ngày ({daysLeft} ngày)', {
-                remaining: format.money(item.remaining),
+          over
+            ? t('Đã chi {spent} / {limit}', {
+                spent: format.money(item.spent),
+                limit: format.money(item.amount),
+              })
+            : t('{spent} / {limit} · tối đa {perDay}/ngày ({daysLeft} ngày)', {
+                spent: format.money(item.spent),
+                limit: format.money(item.amount),
                 perDay: format.money(item.perDay),
                 daysLeft: item.daysLeft,
               }),
