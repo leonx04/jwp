@@ -31,8 +31,8 @@ export function payCreditCharge(
 ): void {
   const creditId = o.schedule.accountId;
   const chargeDay = o.date <= today ? o.date : today;
-  db.transaction(() => {
-    saveTransaction(db, {
+  db.transaction((tx) => {
+    saveTransaction(tx, {
       type: 'expense',
       amount: o.amount,
       accountId: creditId,
@@ -40,7 +40,7 @@ export function payCreditCharge(
       title: o.schedule.title,
       date: vnDateToMs(chargeDay, '12:00'),
     });
-    saveTransaction(db, {
+    saveTransaction(tx, {
       type: 'transfer',
       amount: o.amount,
       accountId: payerAccountId,
