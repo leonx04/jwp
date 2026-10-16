@@ -18,6 +18,8 @@ export type BudgetInput = {
   categoryIds?: readonly string[];
   /** Trống = mọi ví */
   accountIds?: readonly string[];
+  /** Ngày bắt đầu chu kỳ riêng (1–31). Trống / null = theo ngày bắt đầu tháng chung */
+  startDay?: number | null;
 };
 
 export function listBudgetRows(db: AppDatabase): Budget[] {
@@ -31,8 +33,13 @@ export function saveBudget(db: AppDatabase, input: BudgetInput): string {
     throw new BudgetValidationError('Hạn mức phải lớn hơn 0.');
   }
   if (input.amount > MAX_AMOUNT) throw new BudgetValidationError('Hạn mức quá lớn.');
+  const startDay = input.startDay ?? null;
+  if (startDay !== null && (!Number.isInteger(startDay) || startDay < 1 || startDay > 31)) {
+    throw new BudgetValidationError('Ngày bắt đầu chu kỳ phải từ 1 đến 31.');
+  }
   const values = {
     name,
+    startDay,
     amount: input.amount,
     categoryIds: serializeIdList(input.categoryIds ?? []),
     accountIds: serializeIdList(input.accountIds ?? []),

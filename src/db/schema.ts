@@ -314,10 +314,15 @@ export const budgets = sqliteTable(
     categoryIds: text('category_ids'),
     /** Danh sách id ví. Trống = mọi ví */
     accountIds: text('account_ids'),
+    /** Ngày bắt đầu chu kỳ riêng của ngân sách (1–31). Trống = theo ngày bắt đầu tháng chung */
+    startDay: integer('start_day'),
     orderNum: real('order_num').notNull().default(0),
     ...timestamps,
   },
-  (t) => [check('budgets_amount_non_negative', sql`${t.amount} >= 0`)],
+  (t) => [
+    check('budgets_amount_non_negative', sql`${t.amount} >= 0`),
+    check('budgets_start_day_range', sql`${t.startDay} is null or ${t.startDay} between 1 and 31`),
+  ],
 );
 
 // ─── Quỹ / mục tiêu tiết kiệm ───────────────────────────────────────────────
