@@ -40,7 +40,7 @@ export function DebtsCard() {
       <View style={{ flexDirection: 'row', gap: 16 }}>
         <View style={{ flex: 1 }}>
           <AppText variant="caption" color="textMuted">
-            Tôi nợ
+            Bạn đang nợ
           </AppText>
           <AppText
             variant="bodyMedium"
@@ -55,7 +55,7 @@ export function DebtsCard() {
         </View>
         <View style={{ flex: 1 }}>
           <AppText variant="caption" color="textMuted">
-            Nợ tôi
+            Người khác nợ bạn
           </AppText>
           <AppText
             variant="bodyMedium"
@@ -76,7 +76,7 @@ export function DebtsCard() {
             icon={d.direction === 'lent' ? 'arrow-up-circle-outline' : 'arrow-down-circle-outline'}
             iconColor={d.direction === 'lent' ? '#16A34A' : '#DC2626'}
             title={d.person.name}
-            subtitle={`${d.direction === 'lent' ? 'Nợ tôi' : 'Tôi nợ'} · ${statusText(d)}`}
+            subtitle={`${d.direction === 'lent' ? 'Họ nợ bạn' : 'Bạn nợ họ'} · ${statusText(d)}`}
             onPress={() => router.push({ pathname: '/debt/[id]', params: { id: d.debt.id } })}
             right={
               <AppText

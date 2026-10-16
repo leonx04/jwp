@@ -12,11 +12,10 @@ import {
   ListRow,
   Screen,
   SegmentedControl,
-  StatGrid,
 } from '@/components/ui';
 import { useMoneyFormat } from '@/features/settings';
 
-import { statusText } from '../components/display';
+import { repayAction, statusText } from '../components/display';
 import { useDebtProposals, useDebts } from '../hooks';
 import type { DebtItem } from '../queries';
 
@@ -24,8 +23,8 @@ type Filter = 'all' | 'borrowed' | 'lent';
 
 const FILTERS = [
   { value: 'all', label: 'Tất cả' },
-  { value: 'borrowed', label: 'Tôi nợ' },
-  { value: 'lent', label: 'Nợ tôi' },
+  { value: 'borrowed', label: 'Bạn đang nợ' },
+  { value: 'lent', label: 'Nợ bạn' },
 ] as const;
 
 const ACTIVE = (d: DebtItem) => d.status !== 'closed' && d.status !== 'settled';
@@ -49,20 +48,49 @@ export function DebtsScreen() {
       title="Sổ nợ"
       headerRight={<IconButton icon="add" accessibilityLabel="Thêm khoản nợ" onPress={add} />}
     >
-      <Card>
-        <StatGrid
-          columns={3}
-          items={[
-            { label: 'Tôi nợ', value: format.compact(summary.owe) },
-            { label: 'Nợ tôi', value: format.compact(summary.owed) },
-            {
-              label: summary.net >= 0 ? 'Được hoàn' : 'Phải trả',
-              value: format.compact(Math.abs(summary.net)),
-              hint: summary.overdue ? `${summary.overdue} quá hạn` : undefined,
-            },
-          ]}
-        />
-      </Card>
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        <Card style={{ flex: 1, gap: 2 }}>
+          <AppText variant="caption" color="textMuted">
+            Bạn đang nợ
+          </AppText>
+          <AppText
+            variant="heading"
+            color="expense"
+            style={{ fontVariant: ['tabular-nums'] }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
+            {format.money(summary.owe)}
+          </AppText>
+        </Card>
+        <Card style={{ flex: 1, gap: 2 }}>
+          <AppText variant="caption" color="textMuted">
+            Người khác nợ bạn
+          </AppText>
+          <AppText
+            variant="heading"
+            color="income"
+            style={{ fontVariant: ['tabular-nums'] }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
+            {format.money(summary.owed)}
+          </AppText>
+        </Card>
+      </View>
+      {summary.owe > 0 && summary.owed > 0 ? (
+        <AppText variant="caption" color="textMuted">
+          Nếu bù trừ hết: bạn {summary.net >= 0 ? 'được nhận lại ' : 'còn phải trả '}
+          {format.money(Math.abs(summary.net))}
+          {summary.overdue ? ` · ${summary.overdue} khoản quá hạn` : ''}
+        </AppText>
+      ) : summary.overdue ? (
+        <AppText variant="caption" color="expense">
+          {summary.overdue} khoản quá hạn
+        </AppText>
+      ) : null}
 
       {proposals?.length ? (
         <Pressable accessibilityRole="button" onPress={() => router.push('/debts/suggest')}>
@@ -101,7 +129,7 @@ export function DebtsScreen() {
               color={group.net > 0 ? 'income' : group.net < 0 ? 'expense' : 'textMuted'}
               style={{ fontVariant: ['tabular-nums'] }}
             >
-              {group.net > 0 ? 'Nợ tôi ' : group.net < 0 ? 'Tôi nợ ' : ''}
+              {group.net > 0 ? 'Nợ bạn ' : group.net < 0 ? 'Bạn nợ ' : ''}
               {format.money(Math.abs(group.net))}
             </AppText>
           </View>
@@ -135,25 +163,44 @@ function DebtRow({ item, showPerson = false }: { item: DebtItem; showPerson?: bo
   const format = useMoneyFormat();
   const lent = item.direction === 'lent';
   const label = item.debt.title || (lent ? 'Cho vay' : 'Đi vay');
+  const active = item.status !== 'closed' && item.status !== 'settled';
   return (
-    <ListRow
-      icon={lent ? 'arrow-up-circle-outline' : 'arrow-down-circle-outline'}
-      iconColor={lent ? '#16A34A' : '#DC2626'}
-      title={showPerson ? `${item.person.name} · ${label}` : label}
-      subtitle={`${lent ? 'Nợ tôi' : 'Tôi nợ'} · ${statusText(item)}`}
-      onPress={() => router.push({ pathname: '/debt/[id]', params: { id: item.debt.id } })}
-      right={
-        <AppText
-          variant="bodyMedium"
-          color={item.status === 'overdue' ? 'expense' : 'text'}
-          style={{ fontVariant: ['tabular-nums'] }}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.6}
-        >
-          {format.money(item.remaining)}
-        </AppText>
-      }
-    />
+    <View>
+      <ListRow
+        icon={lent ? 'arrow-up-circle-outline' : 'arrow-down-circle-outline'}
+        iconColor={lent ? '#16A34A' : '#DC2626'}
+        title={showPerson ? `${item.person.name} · ${label}` : label}
+        subtitle={`${lent ? 'Họ nợ bạn' : 'Bạn nợ họ'} · ${statusText(item)}`}
+        onPress={() => router.push({ pathname: '/debt/[id]', params: { id: item.debt.id } })}
+        right={
+          <AppText
+            variant="bodyMedium"
+            color={item.status === 'overdue' ? 'expense' : 'text'}
+            style={{ fontVariant: ['tabular-nums'] }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
+            {format.money(item.remaining)}
+          </AppText>
+        }
+      />
+      {active ? (
+        <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 12, paddingBottom: 8 }}>
+          <Button
+            title={repayAction(item.direction)}
+            size="sm"
+            variant="secondary"
+            icon="checkmark"
+            onPress={() =>
+              router.push({
+                pathname: '/debt/record',
+                params: { debtId: item.debt.id, type: 'repay' },
+              })
+            }
+          />
+        </View>
+      ) : null}
+    </View>
   );
 }
