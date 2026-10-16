@@ -1,5 +1,6 @@
 // Thêm / sửa khoản nợ. Có thể điền sẵn qua tham số: personName, amount, direction, title.
-import { router, useLocalSearchParams } from 'expo-router';
+import { goBack } from '@/lib/goBack';
+import { useLocalSearchParams } from 'expo-router';
 import { asc } from 'drizzle-orm';
 import { useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
@@ -86,7 +87,7 @@ function Form({
         accountId,
       });
       showSnackbar({ text: 'Đã lưu khoản nợ', tone: 'success' });
-      router.back();
+      goBack();
     } catch (error) {
       Alert.alert('Chưa lưu được', error instanceof Error ? error.message : String(error));
     }

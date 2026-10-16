@@ -1,3 +1,4 @@
+import { goBack } from '@/lib/goBack';
 import { t } from '@/lib/i18n';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -80,7 +81,7 @@ export function AccountEditScreen() {
       const savedId = saveAccount(db, { id, name, color, icon, includeInBalance, credit });
       if (id && archived !== existing?.archived) setAccountArchived(db, savedId, archived);
       showSnackbar({ text: id ? 'Đã lưu ví' : 'Đã thêm ví', tone: 'success' });
-      router.back();
+      goBack();
     } catch (error) {
       Alert.alert('Chưa lưu được', error instanceof Error ? error.message : String(error));
     }

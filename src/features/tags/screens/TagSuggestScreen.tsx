@@ -1,6 +1,6 @@
 // Gợi ý tag từ lịch sử: các cụm hay lặp trong tiêu đề giao dịch. Xem lại rồi tạo tag và gắn vào giao dịch cũ.
+import { goBack } from '@/lib/goBack';
 import { t } from '@/lib/i18n';
-import { router } from 'expo-router';
 import { Alert, View } from 'react-native';
 
 import { showSnackbar } from '@/components/feedback/snackbarStore';
@@ -27,7 +27,7 @@ export function TagSuggestScreen() {
         }),
         tone: 'success',
       });
-      if (items.length === proposals?.length) router.back();
+      if (items.length === proposals?.length) goBack();
     } catch (error) {
       Alert.alert('Chưa tạo được', error instanceof Error ? error.message : String(error));
     }

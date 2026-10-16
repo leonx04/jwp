@@ -1,5 +1,6 @@
 // Thêm / sửa ngân sách: tên, hạn mức tháng, danh mục và ví áp dụng (trống = tất cả).
-import { router, useLocalSearchParams } from 'expo-router';
+import { goBack } from '@/lib/goBack';
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
@@ -29,7 +30,7 @@ export function BudgetEditScreen() {
     try {
       saveBudget(db, { id, name, amount, categoryIds, accountIds });
       showSnackbar({ text: 'Đã lưu ngân sách', tone: 'success' });
-      router.back();
+      goBack();
     } catch (error) {
       Alert.alert('Chưa lưu được', error instanceof Error ? error.message : String(error));
     }
@@ -43,7 +44,7 @@ export function BudgetEditScreen() {
         style: 'destructive',
         onPress: () => {
           if (id) deleteBudget(db, id);
-          router.back();
+          goBack();
         },
       },
     ]);

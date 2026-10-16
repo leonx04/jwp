@@ -1,4 +1,5 @@
 // Chi tiết một khoản nợ: còn lại, tiến độ trả, lịch sử, thao tác (trả / vay thêm / lãi / sửa / đóng / xoá).
+import { goBack } from '@/lib/goBack';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Alert, View } from 'react-native';
 
@@ -58,7 +59,7 @@ export function DebtDetailScreen() {
           onPress: () => {
             deleteDebt(db, debt.id);
             showSnackbar({ text: 'Đã xoá khoản nợ', tone: 'success' });
-            router.back();
+            goBack();
           },
         },
       ],

@@ -1,3 +1,4 @@
+import { goBack } from '@/lib/goBack';
 import { t } from '@/lib/i18n';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -19,7 +20,7 @@ export function TagEditScreen() {
     try {
       saveTag(db, { id, name, color });
       showSnackbar({ text: 'Đã lưu tag', tone: 'success' });
-      router.back();
+      goBack();
     } catch (error) {
       Alert.alert('Chưa lưu được', error instanceof Error ? error.message : String(error));
     }
@@ -55,7 +56,7 @@ export function TagEditScreen() {
               style: 'destructive',
               onPress: () => {
                 deleteTag(db, id);
-                router.back();
+                goBack();
               },
             },
           ])

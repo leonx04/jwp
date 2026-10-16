@@ -1,3 +1,4 @@
+import { goBack } from '@/lib/goBack';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
@@ -39,7 +40,7 @@ export function CategoryEditScreen() {
     try {
       saveCategory(db, { id, name, color, icon });
       showSnackbar({ text: id ? 'Đã lưu danh mục' : 'Đã thêm danh mục', tone: 'success' });
-      router.back();
+      goBack();
     } catch (error) {
       Alert.alert('Chưa lưu được', error instanceof Error ? error.message : String(error));
     }
@@ -54,7 +55,7 @@ export function CategoryEditScreen() {
         style: 'destructive',
         onPress: () => {
           deleteCategory(db, id);
-          router.back();
+          goBack();
         },
       },
     ]);
