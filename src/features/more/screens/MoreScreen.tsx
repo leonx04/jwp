@@ -35,6 +35,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#7C3AED',
       },
       {
+        icon: 'speedometer-outline',
+        title: 'Xăng xe',
+        subtitle: 'Giá xăng mỗi lít, chi phí theo tháng, dự kiến lần đổ tới',
+        href: '/fuel',
+        color: '#F59E0B',
+      },
+      {
         icon: 'sparkles-outline',
         title: 'Tổng kết',
         subtitle: 'Kỳ này bạn chi gì nhiều nhất, ngày nào, nơi nào — vuốt từng thẻ',
@@ -127,6 +134,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         subtitle: 'JSON, CSV, khôi phục từ file',
         href: '/backup',
         color: '#0EA5E9',
+      },
+      {
+        icon: 'shield-checkmark-outline',
+        title: 'Kiểm tra dữ liệu',
+        subtitle: 'Tìm giao dịch trùng, ngày sai, số tiền lạ, tag thừa để dọn',
+        href: '/data-check',
+        color: '#16A34A',
       },
       {
         icon: 'download-outline',
