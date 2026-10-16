@@ -34,6 +34,7 @@ import {
   Chip,
   Screen,
   SectionTitle,
+  SelectField,
   SegmentedControl,
   TextField,
 } from '@/components/ui';
@@ -156,7 +157,6 @@ export function TransactionEditorScreen() {
       isAdjustment: false,
     };
   });
-  const [newTag, setNewTag] = useState('');
   // Đổ xăng: giá xăng hôm đó (đ/lít), ghi vào ghi chú khi lưu
   const [fuelPrice, setFuelPrice] = useState(() =>
     editingId ? (parseFuelNote(getTransaction(db, editingId)?.note)?.price ?? 0) : 0,
@@ -241,6 +241,30 @@ export function TransactionEditorScreen() {
     [draft.categoryId, deferredTitle, draft.tagIds],
   );
   const pairs = useMemo(() => (isTransfer ? frequentTransferPairs(db) : []), [isTransfer]);
+  const categoryOptions = useMemo(
+    () =>
+      categories.map((c) => ({
+        id: c.id,
+        label: c.name,
+        icon: c.icon ? toAppIcon(c.icon, 'pricetag-outline') : null,
+        color: c.color,
+      })),
+    [categories],
+  );
+  // Tag gợi ý theo danh mục / tiêu đề lên trước, sau đó là các tag còn lại
+  const tagOptions = useMemo(() => {
+    const suggested = new Set(tagSuggestions.map((t) => t.id));
+    const toOption = (t: { id: string; name: string; color: string | null }) => ({
+      id: t.id,
+      label: `#${t.name}`,
+      icon: 'pricetag-outline' as const,
+      color: t.color,
+    });
+    return [
+      ...allTags.filter((t) => suggested.has(t.id)).map(toOption),
+      ...allTags.filter((t) => !suggested.has(t.id)).map(toOption),
+    ];
+  }, [allTags, tagSuggestions]);
 
   const applySuggestion = (s: TitleSuggestion) => {
     Haptics.selectionAsync().catch(() => {});
@@ -251,13 +275,6 @@ export function TransactionEditorScreen() {
       tagIds: [...new Set([...draft.tagIds, ...s.tagIds])],
       amount: draft.amount || s.lastAmount,
     });
-  };
-
-  const addTag = () => {
-    if (!newTag.trim()) return;
-    const id = ensureTag(db, newTag);
-    set({ tagIds: [...new Set([...draft.tagIds, id])] });
-    setNewTag('');
   };
 
   const save = () => {
@@ -552,24 +569,17 @@ export function TransactionEditorScreen() {
               date={draft.date}
             />
           ) : null}
-          <SectionTitle>Danh mục</SectionTitle>
-          <View style={styles.wrap}>
-            {categories.map((c) => (
-              <Chip
-                key={c.id}
-                label={c.name}
-                icon={c.icon ? toAppIcon(c.icon, 'pricetag-outline') : undefined}
-                color={c.color}
-                selected={draft.categoryId === c.id}
-                onPress={() => set({ categoryId: draft.categoryId === c.id ? null : c.id })}
-              />
-            ))}
-            <Chip
-              label="Sửa danh mục"
-              icon="settings-outline"
-              onPress={() => router.push('/categories')}
-            />
-          </View>
+          <SelectField
+            label="Danh mục"
+            title="Chọn danh mục"
+            placeholder="Chưa phân loại"
+            icon="pricetag-outline"
+            clearable
+            options={categoryOptions}
+            value={draft.categoryId}
+            onChange={(categoryId) => set({ categoryId })}
+            action={{ label: 'Sửa danh mục', onPress: () => router.push('/categories') }}
+          />
         </>
       )}
 
@@ -595,38 +605,16 @@ export function TransactionEditorScreen() {
       {/* Tag + ghi chú: gập lại cho gọn, tự mở khi đã có nội dung */}
       {moreOpen || draft.tagIds.length > 0 || !!draft.note ? (
         <>
-          <SectionTitle>Tag</SectionTitle>
-          <View style={styles.wrap}>
-            {draft.tagIds.map((id) => {
-              const tag = allTags.find((t) => t.id === id);
-              return tag ? (
-                <Chip
-                  key={id}
-                  label={`#${tag.name}`}
-                  color={tag.color}
-                  selected
-                  removable
-                  onPress={() => set({ tagIds: draft.tagIds.filter((t) => t !== id) })}
-                />
-              ) : null;
-            })}
-            {tagSuggestions.map((t) => (
-              <Chip
-                key={t.id}
-                label={`#${t.name}`}
-                color={t.color}
-                onPress={() => set({ tagIds: [...draft.tagIds, t.id] })}
-              />
-            ))}
-          </View>
-          <TextField
+          <SelectField
+            multiple
+            label="Tag"
+            title="Chọn tag"
+            placeholder="Chưa gắn tag"
             icon="pricetag-outline"
-            placeholder="Thêm tag mới rồi bấm Enter"
-            value={newTag}
-            onChangeText={setNewTag}
-            onSubmitEditing={addTag}
-            returnKeyType="done"
-            submitBehavior="submit"
+            options={tagOptions}
+            value={draft.tagIds}
+            onChange={(tagIds) => set({ tagIds })}
+            onCreate={(name) => ensureTag(db, name)}
           />
 
           <TextField

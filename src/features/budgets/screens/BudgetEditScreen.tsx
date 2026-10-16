@@ -4,15 +4,7 @@ import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
 import { showSnackbar } from '@/components/feedback/snackbarStore';
-import {
-  AppText,
-  Button,
-  Chip,
-  MoneyField,
-  Screen,
-  SectionTitle,
-  TextField,
-} from '@/components/ui';
+import { AppText, Button, MoneyField, Screen, SelectField, TextField } from '@/components/ui';
 import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 import { listAccounts } from '@/features/accounts/repository';
@@ -21,9 +13,6 @@ import { toAppIcon } from '@/lib/icons';
 
 import { parseIdList } from '../compute';
 import { deleteBudget, listBudgetRows, saveBudget } from '../repository';
-
-const toggle = (list: string[], id: string) =>
-  list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
 
 export function BudgetEditScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -82,39 +71,43 @@ export function BudgetEditScreen() {
       />
       <MoneyField label="Hạn mức mỗi tháng" value={amount} onChange={setAmount} />
 
-      <SectionTitle>Danh mục áp dụng</SectionTitle>
+      <SelectField
+        multiple
+        label="Danh mục áp dụng"
+        title="Chọn danh mục"
+        placeholder="Mọi khoản chi"
+        icon="pricetag-outline"
+        options={categories.map((c) => ({
+          id: c.id,
+          label: c.name,
+          icon: c.icon ? toAppIcon(c.icon, 'pricetag-outline') : null,
+          color: c.color,
+        }))}
+        value={categoryIds}
+        onChange={setCategoryIds}
+      />
       <AppText variant="caption" color="textMuted">
         Không chọn = tính mọi khoản chi.
       </AppText>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-        {categories.map((c) => (
-          <Chip
-            key={c.id}
-            label={c.name}
-            icon={c.icon ? toAppIcon(c.icon, 'pricetag-outline') : undefined}
-            color={c.color}
-            selected={categoryIds.includes(c.id)}
-            onPress={() => setCategoryIds((l) => toggle(l, c.id))}
-          />
-        ))}
-      </View>
 
-      <SectionTitle>Ví áp dụng</SectionTitle>
+      <SelectField
+        multiple
+        label="Ví áp dụng"
+        title="Chọn ví"
+        placeholder="Mọi ví"
+        icon="wallet-outline"
+        options={accounts.map((a) => ({
+          id: a.id,
+          label: a.name,
+          icon: toAppIcon(a.icon, 'wallet-outline'),
+          color: a.color,
+        }))}
+        value={accountIds}
+        onChange={setAccountIds}
+      />
       <AppText variant="caption" color="textMuted">
         Không chọn = tính mọi ví.
       </AppText>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-        {accounts.map((a) => (
-          <Chip
-            key={a.id}
-            label={a.name}
-            icon={toAppIcon(a.icon, 'wallet-outline')}
-            color={a.color}
-            selected={accountIds.includes(a.id)}
-            onPress={() => setAccountIds((l) => toggle(l, a.id))}
-          />
-        ))}
-      </View>
 
       {existing ? (
         <Button title="Xoá ngân sách" variant="danger" icon="trash-outline" onPress={remove} />
