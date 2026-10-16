@@ -29,6 +29,7 @@ import { useCaptureSync } from '@/features/capture/hooks';
 import { useMorningBriefingSync } from '@/features/notifications/hooks/useMorningBriefingSync';
 import { useStartupTasks } from '@/features/startup/useStartupTasks';
 import { useLanguage } from '@/lib/i18n';
+import '@/lib/i18n/patchAlert';
 import { useTheme } from '@/theme';
 
 // Giữ màn hình chờ đến khi font sẵn sàng → không bị nháy font mặc định

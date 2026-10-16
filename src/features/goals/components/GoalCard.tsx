@@ -29,7 +29,7 @@ export function GoalCard({ item, actions = false }: GoalCardProps) {
       params: {
         type: 'transfer',
         toAccountId: goal.accountId ?? '',
-        title: t('Góp quỹ {name}', { name: goal.name }),
+        title: `Góp quỹ ${goal.name}`,
       },
     });
 

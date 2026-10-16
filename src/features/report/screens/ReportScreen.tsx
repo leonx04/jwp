@@ -36,8 +36,8 @@ export function ReportScreen() {
   const [offset, setOffset] = useState(Number.isInteger(initial) && initial <= 0 ? initial : 0);
   const format = useMoneyFormat();
   const { report, period } = useMonthlyReport(offset);
-  const title = t('Báo cáo {toLowerCase}', {
-    toLowerCase: periodTitle('month', period).toLowerCase(),
+  const title = t('Báo cáo {period}', {
+    period: periodTitle('month', period).toLowerCase(),
   });
 
   const share = () => {

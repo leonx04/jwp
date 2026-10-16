@@ -1,0 +1,32 @@
+// Quỹ tiết kiệm / mục tiêu
+export const goals: Record<string, string> = {
+  'Chưa đặt tên mục tiêu.': 'Give the goal a name.',
+  'Số tiền mục tiêu phải lớn hơn 0.': 'The target amount must be greater than 0.',
+  'Số đã góp không hợp lệ.': 'The saved amount is not valid.',
+  'Góp quỹ {name}': 'Contribute to {name}',
+  'Đã đạt mục tiêu 🎉': 'Goal reached 🎉',
+  '· hạn {deadline}': '· due {deadline}',
+  '· quá hạn {daysLeft} ngày': '· {daysLeft} days overdue',
+  '· góp {perMonth}/tháng': '· save {perMonth}/month',
+  'Góp thêm': 'Add savings',
+  'Đã lưu mục tiêu': 'Goal saved',
+  'Xoá mục tiêu?': 'Delete goal?',
+  'Ví và giao dịch không bị ảnh hưởng.': 'Wallets and transactions are not affected.',
+  'Sửa mục tiêu': 'Edit goal',
+  'Thêm mục tiêu': 'Add goal',
+  'Tên mục tiêu': 'Goal name',
+  'vd: Du lịch Đà Lạt': 'e.g. Da Lat trip',
+  'Số tiền cần đạt': 'Target amount',
+  'Ví làm quỹ': 'Wallet used as the fund',
+  'Không gắn ví': 'No wallet',
+  'Đã góp được': 'Saved so far',
+  'Hạn đạt mục tiêu': 'Target date',
+  '+3 tháng': '+3 months',
+  '+6 tháng': '+6 months',
+  'Xoá mục tiêu': 'Delete goal',
+  'Mục tiêu gắn ví: tiến độ chính là số dư của ví đó, nên mọi khoản chuyển vào ví đều được tính. Mục tiêu không gắn ví: bạn tự cập nhật số đã góp trong màn sửa.':
+    'Goal linked to a wallet: progress is that wallet’s balance, so every transfer into it counts. Goal without a wallet: you update the saved amount yourself on the edit screen.',
+  'Chưa có mục tiêu nào': 'No goals yet',
+  'Đặt mục tiêu (du lịch, mua máy, quỹ dự phòng…) và gắn với một ví để app theo dõi tiến độ, tính cần góp bao nhiêu mỗi tháng.':
+    'Set a goal (a trip, a new phone, an emergency fund…) and link it to a wallet so the app tracks progress and works out how much to save each month.',
+};

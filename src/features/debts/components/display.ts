@@ -35,7 +35,7 @@ export function statusText(item: Pick<DebtItem, 'status' | 'daysToDue' | 'debt'>
       return daysToDue === 0 ? 'Hạn hôm nay' : t('Còn {daysToDue} ngày', { daysToDue });
     default:
       return debt.dueDate
-        ? t('Hạn {false}', { false: formatDate(debt.dueDate, false) })
+        ? t('Hạn {date}', { date: formatDate(debt.dueDate, false) })
         : 'Không đặt hạn';
   }
 }

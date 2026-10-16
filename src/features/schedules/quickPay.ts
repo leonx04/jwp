@@ -59,9 +59,7 @@ export function quickPay(
         amount: o.amount,
         accountId: payer,
         toAccountId: credit.id,
-        title: o.schedule.title
-          ? t('Trả {title}', { title: o.schedule.title })
-          : 'Trả nợ ví trả sau',
+        title: o.schedule.title ? `Trả ${o.schedule.title}` : 'Trả nợ ví trả sau',
         date: when,
         ...link,
       });
