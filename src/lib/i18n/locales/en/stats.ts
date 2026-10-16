@@ -42,6 +42,10 @@ export const stats: Record<string, string> = {
   'Ngày {slice}': 'Day {slice}',
   'Ghi vài giao dịch trong kỳ này để xem thống kê.':
     'Record a few transactions this period to see statistics.',
+  'Theo tag': 'By tag',
+  '{count} giao dịch': '{count} transactions',
+  'Giao dịch gắn nhiều tag được tính vào từng tag.':
+    'A transaction with several tags counts toward each tag.',
   // Báo cáo tháng
   'cùng kỳ tháng trước': 'same point last month',
   'tháng trước': 'last month',

@@ -2,6 +2,7 @@
 import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
+import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
 import { AreaLineChart, BarChart, DonutChart, useAxisMoney } from '@/components/charts';
@@ -10,7 +11,8 @@ import { AppText, Card, EmptyState, IconBadge, Screen, SectionTitle } from '@/co
 import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 import { useMoneyFormat, useSettings } from '@/features/settings';
-import { todayVn } from '@/lib/date';
+import { ProgressBar } from '@/features/today/components/ProgressBar';
+import { addDays, todayVn, vnDateToMs } from '@/lib/date';
 import { toAppIcon } from '@/lib/icons';
 import { rgba, useTheme } from '@/theme';
 
@@ -43,7 +45,7 @@ import {
   statsPeriod,
   type StatsMode,
 } from '../periods';
-import { loadStats } from '../queries';
+import { getTagTotals, loadStats } from '../queries';
 
 const TYPE_TABS: { value: FlowType; label: string }[] = [
   { value: 'expense', label: 'Chi tiêu' },
@@ -87,6 +89,17 @@ export function StatsScreen() {
         transfersAsIncomeExpense: transfers,
       }),
     [type, period.start, period.end, transfers],
+  );
+
+  const { data: tagTotals = [] } = useLiveData(
+    ['transactions', 'tags'],
+    () =>
+      getTagTotals(db, {
+        from: vnDateToMs(period.start),
+        to: vnDateToMs(addDays(period.end, 1)),
+        type,
+      }),
+    [type, period.start, period.end],
   );
 
   const view = useMemo(() => {
@@ -308,6 +321,47 @@ export function StatsScreen() {
               ))}
             </View>
           </Card>
+
+          {tagTotals.length ? (
+            <>
+              <SectionTitle tone="section">Theo tag</SectionTitle>
+              <Card>
+                {tagTotals.slice(0, 8).map((g) => (
+                  <Pressable
+                    key={g.tagId}
+                    accessibilityRole="button"
+                    onPress={() =>
+                      router.push({ pathname: '/transactions', params: { tagId: g.tagId } })
+                    }
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 12,
+                      paddingVertical: 6,
+                    }}
+                  >
+                    <View style={{ flex: 1, gap: 4 }}>
+                      <AppText variant="bodyMedium" numberOfLines={1}>{`#${g.name}`}</AppText>
+                      <ProgressBar
+                        value={tagTotals[0].amount > 0 ? g.amount / tagTotals[0].amount : 0}
+                        color={g.color ?? sliceColor}
+                        height={6}
+                      />
+                      <AppText variant="caption" color="textMuted">
+                        {t('{count} giao dịch', { count: g.count })}
+                      </AppText>
+                    </View>
+                    <AppText variant="bodyMedium" style={{ fontVariant: ['tabular-nums'] }}>
+                      {format.compact(g.amount)}
+                    </AppText>
+                  </Pressable>
+                ))}
+              </Card>
+              <AppText variant="caption" color="textMuted">
+                Giao dịch gắn nhiều tag được tính vào từng tag.
+              </AppText>
+            </>
+          ) : null}
 
           <SectionTitle tone="section">
             {mode === 'year' ? 'Theo tháng' : 'Xu hướng 6 tháng'}

@@ -104,6 +104,47 @@ export function getCategoryTotals(
   }));
 }
 
+export type TagTotal = {
+  tagId: string;
+  name: string;
+  color: string | null;
+  amount: number;
+  count: number;
+};
+
+/**
+ * Tổng chi (hoặc thu) theo TAG trong [from, to), số tiền giảm dần. Chỉ khoản chi / thu thật (bỏ chuyển khoản,
+ * điều chỉnh số dư, sổ nợ). Giao dịch gắn nhiều tag được tính vào từng tag nên các tag có thể cộng lại hơn tổng.
+ */
+export function getTagTotals(
+  db: AppDatabase,
+  { from, to, type }: { from: number; to: number; type: FlowType },
+): TagTotal[] {
+  const rows = db.all<{
+    tagId: string;
+    name: string;
+    color: string | null;
+    amount: number;
+    count: number;
+  }>(sql`
+    select g.id as tagId, g.name as name, g.color as color,
+      coalesce(sum(t.amount), 0) as amount, count(*) as count
+    from ${transactions} t
+    join transaction_tags tt on tt.transaction_id = t.id
+    join tags g on g.id = tt.tag_id
+    where ${baseWhere(from, to, false)} and t.type = ${type}
+    group by g.id
+    order by amount desc
+  `);
+  return rows.map((r) => ({
+    tagId: r.tagId,
+    name: r.name,
+    color: r.color,
+    amount: Number(r.amount),
+    count: Number(r.count),
+  }));
+}
+
 /**
  * Tổng thu / chi theo từng ngày (giờ VN) trong [from, to). Chỉ trả về ngày có giao dịch.
  * `categoryKey`: chỉ tính một nhóm danh mục (màn chi tiết danh mục).
