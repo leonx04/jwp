@@ -15,7 +15,6 @@ import { toAppIcon } from '@/lib/icons';
 
 import { usePendingCaptures } from '../hooks';
 import { dismissCapture, setCaptureAccount } from '../repository';
-import type { PendingWithGuess } from '../rulesRepository';
 import { dismissCaptures, type PendingPair, type PendingSingle } from '../transfers';
 
 export function InboxScreen() {

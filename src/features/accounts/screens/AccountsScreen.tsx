@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import { IconButton } from '@/components/glass/IconButton';
@@ -18,9 +19,10 @@ import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 import { useSettings } from '@/features/settings';
 import { toAppIcon } from '@/lib/icons';
+import { moveItem } from '@/lib/list/move';
 
 import { totalBalance, useAccountBalances } from '../index';
-import { applyBankLogos, bankLogoCandidates, listAccounts } from '../repository';
+import { applyBankLogos, bankLogoCandidates, listAccounts, reorderAccounts } from '../repository';
 
 export function AccountsScreen() {
   const { data: balances = [] } = useAccountBalances();
@@ -29,6 +31,17 @@ export function AccountsScreen() {
   );
   const hideBalance = useSettings((s) => s.hideBalance);
   const logoCandidates = bankLogoCandidates(balances);
+  const [sorting, setSorting] = useState(false);
+
+  const move = (index: number, direction: -1 | 1) =>
+    reorderAccounts(
+      db,
+      moveItem(
+        balances.map((b) => b.id),
+        index,
+        direction,
+      ),
+    );
 
   const applyLogos = () => {
     const changed = applyBankLogos(
@@ -42,11 +55,20 @@ export function AccountsScreen() {
     <Screen
       title="Ví"
       headerRight={
-        <IconButton
-          icon="add"
-          accessibilityLabel="Thêm ví"
-          onPress={() => router.push('/account/edit')}
-        />
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {balances.length > 1 ? (
+            <IconButton
+              icon={sorting ? 'checkmark' : 'swap-vertical'}
+              accessibilityLabel={sorting ? 'Xong sắp xếp' : 'Sắp xếp thứ tự ví'}
+              onPress={() => setSorting((v) => !v)}
+            />
+          ) : null}
+          <IconButton
+            icon="add"
+            accessibilityLabel="Thêm ví"
+            onPress={() => router.push('/account/edit')}
+          />
+        </View>
       }
     >
       <Card style={{ alignItems: 'center', gap: 2 }}>
@@ -84,7 +106,12 @@ export function AccountsScreen() {
 
       {balances.length ? (
         <Card style={{ gap: 0, paddingVertical: 6 }}>
-          {balances.map((a) => (
+          {sorting ? (
+            <AppText variant="caption" color="textMuted" style={{ padding: 12 }}>
+              Bấm mũi tên để đưa ví lên / xuống. Thứ tự này dùng ở mọi màn chọn ví.
+            </AppText>
+          ) : null}
+          {balances.map((a, index) => (
             <ListRow
               key={a.id}
               icon={toAppIcon(a.icon, 'wallet-outline')}
@@ -92,13 +119,30 @@ export function AccountsScreen() {
               title={a.name}
               subtitle={a.includeInBalance ? undefined : 'Không tính vào tổng'}
               right={
-                hideBalance ? (
+                sorting ? (
+                  <View style={{ flexDirection: 'row', gap: 6 }}>
+                    <IconButton
+                      icon="chevron-up"
+                      size={34}
+                      accessibilityLabel={`Đưa ${a.name} lên`}
+                      disabled={index === 0}
+                      onPress={() => move(index, -1)}
+                    />
+                    <IconButton
+                      icon="chevron-down"
+                      size={34}
+                      accessibilityLabel={`Đưa ${a.name} xuống`}
+                      disabled={index === balances.length - 1}
+                      onPress={() => move(index, 1)}
+                    />
+                  </View>
+                ) : hideBalance ? (
                   <AppText color="textMuted">••••</AppText>
                 ) : (
                   <AmountText amount={a.balance} />
                 )
               }
-              onPress={() => router.push(`/account/${a.id}`)}
+              onPress={sorting ? undefined : () => router.push(`/account/${a.id}`)}
             />
           ))}
         </Card>
