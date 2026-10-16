@@ -27,6 +27,7 @@ import { AppThemeProvider } from '@/features/settings';
 import { useAutoBackup } from '@/features/backup/hooks';
 import { useCaptureSync } from '@/features/capture/hooks';
 import { useMorningBriefingSync } from '@/features/notifications/hooks/useMorningBriefingSync';
+import { useWidgetSync } from '@/features/widget/useWidgetSync';
 import { useStartupTasks } from '@/features/startup/useStartupTasks';
 import { useLanguage } from '@/lib/i18n';
 import '@/lib/i18n/patchAlert';
@@ -66,6 +67,7 @@ function RootNavigator() {
   useNotificationResponses();
   useStartupTasks();
   useMorningBriefingSync();
+  useWidgetSync();
   useCaptureSync();
   useAutoBackup();
 
