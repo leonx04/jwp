@@ -22,6 +22,8 @@ import {
 import { db } from '@/db';
 import { listAccounts } from '@/features/accounts/repository';
 import { listCategories, saveCategory } from '@/features/categories/repository';
+import { isFuelText, lastFuel, litersFor, mergeFuelNote } from '@/features/fuel/fuel';
+import { useMoneyFormat } from '@/features/settings';
 import { suggestTitles } from '@/features/suggestions/engine';
 import { detectBank } from '@/lib/banks';
 import { normalizeForSearch } from '@/lib/text';
@@ -49,6 +51,8 @@ type Draft = {
   categoryHint: string;
   /** Nguồn tiền ghi trên biên lai (vd "TPBank") — rỗng nếu không đọc được */
   sourceName: string;
+  /** Giá xăng (đồng/lít) khi là khoản đổ xăng; 0 = chưa nhập */
+  fuelPrice: number;
   ref: string | null;
   confidence: number;
 };
@@ -117,12 +121,14 @@ async function recognizeUri(
     categoryId,
     categoryHint,
     sourceName: parsed.bankCode ? (detectBank(parsed.bankCode)?.name ?? parsed.bankCode) : '',
+    fuelPrice: 0,
     ref,
     confidence: parsed.confidence,
   };
 }
 
 export function ReceiptScanScreen() {
+  const format = useMoneyFormat();
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [busy, setBusy] = useState(false);
   const [skipped, setSkipped] = useState(0);
@@ -182,6 +188,11 @@ export function ReceiptScanScreen() {
   const patch = (key: string, change: Partial<Draft>) =>
     setDrafts((list) => list.map((d) => (d.key === key ? { ...d, ...change } : d)));
 
+  const isFuel = (d: Draft) =>
+    d.type === 'expense' &&
+    (isFuelText(d.title) || isFuelText(categories.find((c) => c.id === d.categoryId)?.name));
+  const previousFuel = lastFuel(db);
+
   const selected = drafts.filter((d) => d.include && d.accountId && d.amount > 0);
 
   const saveAll = () => {
@@ -194,9 +205,14 @@ export function ReceiptScanScreen() {
           categoryId: d.categoryId,
           title: d.title,
           note:
-            d.counterparty && d.counterparty !== d.title
-              ? `Người ${d.type === 'income' ? 'chuyển' : 'nhận'}: ${d.counterparty}`
-              : null,
+            mergeFuelNote(
+              d.counterparty && d.counterparty !== d.title
+                ? `Người ${d.type === 'income' ? 'chuyển' : 'nhận'}: ${d.counterparty}`
+                : '',
+              isFuel(d) && d.fuelPrice > 0
+                ? { price: d.fuelPrice, liters: litersFor(d.amount, d.fuelPrice) }
+                : null,
+            ) || null,
           date: d.date,
           externalRef: d.ref,
         });
@@ -363,6 +379,29 @@ export function ReceiptScanScreen() {
                   />
                 ))}
               </View>
+              {isFuel(d) ? (
+                <View style={{ gap: 6 }}>
+                  <MoneyField
+                    keyboardType="numeric"
+                    label="Giá xăng hôm nay (đồng / lít)"
+                    value={d.fuelPrice}
+                    onChange={(fuelPrice) => patch(d.key, { fuelPrice })}
+                  />
+                  {previousFuel && d.fuelPrice !== previousFuel.price ? (
+                    <View style={{ flexDirection: 'row' }}>
+                      <Chip
+                        label={`Dùng giá lần trước ${format.money(previousFuel.price)}`}
+                        onPress={() => patch(d.key, { fuelPrice: previousFuel.price })}
+                      />
+                    </View>
+                  ) : null}
+                  {d.fuelPrice > 0 && d.amount > 0 ? (
+                    <AppText color="textMuted">
+                      ≈ {litersFor(d.amount, d.fuelPrice).toString().replace('.', ',')} lít
+                    </AppText>
+                  ) : null}
+                </View>
+              ) : null}
             </Card>
           ))}
         </>

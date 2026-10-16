@@ -854,7 +854,9 @@ export function parseReceipt(
   }
 
   // Danh mục ghi sẵn trên biên lai
-  const categoryIndex = info.findIndex((r) => r.kind === 'category' && !r.inherited && cleanContent(r.value));
+  const categoryIndex = info.findIndex(
+    (r) => r.kind === 'category' && !r.inherited && cleanContent(r.value),
+  );
   if (categoryIndex >= 0) result.category = cleanContent(info[categoryIndex].value);
 
   // Mã giao dịch
