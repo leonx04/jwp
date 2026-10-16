@@ -10,8 +10,7 @@ import { useLiveData } from '@/db/useLiveData';
 import { listAccounts } from '@/features/accounts/repository';
 import { listCategories } from '@/features/categories/repository';
 import { useMoneyFormat } from '@/features/settings';
-import { ensureTag } from '@/features/tags/repository';
-import { listTags } from '@/features/tags/repository';
+import { ensureTag, listTags } from '@/features/tags/repository';
 import { listTransactions } from '@/features/transactions/queries';
 import { saveTransaction, TransactionValidationError } from '@/features/transactions/repository';
 import { toVnDate } from '@/lib/date';
@@ -28,6 +27,7 @@ export function QuickAddScreen() {
   const styles = useStyles();
   const format = useMoneyFormat();
   const [text, setText] = useState('');
+  const [now] = useState(() => Date.now());
 
   const { data: accounts = [] } = useLiveData(['accounts'], () => listAccounts(db));
   const { data: categories = [] } = useLiveData(['categories'], () => listCategories(db));
@@ -39,7 +39,7 @@ export function QuickAddScreen() {
   const entry = useMemo(() => {
     if (!text.trim()) return null;
     return parseQuickEntry(text, {
-      now: Date.now(),
+      now,
       accounts,
       categories,
       tags,
@@ -48,7 +48,7 @@ export function QuickAddScreen() {
         .map((r) => ({ title: r.title, categoryId: r.categoryId })),
       defaultAccountId: recent[0]?.accountId ?? accounts[0]?.id ?? null,
     });
-  }, [text, accounts, categories, tags, recent]);
+  }, [text, now, accounts, categories, tags, recent]);
 
   const nameOf = <T extends { id: string; name: string }>(list: T[], id: string | null) =>
     list.find((x) => x.id === id)?.name ?? null;
