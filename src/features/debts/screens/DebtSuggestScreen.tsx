@@ -1,4 +1,5 @@
 // Gợi ý dựng Sổ nợ từ giao dịch cũ ("Mượn a Quý", "Nợ a Quý", "Cho em Lít Vay"...). Xem lại rồi mới tạo.
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { Alert, View } from 'react-native';
 
@@ -20,7 +21,10 @@ export function DebtSuggestScreen() {
   const adopt = (items: DebtProposal[]) => {
     try {
       for (const p of items) adoptProposal(db, p);
-      showSnackbar({ text: `Đã tạo ${items.length} khoản nợ`, tone: 'success' });
+      showSnackbar({
+        text: t('Đã tạo {length} khoản nợ', { length: items.length }),
+        tone: 'success',
+      });
       if (items.length === proposals?.length) router.back();
     } catch (error) {
       Alert.alert('Chưa tạo được', error instanceof Error ? error.message : String(error));
@@ -29,7 +33,7 @@ export function DebtSuggestScreen() {
 
   const confirmAll = () =>
     Alert.alert(
-      `Tạo ${proposals?.length} khoản nợ?`,
+      t('Tạo {length} khoản nợ?', { length: proposals?.length }),
       'Các giao dịch liên quan sẽ được gắn vào sổ nợ và không còn tính vào thống kê chi tiêu. Số dư ví không đổi.',
       [
         { text: 'Huỷ', style: 'cancel' },
@@ -53,7 +57,7 @@ export function DebtSuggestScreen() {
 
       {proposals && proposals.length > 1 ? (
         <Button
-          title={`Tạo tất cả (${proposals.length})`}
+          title={t('Tạo tất cả ({length})', { length: proposals.length })}
           icon="checkmark-done"
           onPress={confirmAll}
         />
@@ -81,7 +85,9 @@ export function DebtSuggestScreen() {
                 adjustsFontSizeToFit
                 minimumFontScale={0.6}
               >
-                {p.remaining > 0 ? `Còn ${format.money(p.remaining)}` : 'Đã xong'}
+                {p.remaining > 0
+                  ? t('Còn {remaining}', { remaining: format.money(p.remaining) })
+                  : 'Đã xong'}
               </AppText>
               <AppText variant="caption" color="textMuted">
                 Gốc {format.money(p.opening.amount)}

@@ -1,4 +1,5 @@
 // Báo cáo tháng: còn lại bao nhiêu, so với tháng trước, chi nhiều nhất cho gì, khoản lớn, ngân sách.
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -35,7 +36,9 @@ export function ReportScreen() {
   const [offset, setOffset] = useState(Number.isInteger(initial) && initial <= 0 ? initial : 0);
   const format = useMoneyFormat();
   const { report, period } = useMonthlyReport(offset);
-  const title = `Báo cáo ${periodTitle('month', period).toLowerCase()}`;
+  const title = t('Báo cáo {toLowerCase}', {
+    toLowerCase: periodTitle('month', period).toLowerCase(),
+  });
 
   const share = () => {
     if (!report) return;
@@ -115,7 +118,9 @@ function Summary({ report: r }: { report: MonthlyReport }) {
         {r.savingRate !== null ? (
           <AppText variant="caption" color="textMuted">
             {positive
-              ? `Giữ lại ${Math.max(0, Math.round(r.savingRate))}% thu nhập`
+              ? t('Giữ lại {savingRate}% thu nhập', {
+                  savingRate: Math.max(0, Math.round(r.savingRate)),
+                })
               : 'Chi nhiều hơn thu nhập trong tháng'}
           </AppText>
         ) : null}

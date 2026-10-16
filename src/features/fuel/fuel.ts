@@ -1,5 +1,6 @@
 // Đổ xăng: ghi giá xăng hôm đó vào ghi chú giao dịch (dòng "⛽ 21.350đ/lít · 2,81 lít"), gợi ý giá lần
 // trước và cho biết tăng / giảm bao nhiêu. Không cần thêm cột trong DB: ghi chú là nơi lưu.
+import { t } from '@/lib/i18n';
 import { sql } from 'drizzle-orm';
 
 import type { AppDatabase } from '@/db/types';
@@ -22,17 +23,20 @@ const decimal = (n: number) => n.toString().replace('.', ',');
 
 /** '⛽ 21.350đ/lít · 2,81 lít' */
 export function formatFuelNote(pricePerLiter: number, liters: number): string {
-  const base = `${FUEL_MARK} ${group(pricePerLiter)}đ/lít`;
-  return liters > 0 ? `${base} · ${decimal(liters)} lít` : base;
+  const base = t('{FUEL_MARK} {pricePerLiter}đ/lít', {
+    FUEL_MARK,
+    pricePerLiter: group(pricePerLiter),
+  });
+  return liters > 0 ? t('{base} · {liters} lít', { base, liters: decimal(liters) }) : base;
 }
 
 export type FuelNote = { price: number; liters: number | null };
 
 /** Đọc lại dòng ⛽ trong ghi chú (null nếu không có) */
 export function parseFuelNote(note: string | null | undefined): FuelNote | null {
-  const m = new RegExp(`${FUEL_MARK}\\s*([\\d.]+)\\s*đ/lít(?:\\s*·\\s*([\\d,]+)\\s*lít)?`).exec(
-    note ?? '',
-  );
+  const m = new RegExp(
+    t('{FUEL_MARK}\\s*([\\d.]+)\\s*đ/lít(?:\\s*·\\s*([\\d,]+)\\s*lít)?', { FUEL_MARK }),
+  ).exec(note ?? '');
   if (!m) return null;
   const price = Number(m[1].replace(/\./g, ''));
   if (!Number.isFinite(price) || price <= 0) return null;

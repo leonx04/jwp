@@ -1,4 +1,5 @@
 // Gợi ý tag từ lịch sử: các cụm hay lặp trong tiêu đề giao dịch. Xem lại rồi tạo tag và gắn vào giao dịch cũ.
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { Alert, View } from 'react-native';
 
@@ -20,7 +21,10 @@ export function TagSuggestScreen() {
       let linked = 0;
       for (const p of items) linked += applyTagProposal(db, p);
       showSnackbar({
-        text: `Đã tạo ${items.length} tag, gắn vào ${linked} giao dịch`,
+        text: t('Đã tạo {length} tag, gắn vào {linked} giao dịch', {
+          length: items.length,
+          linked,
+        }),
         tone: 'success',
       });
       if (items.length === proposals?.length) router.back();
@@ -31,7 +35,7 @@ export function TagSuggestScreen() {
 
   const confirmAll = () =>
     Alert.alert(
-      `Tạo ${proposals?.length} tag?`,
+      t('Tạo {length} tag?', { length: proposals?.length }),
       'Mỗi tag được gắn vào các giao dịch cũ có tiêu đề chứa cụm đó. Số tiền và danh mục không đổi.',
       [
         { text: 'Huỷ', style: 'cancel' },
@@ -58,7 +62,7 @@ export function TagSuggestScreen() {
 
       {proposals && proposals.length > 1 ? (
         <Button
-          title={`Tạo tất cả (${proposals.length} tag)`}
+          title={t('Tạo tất cả ({length} tag)', { length: proposals.length })}
           icon="checkmark-done"
           onPress={confirmAll}
         />

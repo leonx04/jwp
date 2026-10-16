@@ -1,4 +1,5 @@
 // Cài đặt "Tự đọc thông báo": bật, cấp quyền, chọn app, hướng dẫn Huawei, thử mẫu, nhật ký thông báo.
+import { t } from '@/lib/i18n';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -116,7 +117,10 @@ export function CaptureSettingsScreen() {
       SAMPLES.map((s) => ({ ...s, postedAt: s.postedAt })),
       listAccounts(db),
     );
-    showSnackbar({ text: `Đã thêm ${r.pending} giao dịch mẫu vào hộp chờ`, tone: 'success' });
+    showSnackbar({
+      text: t('Đã thêm {pending} giao dịch mẫu vào hộp chờ', { pending: r.pending }),
+      tone: 'success',
+    });
   };
 
   const copyAll = async () => {
@@ -169,7 +173,9 @@ export function CaptureSettingsScreen() {
       </Card>
 
       <Button
-        title={pending ? `Xem ${pending} giao dịch chờ xác nhận` : 'Xem hộp chờ xác nhận'}
+        title={
+          pending ? t('Xem {pending} giao dịch chờ xác nhận', { pending }) : 'Xem hộp chờ xác nhận'
+        }
         variant={pending ? 'primary' : 'secondary'}
         icon="mail-unread-outline"
         onPress={() => router.push('/inbox')}
@@ -229,7 +235,7 @@ export function CaptureSettingsScreen() {
         </AppText>
       </Card>
 
-      <SectionTitle>{`Nhật ký (${log.length})`}</SectionTitle>
+      <SectionTitle>{t('Nhật ký ({length})', { length: log.length })}</SectionTitle>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <View style={{ flex: 1 }}>
           <Button

@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import * as Haptics from '@/lib/haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -77,7 +78,7 @@ export function AdjustBalanceScreen() {
 
   return (
     <Screen
-      title={`Đối chiếu · ${account?.name ?? ''}`}
+      title={t('Đối chiếu · {name}', { name: account?.name ?? '' })}
       footer={
         <View style={{ paddingHorizontal: 16, paddingTop: 12, gap: 12 }}>
           <AmountKeypad value={amount} onChange={setAmount} />
@@ -103,7 +104,9 @@ export function AdjustBalanceScreen() {
         </AppText>
         <AppText variant="caption" color="textMuted">
           Trong app: {format.money(current)}
-          {diff !== 0 ? ` · chênh ${diff > 0 ? '+' : ''}${format.money(diff)}` : ' · đang khớp'}
+          {diff !== 0
+            ? t(' · chênh {diff}{diff2}', { diff: diff > 0 ? '+' : '', diff2: format.money(diff) })
+            : ' · đang khớp'}
         </AppText>
         {last ? (
           <AppText variant="caption" color="textMuted">

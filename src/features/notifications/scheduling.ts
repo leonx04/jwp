@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 
 import { PAYMENT_CATEGORY, type ChannelId } from './config';
@@ -61,8 +62,8 @@ export async function scheduleAt(date: Date, input: ReminderInput): Promise<stri
 /** Thông báo mẫu cho màn kiểm tra — dùng đúng định dạng tiền thật của app */
 export function samplePaymentReminder(snoozeSeconds: number): ReminderInput {
   return {
-    title: `💸 Ngày mai: Tiền nhà ${formatMoney(3_000_000)}`,
-    body: `MB bank còn ${formatMoney(60_279)} — có thể không đủ ⚠`,
+    title: t('💸 Ngày mai: Tiền nhà {_000_000}', { _000_000: formatMoney(3_000_000) }),
+    body: t('MB bank còn {_279} — có thể không đủ ⚠', { _279: formatMoney(60_279) }),
     channel: 'payments',
     withActions: true,
     data: { url: '/settings/notifications', snoozeSeconds },

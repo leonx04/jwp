@@ -1,5 +1,6 @@
 // Thẻ ví trả sau (SPayLater, MoMo trả sau, thẻ tín dụng): dư nợ, hạn mức đã dùng, kỳ này phải trả,
 // kỳ sau ước tính, trả góp chưa tới hạn, nút "Trả bill" (= chuyển tiền từ ví thanh toán vào ví trả sau).
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { memo, type ComponentProps } from 'react';
@@ -43,16 +44,25 @@ export function statementLine(
     return {
       icon: 'alert-circle',
       tone: 'expense',
-      text: `Quá hạn ${-current.daysUntilDue} ngày · còn phải trả ${money(current.dueAmount)} (hạn ${due})`,
+      text: t('Quá hạn {daysUntilDue} ngày · còn phải trả {dueAmount} (hạn {due})', {
+        daysUntilDue: -current.daysUntilDue,
+        dueAmount: money(current.dueAmount),
+        due,
+      }),
     };
   }
   if (current.dueAmount > 0) {
     const days = current.daysUntilDue;
-    const when = days === 0 ? 'hạn hôm nay' : days === 1 ? 'hạn ngày mai' : `còn ${days} ngày`;
+    const when =
+      days === 0 ? 'hạn hôm nay' : days === 1 ? 'hạn ngày mai' : t('còn {days} ngày', { days });
     return {
       icon: 'calendar-outline',
       tone: days <= 3 ? 'warning' : 'text',
-      text: `Kỳ này phải trả ${money(current.dueAmount)} trước ${due} · ${when}`,
+      text: t('Kỳ này phải trả {dueAmount} trước {due} · {when}', {
+        dueAmount: money(current.dueAmount),
+        due,
+        when,
+      }),
     };
   }
   // Kỳ vừa chốt không còn gì phải trả, nhưng đang nợ → khoản nợ đó sẽ vào bill kỳ sau
@@ -61,7 +71,14 @@ export function statementLine(
     return {
       icon: 'calendar-outline',
       tone: 'text',
-      text: `Chưa tới kỳ chốt · dự kiến phải trả ${money(next.estimatedAmount)} trước ${formatDate(next.dueDate, false)} (bill chốt ${formatDate(next.closeDate, false)})`,
+      text: t(
+        'Chưa tới kỳ chốt · dự kiến phải trả {estimatedAmount} trước {false} (bill chốt {false2})',
+        {
+          estimatedAmount: money(next.estimatedAmount),
+          false: formatDate(next.dueDate, false),
+          false2: formatDate(next.closeDate, false),
+        },
+      ),
     };
   }
   if (current.statementBalance > 0 || current.paid > 0) {
@@ -92,7 +109,10 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
   const extras: string[] = [];
   if (status.next && status.next.estimatedAmount > 0) {
     extras.push(
-      `Kỳ sau ~${compact(status.next.estimatedAmount)} · hạn ${formatDate(status.next.dueDate, false)}`,
+      t('Kỳ sau ~{estimatedAmount} · hạn {false}', {
+        estimatedAmount: compact(status.next.estimatedAmount),
+        false: formatDate(status.next.dueDate, false),
+      }),
     );
   }
 
@@ -104,7 +124,7 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
         ...(account.paymentAccountId ? { accountId: account.paymentAccountId } : {}),
         toAccountId: account.id,
         amount: String(current?.dueAmount ?? 0),
-        title: `Trả bill ${account.name}`,
+        title: t('Trả bill {name}', { name: account.name }),
       },
     });
 
@@ -126,7 +146,10 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
             minimumFontScale={0.6}
           >
             {account.creditLimit
-              ? `Hạn mức ${compact(account.creditLimit)} · còn ${compact(Math.max(0, status.available ?? 0))}`
+              ? t('Hạn mức {creditLimit} · còn {available}', {
+                  creditLimit: compact(account.creditLimit),
+                  available: compact(Math.max(0, status.available ?? 0)),
+                })
               : 'Chưa đặt hạn mức'}
           </AppText>
         </View>
@@ -206,7 +229,7 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
           size="sm"
           icon="card-outline"
           variant={urgent ? 'primary' : 'secondary'}
-          title={`Trả bill ${compact(current.dueAmount)}`}
+          title={t('Trả bill {dueAmount}', { dueAmount: compact(current.dueAmount) })}
           onPress={payBill}
           style={styles.pay}
         />
@@ -218,7 +241,7 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Ví trả sau ${account.name}`}
+      accessibilityLabel={t('Ví trả sau {name}', { name: account.name })}
       onPress={onPress}
       style={({ pressed }) => pressed && styles.pressed}
     >

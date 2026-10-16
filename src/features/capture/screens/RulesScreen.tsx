@@ -1,4 +1,5 @@
 // Quy tắc phân loại cho giao dịch tự đọc: "nội dung chứa … → danh mục …", có thể bật tự ghi.
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 
 import { IconButton } from '@/components/glass/IconButton';
@@ -47,10 +48,10 @@ export function RulesScreen() {
               <ListRow
                 key={r.id}
                 icon={toAppIcon(category?.icon ?? null, 'pricetag-outline')}
-                title={`Chứa “${r.pattern}”`}
+                title={t('Chứa “{pattern}”', { pattern: r.pattern })}
                 subtitle={[
                   `→ ${category?.name ?? 'Danh mục đã xoá'}`,
-                  r.type ? `chỉ ${TYPE_LABEL[r.type]}` : null,
+                  r.type ? t('chỉ {type}', { type: TYPE_LABEL[r.type] }) : null,
                   r.autoAccept ? 'tự ghi' : null,
                 ]
                   .filter(Boolean)

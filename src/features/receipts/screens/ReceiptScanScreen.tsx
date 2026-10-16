@@ -1,4 +1,5 @@
 // Nhập giao dịch từ ảnh biên lai: chọn ảnh / dán từ clipboard → OCR trên máy → duyệt → lưu hàng loạt.
+import { t } from '@/lib/i18n';
 import * as Clipboard from 'expo-clipboard';
 import { File, Paths } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
@@ -208,7 +209,10 @@ export function ReceiptScanScreen() {
           note:
             mergeFuelNote(
               d.counterparty && d.counterparty !== d.title
-                ? `Người ${d.type === 'income' ? 'chuyển' : 'nhận'}: ${d.counterparty}`
+                ? t('Người {type}: {counterparty}', {
+                    type: d.type === 'income' ? 'chuyển' : 'nhận',
+                    counterparty: d.counterparty,
+                  })
                 : '',
               isFuel(d) && d.fuelPrice > 0
                 ? { price: d.fuelPrice, liters: litersFor(d.amount, d.fuelPrice) }
@@ -218,7 +222,10 @@ export function ReceiptScanScreen() {
           externalRef: d.ref,
         });
       }
-      showSnackbar({ text: `Đã lưu ${selected.length} giao dịch`, tone: 'success' });
+      showSnackbar({
+        text: t('Đã lưu {length} giao dịch', { length: selected.length }),
+        tone: 'success',
+      });
       router.back();
     } catch (error) {
       Alert.alert('Chưa lưu được', error instanceof Error ? error.message : String(error));
@@ -232,7 +239,7 @@ export function ReceiptScanScreen() {
         drafts.length ? (
           <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
             <Button
-              title={`Lưu ${selected.length} giao dịch`}
+              title={t('Lưu {length} giao dịch', { length: selected.length })}
               icon="checkmark"
               disabled={!selected.length}
               onPress={saveAll}
@@ -277,7 +284,9 @@ export function ReceiptScanScreen() {
 
       {drafts.length ? (
         <>
-          <SectionTitle tone="section">{`Kiểm tra lại · ${drafts.length}`}</SectionTitle>
+          <SectionTitle tone="section">
+            {t('Kiểm tra lại · {length}', { length: drafts.length })}
+          </SectionTitle>
           {drafts.map((d) => (
             <Card key={d.key} style={{ gap: 10 }}>
               <Pressable
@@ -344,14 +353,21 @@ export function ReceiptScanScreen() {
               {d.sourceName ? (
                 <AppText variant="caption" color={d.accountId ? 'textMuted' : 'expense'}>
                   {d.accountId
-                    ? `Nguồn tiền theo biên lai: ${d.sourceName}`
-                    : `Biên lai ghi nguồn tiền từ ${d.sourceName} nhưng chưa có ví khớp. Hãy chọn ví đúng.`}
+                    ? t('Nguồn tiền theo biên lai: {sourceName}', { sourceName: d.sourceName })
+                    : t(
+                        'Biên lai ghi nguồn tiền từ {sourceName} nhưng chưa có ví khớp. Hãy chọn ví đúng.',
+                        { sourceName: d.sourceName },
+                      )}
                 </AppText>
               ) : null}
               <SelectField
                 label="Danh mục"
                 title="Chọn danh mục"
-                placeholder={d.categoryHint ? `Gợi ý: ${d.categoryHint}` : 'Chưa phân loại'}
+                placeholder={
+                  d.categoryHint
+                    ? t('Gợi ý: {categoryHint}', { categoryHint: d.categoryHint })
+                    : 'Chưa phân loại'
+                }
                 icon="pricetag-outline"
                 clearable
                 options={categories.map((c) => ({
@@ -383,7 +399,9 @@ export function ReceiptScanScreen() {
                   {previousFuel && d.fuelPrice !== previousFuel.price ? (
                     <View style={{ flexDirection: 'row' }}>
                       <Chip
-                        label={`Dùng giá lần trước ${format.money(previousFuel.price)}`}
+                        label={t('Dùng giá lần trước {price}', {
+                          price: format.money(previousFuel.price),
+                        })}
                         onPress={() => patch(d.key, { fuelPrice: previousFuel.price })}
                       />
                     </View>

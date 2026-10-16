@@ -1,5 +1,6 @@
 // Mục "Đổ xăng" trong màn thêm / sửa giao dịch: nhập giá xăng hôm nay bằng bàn phím số của màn hình
 // → số lít + so với lần trước.
+import { t } from '@/lib/i18n';
 import { View } from 'react-native';
 
 import { AppText, Card, Chip, KeypadField } from '@/components/ui';
@@ -46,7 +47,7 @@ export function FuelSection({
       {last && price !== last.price ? (
         <View style={{ flexDirection: 'row' }}>
           <Chip
-            label={`Dùng giá lần trước ${format.money(last.price)}`}
+            label={t('Dùng giá lần trước {price}', { price: format.money(last.price) })}
             onPress={() => onChange(last.price)}
           />
         </View>
@@ -55,7 +56,7 @@ export function FuelSection({
         <AppText color="textMuted">
           ≈ {liters.toString().replace('.', ',')} lít
           {last
-            ? ` · ${priceChangeText(price, last.price)} (${daysAgo <= 0 ? 'hôm nay' : `${daysAgo} ngày trước`})`
+            ? ` · ${priceChangeText(price, last.price)} (${daysAgo <= 0 ? 'hôm nay' : t('{daysAgo} ngày trước', { daysAgo })})`
             : ''}
         </AppText>
       ) : last ? (

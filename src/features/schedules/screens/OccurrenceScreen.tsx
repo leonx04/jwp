@@ -1,4 +1,5 @@
 // Một kỳ của lịch: đã thanh toán / bỏ qua / dời ngày / sửa lịch.
+import { t } from '@/lib/i18n';
 import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 
@@ -109,7 +110,7 @@ export function OccurrenceScreen() {
     const previous = o.date;
     skipOccurrence(db, scheduleId, dueDate);
     showSnackbar({
-      text: `Đã bỏ qua kỳ ${formatDate(previous, false)}`,
+      text: t('Đã bỏ qua kỳ {false}', { false: formatDate(previous, false) }),
       actionLabel: 'Hoàn tác',
       // Hoàn tác giữ lại ngày đã dời (nếu có)
       onAction: () => moveTo(previous),
@@ -127,7 +128,9 @@ export function OccurrenceScreen() {
       moveTo(next);
     } catch (error) {
       showSnackbar({
-        text: `Chưa dời được: ${error instanceof Error ? error.message : String(error)}`,
+        text: t('Chưa dời được: {error}', {
+          error: error instanceof Error ? error.message : String(error),
+        }),
         tone: 'error',
       });
       return;
@@ -135,8 +138,8 @@ export function OccurrenceScreen() {
     showSnackbar({
       text:
         next === dueDate
-          ? `Đã đưa về ngày gốc ${formatDate(next, false)}`
-          : `Đã dời sang ${formatDate(next, false)}`,
+          ? t('Đã đưa về ngày gốc {false}', { false: formatDate(next, false) })
+          : t('Đã dời sang {false}', { false: formatDate(next, false) }),
       tone: 'success',
       actionLabel: 'Hoàn tác',
       onAction: () => moveTo(previous),
@@ -160,7 +163,9 @@ export function OccurrenceScreen() {
         </AppText>
         <AppText color="textMuted">
           {formatDate(o.date)} · {formatRelativeDue(o.date)}
-          {o.date !== o.dueDate ? ` (dời từ ${formatDate(o.dueDate, false)})` : ''}
+          {o.date !== o.dueDate
+            ? t(' (dời từ {false})', { false: formatDate(o.dueDate, false) })
+            : ''}
         </AppText>
       </Card>
       <Card style={{ gap: 0 }}>
@@ -209,7 +214,7 @@ export function OccurrenceScreen() {
             />
             {o.date !== o.dueDate ? (
               <Button
-                title={`Về ngày gốc ${formatDate(o.dueDate, false)}`}
+                title={t('Về ngày gốc {false}', { false: formatDate(o.dueDate, false) })}
                 icon="arrow-undo-outline"
                 variant="secondary"
                 onPress={() => clearOccurrence(db, scheduleId, dueDate)}

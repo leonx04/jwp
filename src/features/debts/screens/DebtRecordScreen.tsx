@@ -1,4 +1,5 @@
 // Ghi một lần trả nợ / vay thêm / tính lãi cho khoản nợ.
+import { t } from '@/lib/i18n';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
@@ -55,7 +56,10 @@ export function DebtRecordScreen() {
         note,
         accountId: usesWallet ? wallet : null,
       });
-      showSnackbar({ text: `Đã ghi: ${title.toLowerCase()}`, tone: 'success' });
+      showSnackbar({
+        text: t('Đã ghi: {toLowerCase}', { toLowerCase: title.toLowerCase() }),
+        tone: 'success',
+      });
       router.back();
     } catch (error) {
       Alert.alert('Chưa lưu được', error instanceof Error ? error.message : String(error));

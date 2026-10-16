@@ -1,5 +1,6 @@
 // Giữ các thông báo nhắc hạn luôn khớp dữ liệu: tính lại khi mở app / dữ liệu đổi, chỉ thay bản đã đổi.
 // Định danh cố định 'reminder:<loại>:<khoá>:<before|due>@<ngày>' → hẹn lại không bị trùng.
+import { t } from '@/lib/i18n';
 import { Platform } from 'react-native';
 
 import type { AppDatabase } from '@/db/types';
@@ -72,7 +73,10 @@ export function loadReminderItems(db: AppDatabase, now = Date.now()): ReminderIt
       key: d.debt.id,
       kind: 'debt',
       date: d.debt.dueDate,
-      title: d.direction === 'lent' ? `${d.person.name} hẹn trả` : `Trả nợ ${d.person.name}`,
+      title:
+        d.direction === 'lent'
+          ? t('{name} hẹn trả', { name: d.person.name })
+          : t('Trả nợ {name}', { name: d.person.name }),
       amount: d.remaining,
       overdue: d.status === 'overdue',
       daysBefore: prefs.daysBefore,

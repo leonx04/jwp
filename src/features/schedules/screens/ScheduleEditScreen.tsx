@@ -1,4 +1,5 @@
 // Thêm / sửa lịch thu chi: lương, tiền nhà, trả góp, điện nước, chuyển tiết kiệm...
+import { t } from '@/lib/i18n';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
@@ -332,7 +333,7 @@ export function ScheduleEditScreen() {
       {frequency === 'monthly' ? (
         <View style={styles.wrap}>
           <Chip
-            label={`Ngày ${fixedMonthDay ?? parseDate(startDate).day} hằng tháng`}
+            label={t('Ngày {day} hằng tháng', { day: fixedMonthDay ?? parseDate(startDate).day })}
             selected={!lastDayOfMonth}
             onPress={() => setLastDayOfMonth(false)}
           />
@@ -366,7 +367,11 @@ export function ScheduleEditScreen() {
               onPress={() => setEndType('never')}
             />
             <Chip
-              label={endType === 'until' ? `Đến ${formatDate(endDate)}` : 'Đến ngày'}
+              label={
+                endType === 'until'
+                  ? t('Đến {endDate}', { endDate: formatDate(endDate) })
+                  : 'Đến ngày'
+              }
               selected={endType === 'until'}
               onPress={() => {
                 setEndType('until');
@@ -394,7 +399,9 @@ export function ScheduleEditScreen() {
         <AppText variant="bodyMedium">{describeRule(rule)}</AppText>
         <AppText variant="caption" color="textMuted">
           {preview.length
-            ? `Các kỳ tới: ${preview.map((d) => formatDate(d, false)).join(' · ')}`
+            ? t('Các kỳ tới: {join}', {
+                join: preview.map((d) => formatDate(d, false)).join(' · '),
+              })
             : 'Không còn kỳ nào sau hôm nay'}
         </AppText>
       </Card>
@@ -411,7 +418,7 @@ export function ScheduleEditScreen() {
         ))}
         <Chip
           icon="time-outline"
-          label={`Lúc ${remindTime}`}
+          label={t('Lúc {remindTime}', { remindTime })}
           onPress={async () => {
             const value = await pickDateTime(vnDateToMs(todayVn(), remindTime), 'time');
             if (value != null) setRemindTime(toVnTime(value));

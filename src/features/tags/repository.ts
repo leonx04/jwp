@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { asc, count, eq } from 'drizzle-orm';
 
 import { tags, transactionTags, type Tag } from '@/db/schema';
@@ -53,7 +54,7 @@ export function saveTag(
   const nameKey = normalizeForSearch(name);
   if (!nameKey) throw new Error('Tên tag không được trống.');
   const clash = db.select({ id: tags.id }).from(tags).where(eq(tags.nameKey, nameKey)).get();
-  if (clash && clash.id !== input.id) throw new Error(`Đã có tag "${name}".`);
+  if (clash && clash.id !== input.id) throw new Error(t('Đã có tag "{name}".', { name }));
   db.update(tags)
     .set({ name, nameKey, color: input.color ?? null })
     .where(eq(tags.id, input.id))

@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
@@ -48,7 +49,7 @@ export function AccountsScreen() {
       db,
       logoCandidates.map((c) => c.account.id),
     );
-    showSnackbar({ text: `Đã gắn logo cho ${changed} ví`, tone: 'success' });
+    showSnackbar({ text: t('Đã gắn logo cho {changed} ví', { changed }), tone: 'success' });
   };
 
   return (
@@ -124,14 +125,14 @@ export function AccountsScreen() {
                     <IconButton
                       icon="chevron-up"
                       size={34}
-                      accessibilityLabel={`Đưa ${a.name} lên`}
+                      accessibilityLabel={t('Đưa {name} lên', { name: a.name })}
                       disabled={index === 0}
                       onPress={() => move(index, -1)}
                     />
                     <IconButton
                       icon="chevron-down"
                       size={34}
-                      accessibilityLabel={`Đưa ${a.name} xuống`}
+                      accessibilityLabel={t('Đưa {name} xuống', { name: a.name })}
                       disabled={index === balances.length - 1}
                       onPress={() => move(index, 1)}
                     />

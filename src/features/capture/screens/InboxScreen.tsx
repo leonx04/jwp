@@ -1,4 +1,5 @@
 // Hộp "Chờ xác nhận": các giao dịch app tự đọc được từ thông báo / SMS ngân hàng. Bấm Ghi để mở form điền sẵn.
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 
@@ -215,7 +216,10 @@ function CaptureCard({
         <AppText variant="caption" color="textMuted">
           Danh mục: <AppText variant="caption">{guessedCategory.name}</AppText>{' '}
           {guess.source === 'rule'
-            ? `(theo quy tắc “${guess.rule?.pattern ?? ''}”${guess.rule?.autoAccept ? ', tự ghi' : ''})`
+            ? t('(theo quy tắc “{pattern}”{autoAccept})', {
+                pattern: guess.rule?.pattern ?? '',
+                autoAccept: guess.rule?.autoAccept ? ', tự ghi' : '',
+              })
             : '(trước giờ hay dùng cho nội dung này)'}
         </AppText>
       ) : null}

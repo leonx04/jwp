@@ -1,4 +1,5 @@
 // Quy tắc phân loại + đoán danh mục cho giao dịch tự đọc + tự ghi theo quy tắc.
+import { t } from '@/lib/i18n';
 import { and, asc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 
 import { captureRules, captures, categories, transactions } from '@/db/schema';
@@ -32,7 +33,7 @@ export function listRules(db: AppDatabase): CaptureRule[] {
 export function saveRule(db: AppDatabase, input: RuleInput): string {
   const pattern = input.pattern.trim().replace(/\s+/g, ' ');
   if (patternKey(pattern).length < MIN_PATTERN_LENGTH) {
-    throw new Error(`Cụm từ cần ít nhất ${MIN_PATTERN_LENGTH} ký tự.`);
+    throw new Error(t('Cụm từ cần ít nhất {MIN_PATTERN_LENGTH} ký tự.', { MIN_PATTERN_LENGTH }));
   }
   if (!input.categoryId) throw new Error('Chưa chọn danh mục.');
   const exists = db

@@ -2,6 +2,7 @@
 // (số dư từng ví, hôm nay được tiêu bao nhiêu, còn mấy ngày tới lương, khoản / bill trong ngày).
 // Định danh cố định 'morning-briefing:<ngày>@<giờ>' → mỗi lần tính lại chỉ thay bản đã đổi.
 // An toàn trong Expo Go / web: không có module thông báo thì không làm gì.
+import { t } from '@/lib/i18n';
 import { Platform } from 'react-native';
 
 import type { AppDatabase } from '@/db/types';
@@ -113,7 +114,10 @@ export function loadBriefingInput(
     )
     .map((d) => ({
       date: d.status === 'overdue' ? today : d.debt.dueDate!,
-      title: d.direction === 'lent' ? `${d.person.name} trả nợ` : `Trả nợ ${d.person.name}`,
+      title:
+        d.direction === 'lent'
+          ? t('{name} trả nợ', { name: d.person.name })
+          : t('Trả nợ {name}', { name: d.person.name }),
       amount: d.remaining,
       type: d.direction === 'lent' ? ('income' as const) : ('expense' as const),
       overdue: d.status === 'overdue',

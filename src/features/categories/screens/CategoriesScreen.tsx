@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { Alert, View } from 'react-native';
 
@@ -16,7 +17,7 @@ export function CategoriesScreen() {
   const changes = proposeIconChanges(categories);
   const applyIcons = () =>
     Alert.alert(
-      `Đổi biểu tượng cho ${changes.length} danh mục?`,
+      t('Đổi biểu tượng cho {length} danh mục?', { length: changes.length }),
       changes.map((c) => c.name).join(', '),
       [
         { text: 'Huỷ', style: 'cancel' },
@@ -28,7 +29,10 @@ export function CategoriesScreen() {
               if (cat)
                 saveCategory(db, { id: cat.id, name: cat.name, color: cat.color, icon: c.to });
             }
-            showSnackbar({ text: `Đã đổi biểu tượng ${changes.length} danh mục`, tone: 'success' });
+            showSnackbar({
+              text: t('Đã đổi biểu tượng {length} danh mục', { length: changes.length }),
+              tone: 'success',
+            });
           },
         },
       ],
@@ -48,7 +52,7 @@ export function CategoriesScreen() {
       {changes.length ? (
         <View>
           <Button
-            title={`Gợi ý biểu tượng phù hợp (${changes.length})`}
+            title={t('Gợi ý biểu tượng phù hợp ({length})', { length: changes.length })}
             icon="sparkles-outline"
             variant="secondary"
             onPress={applyIcons}

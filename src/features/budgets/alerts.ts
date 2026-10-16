@@ -1,4 +1,5 @@
 // Cảnh báo ngân sách ngay sau khi lưu một khoản chi: so trạng thái trước / sau.
+import { t } from '@/lib/i18n';
 import type { AppDatabase } from '@/db/types';
 import { getSettings } from '@/features/settings/store';
 import { todayVn } from '@/lib/date';
@@ -25,13 +26,20 @@ export function budgetAlert(
     if (b.state === 'over' && was !== 'over') {
       return {
         over: true,
-        text: `Vượt ngân sách “${b.name}” ${formatMoney(-b.remaining)}`,
+        text: t('Vượt ngân sách “{name}” {remaining}', {
+          name: b.name,
+          remaining: formatMoney(-b.remaining),
+        }),
       };
     }
     if (b.state === 'warning' && was === 'ok') {
       warning = {
         over: false,
-        text: `Ngân sách “${b.name}” đã dùng ${Math.floor(b.ratio * 100)}%, còn ${formatMoney(b.remaining)}`,
+        text: t('Ngân sách “{name}” đã dùng {ratio}%, còn {remaining}', {
+          name: b.name,
+          ratio: Math.floor(b.ratio * 100),
+          remaining: formatMoney(b.remaining),
+        }),
       };
     }
   }

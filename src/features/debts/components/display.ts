@@ -1,4 +1,5 @@
 // Chữ hiển thị dùng chung cho các màn Sổ nợ.
+import { t } from '@/lib/i18n';
 import type { DebtDirection, DebtRecordType } from '@/db/schema';
 import { formatDate } from '@/lib/date';
 
@@ -31,8 +32,10 @@ export function statusText(item: Pick<DebtItem, 'status' | 'daysToDue' | 'debt'>
     case 'overdue':
       return `Quá hạn ${-(daysToDue ?? 0)} ngày`;
     case 'due-soon':
-      return daysToDue === 0 ? 'Hạn hôm nay' : `Còn ${daysToDue} ngày`;
+      return daysToDue === 0 ? 'Hạn hôm nay' : t('Còn {daysToDue} ngày', { daysToDue });
     default:
-      return debt.dueDate ? `Hạn ${formatDate(debt.dueDate, false)}` : 'Không đặt hạn';
+      return debt.dueDate
+        ? t('Hạn {false}', { false: formatDate(debt.dueDate, false) })
+        : 'Không đặt hạn';
   }
 }

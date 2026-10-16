@@ -1,5 +1,6 @@
 // Biểu đồ đường số dư dự kiến (SVG — không dùng Skia).
 // Vạch đứt đỏ ở mức 0 ₫ và vạch vàng ở ngưỡng an toàn. Chạm / kéo để xem số dư từng ngày.
+import { t } from '@/lib/i18n';
 import { useMemo } from 'react';
 import { View } from 'react-native';
 
@@ -51,7 +52,10 @@ export function BalanceLineChart({
         return `${day}/${month}`;
       }),
       references: refs,
-      summary: `Số dư dự kiến: cuối kỳ ${format.money(last)}, thấp nhất ${format.money(lowest)}`,
+      summary: t('Số dư dự kiến: cuối kỳ {last}, thấp nhất {lowest}', {
+        last: format.money(last),
+        lowest: format.money(lowest),
+      }),
     };
   }, [points, safetyThreshold, colors.expense, colors.primary, colors.warning, format]);
 

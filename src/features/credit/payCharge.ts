@@ -1,6 +1,7 @@
 // Khoản chi theo lịch từ ví trả sau (vd "Spaylater tháng 9"): đã cộng vào dư nợ ngay khi lịch được tạo
 // (xem getCreditSummary). Bấm "Đã thanh toán" = TRẢ NỢ: ghi khoản chi lên ví trả sau, rồi chuyển tiền
 // từ ví thanh toán vào ví trả sau → dư nợ về như cũ, ví thanh toán giảm đúng số tiền.
+import { t } from '@/lib/i18n';
 import { eq } from 'drizzle-orm';
 import { Alert } from 'react-native';
 
@@ -45,7 +46,7 @@ export function payCreditCharge(
       amount: o.amount,
       accountId: payerAccountId,
       toAccountId: creditId,
-      title: o.schedule.title ? `Trả ${o.schedule.title}` : 'Trả nợ ví trả sau',
+      title: o.schedule.title ? t('Trả {title}', { title: o.schedule.title }) : 'Trả nợ ví trả sau',
       date: vnDateToMs(today, '12:00'),
       scheduleId: o.scheduleId,
       scheduleDueDate: o.dueDate,
@@ -72,8 +73,14 @@ export function tryPayCreditCharge(
     return true;
   }
   Alert.alert(
-    `Trả nợ ví ${credit.name}?`,
-    `Trả ${money(o.amount)} từ ${payer.name} vào ${credit.name}. Dư nợ sẽ giảm tương ứng, ${payer.name} bị trừ ${money(o.amount)}.`,
+    t('Trả nợ ví {name}?', { name: credit.name }),
+    t('Trả {amount} từ {name} vào {name2}. Dư nợ sẽ giảm tương ứng, {name3} bị trừ {amount2}.', {
+      amount: money(o.amount),
+      name: payer.name,
+      name2: credit.name,
+      name3: payer.name,
+      amount2: money(o.amount),
+    }),
     [
       { text: 'Huỷ', style: 'cancel' },
       {
@@ -81,7 +88,10 @@ export function tryPayCreditCharge(
         onPress: () => {
           try {
             payCreditCharge(db, o, payer.id);
-            showSnackbar({ text: `Đã trả ${money(o.amount)} cho ${credit.name}`, tone: 'success' });
+            showSnackbar({
+              text: t('Đã trả {amount} cho {name}', { amount: money(o.amount), name: credit.name }),
+              tone: 'success',
+            });
             onDone?.();
           } catch (error) {
             Alert.alert('Chưa trả được', error instanceof Error ? error.message : String(error));

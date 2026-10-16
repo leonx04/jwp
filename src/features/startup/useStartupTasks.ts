@@ -1,6 +1,7 @@
 // Việc chạy khi mở app và mỗi lần app quay lại tiền cảnh:
 // - tự ghi nhận các kỳ đến hạn của lịch "Tự ghi nhận"
 // - đồng bộ lại lịch thông báo nhắc nhở (Giai đoạn 4)
+import { t } from '@/lib/i18n';
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 
@@ -21,7 +22,10 @@ function runAll() {
   try {
     const posted = processAutoPost(db);
     if (posted > 0)
-      showSnackbar({ text: `Đã tự ghi nhận ${posted} khoản theo lịch`, tone: 'success' });
+      showSnackbar({
+        text: t('Đã tự ghi nhận {posted} khoản theo lịch', { posted }),
+        tone: 'success',
+      });
   } catch (error) {
     console.warn('[startup] processAutoPost lỗi:', error);
   }

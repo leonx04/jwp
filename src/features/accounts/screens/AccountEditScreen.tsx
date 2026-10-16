@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, View } from 'react-native';
@@ -89,7 +90,7 @@ export function AccountEditScreen() {
     if (!id) return;
     const count = accountTransactionCount(db, id);
     if (count === 0) {
-      Alert.alert('Xoá ví?', `Xoá "${existing?.name}".`, [
+      Alert.alert('Xoá ví?', t('Xoá "{name}".', { name: existing?.name }), [
         { text: 'Huỷ', style: 'cancel' },
         {
           text: 'Xoá',
@@ -104,7 +105,10 @@ export function AccountEditScreen() {
     }
     Alert.alert(
       'Ví còn giao dịch',
-      `Ví có ${count} giao dịch. Nên lưu trữ để giữ lịch sử, hoặc xoá cả ví và giao dịch (kể cả chuyển khoản liên quan, không hoàn tác được).`,
+      t(
+        'Ví có {count} giao dịch. Nên lưu trữ để giữ lịch sử, hoặc xoá cả ví và giao dịch (kể cả chuyển khoản liên quan, không hoàn tác được).',
+        { count },
+      ),
       [
         { text: 'Huỷ', style: 'cancel' },
         {
@@ -115,7 +119,7 @@ export function AccountEditScreen() {
           },
         },
         {
-          text: `Xoá cả ${count} giao dịch`,
+          text: t('Xoá cả {count} giao dịch', { count }),
           style: 'destructive',
           onPress: () => {
             deleteAccount(db, id, true);

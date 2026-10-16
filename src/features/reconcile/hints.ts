@@ -1,3 +1,4 @@
+import { t as translate } from '@/lib/i18n';
 // Đối chiếu số dư: khi số dư thật (ngân hàng) khác số dư trong app, đoán nguyên nhân từ các giao dịch gần đây.
 // Hàm thuần, chỉ gợi ý — người dùng quyết định sửa thế nào.
 export type ReconcileTx = {
@@ -72,7 +73,10 @@ export function reconcileHints({ diff, accountId, txs, accountNames, money }: In
       hints.push({
         kind: 'duplicate',
         txId: a.id,
-        text: `“${label(a)}” ${money(abs)} xuất hiện hai lần gần nhau — có thể ghi trùng, xoá một khoản sẽ khớp.`,
+        text: translate(
+          '“{label}” {abs} xuất hiện hai lần gần nhau — có thể ghi trùng, xoá một khoản sẽ khớp.',
+          { label: label(a), abs: money(abs) },
+        ),
       });
     }
   }
@@ -86,7 +90,15 @@ export function reconcileHints({ diff, accountId, txs, accountNames, money }: In
       hints.push({
         kind: 'wrong-type',
         txId: t.id,
-        text: `“${label(t)}” ${money(t.amount)} đang ghi là ${t.type === 'expense' ? 'chi' : 'thu'} — nếu thật ra là ${t.type === 'expense' ? 'thu' : 'chi'} thì số dư sẽ khớp.`,
+        text: translate(
+          '“{label}” {amount} đang ghi là {type} — nếu thật ra là {type2} thì số dư sẽ khớp.',
+          {
+            label: label(t),
+            amount: money(t.amount),
+            type: t.type === 'expense' ? 'chi' : 'thu',
+            type2: t.type === 'expense' ? 'thu' : 'chi',
+          },
+        ),
       });
     }
   }
@@ -103,25 +115,38 @@ export function reconcileHints({ diff, accountId, txs, accountNames, money }: In
       hints.push({
         kind: 'wrong-wallet',
         txId: t.id,
-        text: `Khoản thu “${label(t)}” ${money(abs)} đang ở ví ${accountNames.get(t.accountId) ?? 'khác'} — có thể thuộc ví này.`,
+        text: translate('Khoản thu “{label}” {abs} đang ở ví {accountId} — có thể thuộc ví này.', {
+          label: label(t),
+          abs: money(abs),
+          accountId: accountNames.get(t.accountId) ?? 'khác',
+        }),
       });
     } else if (!here && diff < 0 && t.type === 'expense') {
       hints.push({
         kind: 'wrong-wallet',
         txId: t.id,
-        text: `Khoản chi “${label(t)}” ${money(abs)} đang ở ví ${accountNames.get(t.accountId) ?? 'khác'} — có thể thật ra trả từ ví này.`,
+        text: translate(
+          'Khoản chi “{label}” {abs} đang ở ví {accountId} — có thể thật ra trả từ ví này.',
+          { label: label(t), abs: money(abs), accountId: accountNames.get(t.accountId) ?? 'khác' },
+        ),
       });
     } else if (here && diff > 0 && t.type === 'expense') {
       hints.push({
         kind: 'wrong-wallet',
         txId: t.id,
-        text: `Khoản chi “${label(t)}” ${money(abs)} ở ví này — có thể thật ra trả từ ví khác.`,
+        text: translate('Khoản chi “{label}” {abs} ở ví này — có thể thật ra trả từ ví khác.', {
+          label: label(t),
+          abs: money(abs),
+        }),
       });
     } else if (here && diff < 0 && t.type === 'income') {
       hints.push({
         kind: 'wrong-wallet',
         txId: t.id,
-        text: `Khoản thu “${label(t)}” ${money(abs)} ở ví này — có thể thật ra vào ví khác.`,
+        text: translate('Khoản thu “{label}” {abs} ở ví này — có thể thật ra vào ví khác.', {
+          label: label(t),
+          abs: money(abs),
+        }),
       });
     }
   }
@@ -130,7 +155,10 @@ export function reconcileHints({ diff, accountId, txs, accountNames, money }: In
   if (diff < 0 && COMMON_FEES.has(abs)) {
     hints.push({
       kind: 'fee',
-      text: `${money(abs)} là mức phí ngân hàng hay gặp (phí chuyển khoản, SMS banking, duy trì tài khoản…) — có thể bạn chưa ghi.`,
+      text: translate(
+        '{abs} là mức phí ngân hàng hay gặp (phí chuyển khoản, SMS banking, duy trì tài khoản…) — có thể bạn chưa ghi.',
+        { abs: money(abs) },
+      ),
     });
   }
 
@@ -139,8 +167,10 @@ export function reconcileHints({ diff, accountId, txs, accountNames, money }: In
     kind: 'missing',
     text:
       diff > 0
-        ? `Có thể thiếu một khoản thu ${money(abs)} chưa ghi (lương, tiền nhận, lãi…).`
-        : `Có thể thiếu một khoản chi ${money(abs)} chưa ghi.`,
+        ? translate('Có thể thiếu một khoản thu {abs} chưa ghi (lương, tiền nhận, lãi…).', {
+            abs: money(abs),
+          })
+        : translate('Có thể thiếu một khoản chi {abs} chưa ghi.', { abs: money(abs) }),
   });
   return hints;
 }

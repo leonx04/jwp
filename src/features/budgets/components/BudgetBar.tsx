@@ -1,4 +1,5 @@
 // Một dòng ngân sách: tên, đã dùng / hạn mức, thanh tiến độ, còn lại + dự báo. Dùng ở màn Ngân sách và Tổng quan.
+import { t } from '@/lib/i18n';
 import { View } from 'react-native';
 
 import { AppText } from '@/components/ui';
@@ -44,11 +45,17 @@ export function BudgetBar({ item }: { item: BudgetItem }) {
       >
         {mask(
           item.state === 'over'
-            ? `Vượt ${format.money(-item.remaining)}`
-            : `Còn ${format.money(item.remaining)} · tối đa ${format.money(item.perDay)}/ngày (${item.daysLeft} ngày)`,
+            ? t('Vượt {remaining}', { remaining: format.money(-item.remaining) })
+            : t('Còn {remaining} · tối đa {perDay}/ngày ({daysLeft} ngày)', {
+                remaining: format.money(item.remaining),
+                perDay: format.money(item.perDay),
+                daysLeft: item.daysLeft,
+              }),
         )}
         {item.willExceed && !hide
-          ? ` · giữ tốc độ này sẽ vượt (~${format.money(item.projected)})`
+          ? t(' · giữ tốc độ này sẽ vượt (~{projected})', {
+              projected: format.money(item.projected),
+            })
           : ''}
       </AppText>
     </View>

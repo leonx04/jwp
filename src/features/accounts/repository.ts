@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { asc, count, eq, or, sql } from 'drizzle-orm';
 
 import { accounts, schedules, transactions, type Account } from '@/db/schema';
@@ -99,7 +100,7 @@ export function deleteAccount(db: AppDatabase, id: string, deleteTransactions = 
         .where(or(eq(transactions.accountId, id), eq(transactions.toAccountId, id)))
         .get()?.n ?? 0;
     if (used > 0 && !deleteTransactions) {
-      throw new Error(`Ví còn ${used} giao dịch.`);
+      throw new Error(t('Ví còn {used} giao dịch.', { used }));
     }
     tx.delete(transactions)
       .where(or(eq(transactions.accountId, id), eq(transactions.toAccountId, id)))

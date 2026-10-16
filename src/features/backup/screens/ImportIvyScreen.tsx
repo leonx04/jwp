@@ -1,4 +1,5 @@
 // Import Ivy Wallet: chọn file → xem trước → xác nhận → ghi (1 transaction) → kiểm tra lại.
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from '@/lib/haptics';
 import { router } from 'expo-router';
@@ -68,7 +69,9 @@ export function ImportIvyScreen() {
         message:
           error instanceof IvyReadError
             ? error.message
-            : `Không đọc được file: ${error instanceof Error ? error.message : String(error)}`,
+            : t('Không đọc được file: {error}', {
+                error: error instanceof Error ? error.message : String(error),
+              }),
       });
     }
   };
@@ -90,7 +93,9 @@ export function ImportIvyScreen() {
     } catch (error) {
       setStep({
         kind: 'error',
-        message: `Import thất bại, chưa có gì được ghi vào máy. ${error instanceof Error ? error.message : ''}`,
+        message: t('Import thất bại, chưa có gì được ghi vào máy. {message}', {
+          message: error instanceof Error ? error.message : '',
+        }),
       });
     }
   };
@@ -115,7 +120,9 @@ export function ImportIvyScreen() {
     const settingsText = [
       plan.settings.themePreference === 'dark' && 'theme tối',
       plan.settings.safetyThreshold != null &&
-        `ngưỡng an toàn ${format.money(plan.settings.safetyThreshold)}`,
+        t('ngưỡng an toàn {safetyThreshold}', {
+          safetyThreshold: format.money(plan.settings.safetyThreshold),
+        }),
       plan.settings.transfersAsIncomeExpense && 'tính chuyển khoản là thu/chi',
     ]
       .filter(Boolean)
@@ -126,7 +133,9 @@ export function ImportIvyScreen() {
           <ListRow
             icon="document-outline"
             title={step.fileName}
-            subtitle={`Mã hoá ${ENCODING_LABEL[step.encoding] ?? step.encoding} · đúng cấu trúc Ivy Wallet`}
+            subtitle={t('Mã hoá {encoding} · đúng cấu trúc Ivy Wallet', {
+              encoding: ENCODING_LABEL[step.encoding] ?? step.encoding,
+            })}
           />
         </Card>
 
@@ -140,7 +149,11 @@ export function ImportIvyScreen() {
               { label: 'Khoản chi', value: s.expense },
               { label: 'Khoản thu', value: s.income },
               { label: 'Chuyển khoản', value: s.transfer },
-              { label: 'Lịch định kỳ', value: s.schedules, hint: `${s.activeSchedules} đang chạy` },
+              {
+                label: 'Lịch định kỳ',
+                value: s.schedules,
+                hint: t('{activeSchedules} đang chạy', { activeSchedules: s.activeSchedules }),
+              },
               { label: 'Khoản nợ', value: s.debts },
               { label: 'Ngân sách', value: s.budgets },
             ]}
@@ -148,8 +161,12 @@ export function ImportIvyScreen() {
           <AppText variant="caption" color="textMuted">
             {s.upcomingSkipped} khoản “sắp tới” Ivy sinh sẵn không import thành giao dịch — JWP tự
             tính lại từ {s.schedules} lịch định kỳ.
-            {s.uncategorized ? ` ${s.uncategorized} giao dịch chưa phân loại.` : ''}
-            {s.deletedSkipped ? ` Bỏ qua ${s.deletedSkipped} bản ghi đã xoá.` : ''}
+            {s.uncategorized
+              ? t(' {uncategorized} giao dịch chưa phân loại.', { uncategorized: s.uncategorized })
+              : ''}
+            {s.deletedSkipped
+              ? t(' Bỏ qua {deletedSkipped} bản ghi đã xoá.', { deletedSkipped: s.deletedSkipped })
+              : ''}
           </AppText>
         </Card>
 
@@ -218,7 +235,9 @@ export function ImportIvyScreen() {
           </AppText>
           <AppText color="textMuted" style={{ textAlign: 'center' }}>
             {verify.ok
-              ? `Đã kiểm tra lại: đủ dữ liệu, số dư ${verify.balances.length} ví khớp với Ivy.`
+              ? t('Đã kiểm tra lại: đủ dữ liệu, số dư {length} ví khớp với Ivy.', {
+                  length: verify.balances.length,
+                })
               : 'Một số số dư khác bản xem trước (thường do ví đã có giao dịch khác trong JWP).'}
           </AppText>
         </Card>

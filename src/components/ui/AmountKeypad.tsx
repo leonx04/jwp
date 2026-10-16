@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from '@/lib/haptics';
 import { useEffect, useRef, useState } from 'react';
@@ -28,7 +29,8 @@ type AmountKeypadProps = {
   onChange: (value: Money) => void;
 };
 
-const warn = () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+const warn = () =>
+  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
 const tick = () => Haptics.selectionAsync().catch(() => {});
 
 /**
@@ -176,7 +178,7 @@ export function AmountKeypad({ value, onChange }: AmountKeypadProps) {
           {calc ? (
             <Pressable
               accessibilityRole="keyboardkey"
-              accessibilityLabel={`Phép ${OPS[r]}`}
+              accessibilityLabel={t('Phép {OPS}', { OPS: OPS[r] })}
               onPress={() => pressOp(OPS[r])}
               style={({ pressed }) => [
                 styles.key,

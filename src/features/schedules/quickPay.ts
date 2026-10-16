@@ -1,5 +1,6 @@
 // Bấm ✓ "đã thanh toán" trên một kỳ của lịch: ghi luôn theo đúng thông tin của lịch, không mở form,
 // có "Hoàn tác" ngay trên thanh thông báo. Chỉ kỳ "ước tính" (chưa biết số tiền thật) mới cần mở form.
+import { t } from '@/lib/i18n';
 import { eq } from 'drizzle-orm';
 
 import { showSnackbar } from '@/components/feedback/snackbarStore';
@@ -58,7 +59,9 @@ export function quickPay(
         amount: o.amount,
         accountId: payer,
         toAccountId: credit.id,
-        title: o.schedule.title ? `Trả ${o.schedule.title}` : 'Trả nợ ví trả sau',
+        title: o.schedule.title
+          ? t('Trả {title}', { title: o.schedule.title })
+          : 'Trả nợ ví trả sau',
         date: when,
         ...link,
       });
@@ -96,7 +99,7 @@ export function quickPayWithToast(
   const result = quickPay(db, o);
   if (result.kind !== 'done') return false;
   showSnackbar({
-    text: `Đã ghi ${title} · ${money(o.amount)}`,
+    text: t('Đã ghi {title} · {amount}', { title, amount: money(o.amount) }),
     tone: 'success',
     actionLabel: 'Hoàn tác',
     onAction: () => undoQuickPay(db, result.ids),
