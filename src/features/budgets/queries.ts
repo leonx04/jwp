@@ -2,8 +2,10 @@ import { sql, type SQL } from 'drizzle-orm';
 
 import { transactions } from '@/db/schema';
 import type { AppDatabase } from '@/db/types';
+import type { WeekendRule } from '@/lib/recurrence';
 import { addDays, periodContaining, vnDateToMs, type DateString } from '@/lib/date';
 
+import { cyclePeriodContaining } from './cycle';
 import { budgetProgress, parseIdList, type BudgetProgress } from './compute';
 import { listBudgetRows } from './repository';
 
@@ -14,6 +16,7 @@ export type BudgetItem = BudgetProgress & {
   accountIds: string[];
   /** Ngày bắt đầu chu kỳ riêng; null = theo chu kỳ chung */
   startDay: number | null;
+  weekendRule: WeekendRule;
   periodStart: DateString;
   periodEnd: DateString;
 };
@@ -51,7 +54,10 @@ export function listBudgets(
 ): BudgetItem[] {
   return listBudgetRows(db).map((b) => {
     // Mỗi ngân sách có thể có chu kỳ riêng; không đặt thì theo ngày bắt đầu tháng chung
-    const period = periodContaining(today, b.startDay ?? startDayOfMonth);
+    const period =
+      b.startDay === null
+        ? periodContaining(today, startDayOfMonth)
+        : cyclePeriodContaining(today, b.startDay, b.weekendRule);
     const from = vnDateToMs(period.start);
     const to = vnDateToMs(addDays(period.end, 1));
     const categoryIds = parseIdList(b.categoryIds);
@@ -63,6 +69,7 @@ export function listBudgets(
       categoryIds,
       accountIds,
       startDay: b.startDay,
+      weekendRule: b.weekendRule,
       periodStart: period.start,
       periodEnd: period.end,
       ...budgetProgress({

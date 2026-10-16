@@ -4,6 +4,7 @@ import { budgets, type Budget } from '@/db/schema';
 import type { AppDatabase } from '@/db/types';
 import { createId } from '@/lib/id';
 import { MAX_AMOUNT } from '@/lib/money';
+import type { WeekendRule } from '@/lib/recurrence';
 
 import { serializeIdList } from './compute';
 
@@ -20,6 +21,8 @@ export type BudgetInput = {
   accountIds?: readonly string[];
   /** Ngày bắt đầu chu kỳ riêng (1–31). Trống / null = theo ngày bắt đầu tháng chung */
   startDay?: number | null;
+  /** Ngày bắt đầu rơi vào cuối tuần: giữ nguyên / lùi về thứ Sáu / dời sang thứ Hai */
+  weekendRule?: WeekendRule;
 };
 
 export function listBudgetRows(db: AppDatabase): Budget[] {
@@ -40,6 +43,7 @@ export function saveBudget(db: AppDatabase, input: BudgetInput): string {
   const values = {
     name,
     startDay,
+    weekendRule: startDay === null ? ('none' as const) : (input.weekendRule ?? 'none'),
     amount: input.amount,
     categoryIds: serializeIdList(input.categoryIds ?? []),
     accountIds: serializeIdList(input.accountIds ?? []),
