@@ -34,12 +34,15 @@ export function useLanguage(): Language {
   return resolveLanguage(pref);
 }
 
-export function t(source: string, params?: Record<string, string | number>): string {
+export function t(
+  source: string,
+  params?: Record<string, string | number | null | undefined>,
+): string {
   const lang = getLanguage();
   const text = lang === 'vi' ? source : (DICTIONARIES[lang][source] ?? source);
   if (!params) return text;
   return text.replace(/\{(\w+)\}/g, (match, key: string) =>
-    key in params ? String(params[key]) : match,
+    key in params ? String(params[key] ?? '') : match,
   );
 }
 

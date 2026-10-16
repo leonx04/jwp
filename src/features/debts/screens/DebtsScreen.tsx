@@ -1,4 +1,5 @@
 // Sổ nợ: tổng "tôi nợ" / "nợ tôi", gom theo người, khoản đã xong cất gọn ở cuối.
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -84,7 +85,7 @@ export function DebtsScreen() {
         <AppText variant="caption" color="textMuted">
           Nếu bù trừ hết: bạn {summary.net >= 0 ? 'được nhận lại ' : 'còn phải trả '}
           {format.money(Math.abs(summary.net))}
-          {summary.overdue ? ` · ${summary.overdue} khoản quá hạn` : ''}
+          {summary.overdue ? t(' · {overdue} khoản quá hạn', { overdue: summary.overdue }) : ''}
         </AppText>
       ) : summary.overdue ? (
         <AppText variant="caption" color="expense">

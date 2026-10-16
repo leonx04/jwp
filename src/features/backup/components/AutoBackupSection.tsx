@@ -1,4 +1,5 @@
 // Mục "Sao lưu tự động" trong màn Sao lưu: bật/tắt, tần suất, thư mục ngoài, sao lưu ngay.
+import { t } from '@/lib/i18n';
 import { useState } from 'react';
 import { View } from 'react-native';
 
@@ -29,7 +30,9 @@ export function AutoBackupSection() {
     const result = backupNow(db);
     setConfig(getAutoBackupConfig());
     showSnackbar({
-      text: result.ok ? `Đã sao lưu: ${result.name}` : (result.error ?? 'Sao lưu chưa thành công'),
+      text: result.ok
+        ? t('Đã sao lưu: {name}', { name: result.name })
+        : (result.error ?? 'Sao lưu chưa thành công'),
       tone: result.ok ? 'success' : 'error',
     });
   };
@@ -70,7 +73,7 @@ export function AutoBackupSection() {
               title="Thư mục lưu bản sao"
               subtitle={
                 config.folderName
-                  ? `${config.folderName} — chạm để đổi`
+                  ? t('{folderName} — chạm để đổi', { folderName: config.folderName })
                   : 'Chưa chọn — chọn Drive / thẻ nhớ để mất máy vẫn còn bản sao'
               }
               onPress={chooseFolder}
@@ -82,7 +85,10 @@ export function AutoBackupSection() {
             {config.lastError
               ? config.lastError
               : config.lastAt
-                ? `Lần gần nhất: ${formatDate(toVnDate(config.lastAt))} ${toVnTime(config.lastAt)}`
+                ? t('Lần gần nhất: {lastAt} {lastAt2}', {
+                    lastAt: formatDate(toVnDate(config.lastAt)),
+                    lastAt2: toVnTime(config.lastAt),
+                  })
                 : 'Chưa sao lưu lần nào.'}
           </AppText>
           <Button

@@ -1,5 +1,6 @@
 // Bill ví trả sau → các "kỳ thanh toán" ảo để hiện trong Lịch và tính vào dự báo dòng tiền
 // (trả bill = chuyển tiền từ ví thanh toán sang ví trả sau). Hàm thuần, test được.
+import { t } from '@/lib/i18n';
 import type { Occurrence, ScheduleLike } from '@/features/schedules/occurrences';
 import { diffDays, type DateString } from '@/lib/date';
 
@@ -31,7 +32,7 @@ function billSchedule(
     accountId: payer,
     toAccountId: source.account.id,
     categoryId: null,
-    title: `Trả bill ${source.account.name}`,
+    title: t('Trả bill {name}', { name: source.account.name }),
     startDate,
     frequency: 'once',
     interval: 1,

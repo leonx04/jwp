@@ -1,4 +1,5 @@
 // Thống kê: tổng quan kỳ, cơ cấu theo danh mục, xu hướng 6 tháng, tích luỹ so với kỳ trước, nhận xét.
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -354,7 +355,7 @@ export function StatsScreen() {
                   ]}
                   xLabels={view.days.map((d) => d.slice(8))}
                   formatValue={axisMoney}
-                  tooltipTitle={(i) => `Ngày ${view.days[i]?.slice(8) ?? ''}`}
+                  tooltipTitle={(i) => t('Ngày {slice}', { slice: view.days[i]?.slice(8) ?? '' })}
                   animationKey={`${type}-${period.start}`}
                 />
               </Card>

@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
@@ -37,7 +38,7 @@ export function TagEditScreen() {
       <SectionTitle>Màu</SectionTitle>
       <ColorPicker value={color} onChange={setColor} />
       <Button
-        title={`Xem ${existing?.usage ?? 0} giao dịch`}
+        title={t('Xem {usage} giao dịch', { usage: existing?.usage ?? 0 })}
         variant="secondary"
         icon="receipt-outline"
         onPress={() => router.navigate({ pathname: '/transactions', params: { tagId: id } })}

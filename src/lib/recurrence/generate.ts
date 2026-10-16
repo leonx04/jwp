@@ -1,4 +1,5 @@
 // Sinh các kỳ (ngày đến hạn) từ một quy tắc lặp lại. Hàm thuần, không đụng DB → test kỹ được.
+import { t } from '@/lib/i18n';
 import {
   addDays,
   addMonths,
@@ -129,7 +130,8 @@ export function nextOccurrence(
 /** Mô tả quy tắc bằng tiếng Việt: 'Hằng tháng, ngày 19' · 'Mỗi 2 tuần vào T2, T6' */
 export function describeRule(rule: RecurrenceRule): string {
   const n = Math.max(1, rule.interval);
-  const every = (unit: string) => (n === 1 ? `Hằng ${unit}` : `Mỗi ${n} ${unit}`);
+  const every = (unit: string) =>
+    n === 1 ? t('Hằng {unit}', { unit }) : t('Mỗi {n} {unit}', { n, unit });
   const short = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
   let text: string;
   switch (rule.frequency) {
@@ -148,17 +150,18 @@ export function describeRule(rule: RecurrenceRule): string {
     }
     case 'monthly': {
       const day = rule.monthDay ?? parseDate(rule.startDate).day;
-      text = `${every('tháng')}, ${day === -1 ? 'ngày cuối tháng' : `ngày ${day}`}`;
+      text = `${every('tháng')}, ${day === -1 ? 'ngày cuối tháng' : t('ngày {day}', { day })}`;
       break;
     }
     case 'yearly': {
       const { day, month } = parseDate(rule.startDate);
-      text = `${every('năm')}, ngày ${day}/${month}`;
+      text = t('{every}, ngày {day}/{month}', { every: every('năm'), day, month });
       break;
     }
   }
   if (rule.weekendRule === 'before') text += ' (cuối tuần → thứ Sáu)';
   if (rule.weekendRule === 'after') text += ' (cuối tuần → thứ Hai)';
-  if (rule.endType === 'count' && rule.endCount) text += ` · ${rule.endCount} lần`;
+  if (rule.endType === 'count' && rule.endCount)
+    text += t(' · {endCount} lần', { endCount: rule.endCount });
   return text;
 }

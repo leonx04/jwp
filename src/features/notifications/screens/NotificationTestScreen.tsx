@@ -1,4 +1,5 @@
 // Màn "Kiểm tra thông báo" (spike Giai đoạn 0): thử popup, nút hành động, hẹn giờ khi app đã tắt.
+import { t } from '@/lib/i18n';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Linking, View } from 'react-native';
@@ -134,7 +135,7 @@ function NotificationTester() {
         <ListRow
           icon="time-outline"
           title="Đang chờ gửi"
-          subtitle={`${scheduled} thông báo đã hẹn`}
+          subtitle={t('{scheduled} thông báo đã hẹn', { scheduled })}
           right={
             scheduled > 0 ? (
               <Button
@@ -219,7 +220,7 @@ function NotificationTester() {
           {[0, 1, 2, 3, 5].map((d) => (
             <Chip
               key={d}
-              label={d === 0 ? 'Chỉ đúng ngày' : `${d} ngày`}
+              label={d === 0 ? 'Chỉ đúng ngày' : t('{d} ngày', { d })}
               selected={prefs.daysBefore === d}
               onPress={() => updateNotifications({ daysBefore: d })}
             />

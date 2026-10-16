@@ -1,6 +1,7 @@
 // Mục "Trả góp" trong màn thêm giao dịch (chỉ hiện với khoản CHI từ ví trả sau).
 // Màn editor giữ `value` trong draft; khi lưu: ghi CHI tổng tiền (giá + phí) rồi saveInstallmentPlan
 // (xem installmentDraft.ts → installmentToSave).
+import { t } from '@/lib/i18n';
 import { useEffect, useMemo } from 'react';
 import { ScrollView, View } from 'react-native';
 
@@ -71,7 +72,10 @@ export function InstallmentSection({
         title="Trả góp"
         subtitle={
           value
-            ? `Chia thành ${value.months} kỳ trong bill ${account.name}`
+            ? t('Chia thành {months} kỳ trong bill {name}', {
+                months: value.months,
+                name: account.name,
+              })
             : 'Chia khoản mua thành nhiều kỳ'
         }
         value={!!value}
@@ -91,7 +95,7 @@ export function InstallmentSection({
             {months.map((m) => (
               <Chip
                 key={m}
-                label={`${m} tháng`}
+                label={t('{m} tháng', { m })}
                 selected={value.months === m}
                 onPress={() => onChange({ ...value, months: m })}
               />
@@ -116,11 +120,17 @@ export function InstallmentSection({
                 label="Tổng phải trả"
                 value={
                   plan.fee > 0
-                    ? `${format.money(plan.total)} (phí ${format.compact(plan.fee)})`
+                    ? t('{total} (phí {fee})', {
+                        total: format.money(plan.total),
+                        fee: format.compact(plan.fee),
+                      })
                     : format.money(plan.total)
                 }
               />
-              <Row label="Kỳ đầu tiên" value={`hạn ${formatDate(firstDue)}`} />
+              <Row
+                label="Kỳ đầu tiên"
+                value={t('hạn {firstDue}', { firstDue: formatDate(firstDue) })}
+              />
               <AppText variant="caption" color="textMuted">
                 Khoản chi ghi tổng tiền (giá + phí). Bill mỗi kỳ chỉ tính phần góp tới hạn.
               </AppText>

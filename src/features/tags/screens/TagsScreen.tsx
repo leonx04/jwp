@@ -1,3 +1,4 @@
+import { t as translate } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
@@ -34,7 +35,7 @@ export function TagsScreen() {
       </AppText>
       {proposals?.length ? (
         <Button
-          title={`Gợi ý ${proposals.length} tag từ lịch sử`}
+          title={translate('Gợi ý {length} tag từ lịch sử', { length: proposals.length })}
           icon="sparkles-outline"
           variant="secondary"
           onPress={() => router.push('/tags/suggest')}
@@ -61,7 +62,7 @@ export function TagsScreen() {
               icon="pricetag-outline"
               iconColor={t.color ?? undefined}
               title={`#${t.name}`}
-              subtitle={`${t.usage} giao dịch`}
+              subtitle={translate('{usage} giao dịch', { usage: t.usage })}
               onPress={() => router.push({ pathname: '/tag/edit', params: { id: t.id } })}
             />
           ))

@@ -1,5 +1,6 @@
 // Báo cáo cuối tháng: gom số liệu đã tổng hợp thành bản tóm tắt dễ đọc + văn bản để chia sẻ.
 // Hàm thuần — định dạng tiền truyền vào, không đụng DB. Số tiền luôn nguyên (không làm tròn).
+import { t } from '@/lib/i18n';
 import {
   percentChange,
   sumFlows,
@@ -166,12 +167,15 @@ function buildHighlights(r: MonthlyReport, format: (amount: number) => string): 
         ? {
             key: 'saving',
             tone: 'good',
-            text: `Còn lại ${format(r.net)}, bằng ${pct(r.savingRate ?? 0)} thu nhập.`,
+            text: t('Còn lại {net}, bằng {savingRate} thu nhập.', {
+              net: format(r.net),
+              savingRate: pct(r.savingRate ?? 0),
+            }),
           }
         : {
             key: 'saving',
             tone: 'bad',
-            text: `Chi vượt thu ${format(-r.net)}.`,
+            text: t('Chi vượt thu {net}.', { net: format(-r.net) }),
           },
     );
   } else if (r.expense > 0) {
@@ -183,7 +187,11 @@ function buildHighlights(r: MonthlyReport, format: (amount: number) => string): 
     out.push({
       key: 'top-category',
       tone: 'neutral',
-      text: `Chi nhiều nhất cho ${top.name}: ${format(top.amount)} (${pct(top.share * 100)} tổng chi).`,
+      text: t('Chi nhiều nhất cho {name}: {amount} ({share} tổng chi).', {
+        name: top.name,
+        amount: format(top.amount),
+        share: pct(top.share * 100),
+      }),
     });
   }
 
@@ -199,7 +207,11 @@ function buildHighlights(r: MonthlyReport, format: (amount: number) => string): 
     out.push({
       key: 'rise',
       tone: 'bad',
-      text: `${rise.name} tăng ${format(rise.amount - rise.previous)} so với ${since}.`,
+      text: t('{name} tăng {previous} so với {since}.', {
+        name: rise.name,
+        previous: format(rise.amount - rise.previous),
+        since,
+      }),
     });
   }
 
@@ -207,7 +219,10 @@ function buildHighlights(r: MonthlyReport, format: (amount: number) => string): 
     out.push({
       key: 'top-day',
       tone: 'neutral',
-      text: `Ngày chi nhiều nhất: ${formatDate(r.topDay.date, false)}, ${format(r.topDay.amount)}.`,
+      text: t('Ngày chi nhiều nhất: {false}, {amount}.', {
+        false: formatDate(r.topDay.date, false),
+        amount: format(r.topDay.amount),
+      }),
     });
   }
 
@@ -218,12 +233,15 @@ function buildHighlights(r: MonthlyReport, format: (amount: number) => string): 
         ? {
             key: 'budgets',
             tone: 'good',
-            text: `Giữ được ${r.budgets.length}/${r.budgets.length} ngân sách trong hạn mức.`,
+            text: t('Giữ được {length}/{length2} ngân sách trong hạn mức.', {
+              length: r.budgets.length,
+              length2: r.budgets.length,
+            }),
           }
         : {
             key: 'budgets',
             tone: 'bad',
-            text: `Vượt ngân sách: ${over.map((b) => b.name).join(', ')}.`,
+            text: t('Vượt ngân sách: {join}.', { join: over.map((b) => b.name).join(', ') }),
           },
     );
   }
@@ -244,7 +262,9 @@ export function reportToText(
     `Thu: ${format(r.income)}`,
     `Chi: ${format(r.expense)}`,
     `${r.net >= 0 ? 'Còn lại' : 'Chi vượt thu'}: ${format(Math.abs(r.net))}${
-      r.savingRate !== null && r.net >= 0 ? ` (${pct(r.savingRate)} thu nhập)` : ''
+      r.savingRate !== null && r.net >= 0
+        ? t(' ({savingRate} thu nhập)', { savingRate: pct(r.savingRate) })
+        : ''
     }`,
   );
   if (r.categories.length) {
@@ -252,7 +272,8 @@ export function reportToText(
     r.categories.forEach((c, i) =>
       lines.push(`${i + 1}. ${c.name}: ${format(c.amount)} (${pct(c.share * 100)})`),
     );
-    if (r.otherAmount > 0) lines.push(`Khác: ${format(r.otherAmount)}`);
+    if (r.otherAmount > 0)
+      lines.push(t('Khác: {otherAmount}', { otherAmount: format(r.otherAmount) }));
   }
   if (r.biggestExpenses.length) {
     lines.push('', 'Khoản chi lớn:');

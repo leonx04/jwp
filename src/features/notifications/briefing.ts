@@ -1,6 +1,7 @@
 // Nội dung "báo cáo buổi sáng" (hàm thuần, test được).
 // Thông báo cục bộ KHÔNG chạy code lúc hiện → phải tính sẵn nội dung cho vài ngày tới rồi hẹn giờ;
 // mỗi lần mở app / dữ liệu đổi sẽ tính lại và thay các bản đã hẹn.
+import { t } from '@/lib/i18n';
 import type { TransactionType } from '@/db/schema';
 import { incomeLabel, type DayAllowance } from '@/features/today/compute';
 import { addDays, diffDays, formatDate, vnDateToMs, type DateString } from '@/lib/date';
@@ -64,12 +65,12 @@ function walletLine(
   if (!shown.length) return null;
   const head = shown.slice(0, MAX_WALLETS).map((w) => `${w.name} ${money(w.balance)}`);
   const more = shown.length - MAX_WALLETS;
-  return more > 0 ? `${head.join(' · ')} · +${more} ví` : head.join(' · ');
+  return more > 0 ? t('{join} · +{more} ví', { join: head.join(' · '), more }) : head.join(' · ');
 }
 
 function allowanceLine(day: DayAllowance, money: BriefingInput['money']): string {
   const income = day.incomeOnDay ?? day.nextIncome;
-  const spend = `Hôm nay được tiêu ~${money(day.allowance)}`;
+  const spend = t('Hôm nay được tiêu ~{allowance}', { allowance: money(day.allowance) });
   return income ? `${spend} · ${incomeLabel(income)}` : spend;
 }
 
@@ -81,7 +82,7 @@ function itemsLine(input: BriefingInput, date: DateString): string | null {
     `${i.overdue || i.date < date ? 'quá hạn ' : ''}${i.title} ${i.type === 'income' ? '+' : ''}${input.money(i.amount)}`;
   const head = due.slice(0, MAX_ITEMS).map(text);
   const more = due.length - MAX_ITEMS;
-  return `Hôm nay: ${head.join(' · ')}${more > 0 ? ` · +${more} khoản` : ''}`;
+  return `Hôm nay: ${head.join(' · ')}${more > 0 ? t(' · +{more} khoản', { more }) : ''}`;
 }
 
 function billLines(input: BriefingInput, date: DateString): string[] {

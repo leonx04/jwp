@@ -1,4 +1,5 @@
 // Bộ chọn màu + bộ chọn biểu tượng hợp nhất (Ionicons theo nhóm + logo ngân hàng / ví điện tử).
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from '@/lib/haptics';
 import {
@@ -222,7 +223,7 @@ function CompactRow({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${title}: ${label}. Đổi biểu tượng`}
+      accessibilityLabel={t('{title}: {label}. Đổi biểu tượng', { title, label })}
       onPress={onPress}
       style={({ pressed }) => [styles.compact, pressed && { opacity: 0.75 }]}
     >

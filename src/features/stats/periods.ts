@@ -1,5 +1,6 @@
 // Kỳ thống kê: tháng (theo "ngày bắt đầu tháng" trong cài đặt) hoặc năm (12 tháng liên tiếp).
 // Hàm thuần — test được, không phụ thuộc giờ máy (truyền `today` vào).
+import { t } from '@/lib/i18n';
 import {
   addDays,
   diffDays,
@@ -86,7 +87,7 @@ export function periodRange(period: Period): { from: number; to: number } {
 /** Tên kỳ: 'Tháng 10/2026' · 'Năm 2026' (đặt theo tháng / năm bắt đầu kỳ) */
 export function periodTitle(mode: StatsMode, period: Period): string {
   const { year, month } = parseDate(period.start);
-  return mode === 'year' ? `Năm ${year}` : `Tháng ${month}/${year}`;
+  return mode === 'year' ? t('Năm {year}', { year }) : t('Tháng {month}/{year}', { month, year });
 }
 
 /** Nhãn ngắn trên cột: 'T10' */

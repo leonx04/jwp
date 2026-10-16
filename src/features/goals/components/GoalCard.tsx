@@ -1,4 +1,5 @@
 // Một mục tiêu tiết kiệm: tiến độ, còn thiếu, cần góp mỗi tháng. Dùng ở màn Quỹ và Tổng quan.
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
@@ -28,7 +29,7 @@ export function GoalCard({ item, actions = false }: GoalCardProps) {
       params: {
         type: 'transfer',
         toAccountId: goal.accountId ?? '',
-        title: `Góp quỹ ${goal.name}`,
+        title: t('Góp quỹ {name}', { name: goal.name }),
       },
     });
 
@@ -74,12 +75,12 @@ export function GoalCard({ item, actions = false }: GoalCardProps) {
           ? 'Đã đạt mục tiêu 🎉'
           : mask(
               `Còn thiếu ${format.money(item.remaining)}${
-                goal.deadline ? ` · hạn ${formatDate(goal.deadline)}` : ''
+                goal.deadline ? t(' · hạn {deadline}', { deadline: formatDate(goal.deadline) }) : ''
               }${
                 item.overdue
-                  ? ` · quá hạn ${-(item.daysLeft ?? 0)} ngày`
+                  ? t(' · quá hạn {daysLeft} ngày', { daysLeft: -(item.daysLeft ?? 0) })
                   : item.perMonth
-                    ? ` · góp ${format.money(item.perMonth)}/tháng`
+                    ? t(' · góp {perMonth}/tháng', { perMonth: format.money(item.perMonth) })
                     : ''
               }`,
             )}

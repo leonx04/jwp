@@ -1,4 +1,5 @@
 // Tab Lịch: dự trù dòng tiền + các kỳ thu/chi sắp tới.
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -148,7 +149,7 @@ export function ScheduleScreen() {
                 color={colors.expense}
               />
               <Stat
-                label={`Thấp nhất ${formatDate(forecast.lowest.date, false)}`}
+                label={t('Thấp nhất {false}', { false: formatDate(forecast.lowest.date, false) })}
                 value={format.compact(forecast.lowest.balance)}
                 color={forecast.lowest.balance < 0 ? colors.expense : colors.text}
               />
@@ -160,13 +161,19 @@ export function ScheduleScreen() {
             <Alert
               tone="expense"
               icon="warning"
-              text={`Ngày ${formatDate(forecast.firstNegative.date, false)} số dư dự kiến âm ${format.money(-forecast.firstNegative.balance)}`}
+              text={t('Ngày {false} số dư dự kiến âm {balance}', {
+                false: formatDate(forecast.firstNegative.date, false),
+                balance: format.money(-forecast.firstNegative.balance),
+              })}
             />
           ) : forecast.firstBelowSafety ? (
             <Alert
               tone="warning"
               icon="alert-circle"
-              text={`Ngày ${formatDate(forecast.firstBelowSafety.date, false)} số dư xuống dưới ngưỡng an toàn ${format.money(safetyThreshold)}`}
+              text={t('Ngày {false} số dư xuống dưới ngưỡng an toàn {safetyThreshold}', {
+                false: formatDate(forecast.firstBelowSafety.date, false),
+                safetyThreshold: format.money(safetyThreshold),
+              })}
             />
           ) : null}
           {forecast.walletWarnings.slice(0, 3).map((w) => (
@@ -174,7 +181,16 @@ export function ScheduleScreen() {
               key={`${w.occurrence.scheduleId}-${w.occurrence.dueDate}`}
               tone="warning"
               icon="wallet"
-              text={`${occurrenceTitle(w.occurrence, lookup)} ${format.money(w.occurrence.amount)} (${formatRelativeDue(w.occurrence.date)}) trả từ ${accountName(w.accountId)} nhưng ví sẽ thiếu ${format.money(-w.balanceAfter)}`}
+              text={t(
+                '{lookup} {amount} ({date}) trả từ {accountId} nhưng ví sẽ thiếu {balanceAfter}',
+                {
+                  lookup: occurrenceTitle(w.occurrence, lookup),
+                  amount: format.money(w.occurrence.amount),
+                  date: formatRelativeDue(w.occurrence.date),
+                  accountId: accountName(w.accountId),
+                  balanceAfter: format.money(-w.balanceAfter),
+                },
+              )}
             />
           ))}
 

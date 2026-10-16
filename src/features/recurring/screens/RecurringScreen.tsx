@@ -1,4 +1,5 @@
 // Khoản lặp hằng tháng app phát hiện trong lịch sử → bấm để tạo lịch nhắc.
+import { t } from '@/lib/i18n';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
 
@@ -27,7 +28,7 @@ export function RecurringScreen() {
     try {
       createScheduleFromSuggestion(db, s);
       setHidden((h) => new Set(h).add(s.key));
-      showSnackbar({ text: `Đã tạo lịch “${s.title}”`, tone: 'success' });
+      showSnackbar({ text: t('Đã tạo lịch “{title}”', { title: s.title }), tone: 'success' });
     } catch (error) {
       Alert.alert('Chưa tạo được', error instanceof Error ? error.message : String(error));
     }

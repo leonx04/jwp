@@ -1,5 +1,6 @@
 // Nhắc hạn: khoản phải trả (kể cả bill ví trả sau), khoản thu dự kiến, hạn trả / đòi nợ.
 // Phần tính là hàm thuần (test được): từ danh sách khoản sắp tới → các thông báo cần hẹn.
+import { t } from '@/lib/i18n';
 import { addDays, formatDate, vnDateToMs, type DateString } from '@/lib/date';
 
 import type { ChannelId } from './config';
@@ -92,7 +93,7 @@ export function avoidQuietHours(
   return vnDateToMs(sameDay ? date : addDays(date, 1), quietEnd);
 }
 
-const dayWord = (days: number) => (days === 1 ? 'Ngày mai' : `${days} ngày nữa`);
+const dayWord = (days: number) => (days === 1 ? 'Ngày mai' : t('{days} ngày nữa', { days }));
 
 export function buildReminders(input: ReminderInput): Reminder[] {
   const { now, today, flags, money } = input;
@@ -137,7 +138,7 @@ export function buildReminders(input: ReminderInput): Reminder[] {
       out.push({
         id: `${REMINDER_PREFIX}${item.kind}:${item.key}:due@${item.date}`,
         fireAt: dayOf,
-        title: `${icon} Hôm nay: ${item.title}`,
+        title: t('{icon} Hôm nay: {title}', { icon, title: item.title }),
         body: money(item.amount),
         url,
         channel,
@@ -157,7 +158,9 @@ export function buildReminders(input: ReminderInput): Reminder[] {
         .join('\n');
       const more =
         overdue.length > MAX_OVERDUE_LINES
-          ? `\n…và ${overdue.length - MAX_OVERDUE_LINES} khoản nữa`
+          ? t('\n…và {MAX_OVERDUE_LINES} khoản nữa', {
+              MAX_OVERDUE_LINES: overdue.length - MAX_OVERDUE_LINES,
+            })
           : '';
       for (let d = 0; d <= OVERDUE_DAYS; d++) {
         const date = addDays(today, d);
@@ -166,7 +169,7 @@ export function buildReminders(input: ReminderInput): Reminder[] {
         out.push({
           id: `${REMINDER_PREFIX}overdue:${date}`,
           fireAt,
-          title: `⚠️ ${overdue.length} khoản quá hạn`,
+          title: t('⚠️ {length} khoản quá hạn', { length: overdue.length }),
           body: lines + more,
           url: overdue[0].url,
           channel: 'payments',

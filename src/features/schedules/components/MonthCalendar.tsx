@@ -1,4 +1,5 @@
 // Lịch tháng: lưới 6 tuần, chấm màu thu / chi / bill, âm lịch nhỏ; bấm ngày để xem chi tiết.
+import { t } from '@/lib/i18n';
 import { useFocusEffect } from 'expo-router';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, View } from 'react-native';
@@ -278,7 +279,7 @@ function DaySheet({
             <AppText variant="heading">{formatDate(day.date)}</AppText>
             <AppText variant="caption" color="textMuted">
               Âm lịch {day.lunar}
-              {day.totals ? ` · ${day.totals.count} giao dịch` : ''}
+              {day.totals ? t(' · {count} giao dịch', { count: day.totals.count }) : ''}
             </AppText>
           </View>
           {day.totals ? (

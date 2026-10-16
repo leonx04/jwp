@@ -1,6 +1,7 @@
 // Âm lịch Việt Nam — thuật toán của Hồ Ngọc Đức (https://www.informatik.uni-leipzig.de/~duc/amlich/),
 // tính theo múi giờ UTC+7 (khác lịch Trung Quốc UTC+8 ở vài năm, vd Tết 1985, 2007).
 // Hàm thuần, không phụ thuộc múi giờ của máy.
+import { t } from '@/lib/i18n';
 import { parseDate, type DateString } from './vn';
 
 export type LunarDate = {
@@ -164,7 +165,8 @@ export function lunarYearName(year: number): string {
 /** '2026-09-25' → 'Rằm tháng 8 năm Bính Ngọ' · 'Mùng 1 tháng 6 nhuận năm Ất Tỵ' · '23 tháng Chạp…' */
 export function formatLunar(date: DateString): string {
   const { day, month, year, leap } = toLunar(date);
-  const dayText = day === 15 ? 'Rằm' : day <= 10 ? `Mùng ${day}` : `Ngày ${day}`;
+  const dayText =
+    day === 15 ? 'Rằm' : day <= 10 ? t('Mùng {day}', { day }) : t('Ngày {day}', { day });
   const monthText = month === 1 ? 'Giêng' : month === 12 ? 'Chạp' : String(month);
   return `${dayText} tháng ${monthText}${leap ? ' nhuận' : ''} năm ${lunarYearName(year)}`;
 }

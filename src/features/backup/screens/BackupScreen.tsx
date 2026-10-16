@@ -1,4 +1,5 @@
 // Sao lưu: xuất JSON (JWP) / CSV, khôi phục từ file JSON (gộp hoặc thay thế).
+import { t } from '@/lib/i18n';
 import * as Haptics from '@/lib/haptics';
 import { useState } from 'react';
 import { Alert } from 'react-native';
@@ -59,7 +60,16 @@ export function BackupScreen() {
       const backup = readJwpBackup(picked.bytes);
       const preview = previewRestore(db, backup);
       const types = preview.transactionTypes;
-      const summary = `${backup.data.accounts.length} ví · ${backup.data.transactions.length} giao dịch (${types.expense} chi, ${types.income} thu, ${types.transfer} chuyển)`;
+      const summary = t(
+        '{length} ví · {length2} giao dịch ({expense} chi, {income} thu, {transfer} chuyển)',
+        {
+          length: backup.data.accounts.length,
+          length2: backup.data.transactions.length,
+          expense: types.expense,
+          income: types.income,
+          transfer: types.transfer,
+        },
+      );
       const apply = (mode: RestoreMode) => {
         try {
           restoreBackup(db, backup, mode, {

@@ -1,5 +1,6 @@
 // Ghi sổ nợ. Mỗi lần cho vay / vay / trả có chọn ví sẽ sinh một giao dịch ví gắn `debt_id`
 // (giao dịch này không tính vào thống kê chi tiêu). Mọi thao tác ghi chạy trong một transaction SQLite.
+import { t } from '@/lib/i18n';
 import { eq, inArray } from 'drizzle-orm';
 
 import {
@@ -47,9 +48,9 @@ function titleFor(direction: DebtDirection, kind: 'open' | DebtRecordType, name:
     case 'open':
       return lent ? `Cho ${name} vay` : `Vay ${name}`;
     case 'increase':
-      return lent ? `Cho ${name} vay thêm` : `Vay thêm ${name}`;
+      return lent ? t('Cho {name} vay thêm', { name }) : t('Vay thêm {name}', { name });
     case 'repay':
-      return lent ? `${name} trả nợ` : `Trả nợ ${name}`;
+      return lent ? t('{name} trả nợ', { name }) : t('Trả nợ {name}', { name });
     default:
       return `Lãi ${name}`;
   }

@@ -1,4 +1,5 @@
 // Nhận xét tự động bằng tiếng Việt từ số liệu đã phân tích. Hàm thuần — định dạng tiền truyền vào.
+import { t } from '@/lib/i18n';
 import { WEEKDAY_NAMES, formatDate, type DateString } from '@/lib/date';
 
 import type { CategoryDelta, FlowType, Spike } from './analysis';
@@ -78,8 +79,8 @@ export function buildInsights(input: InsightInput): Insight[] {
   const noun = expense ? 'Chi tiêu' : 'Thu nhập';
   const verb = expense ? 'chi' : 'thu';
   const unit = mode === 'month' ? 'tháng' : 'năm';
-  const prevNoun = `${unit} trước`;
-  const versus = inProgress ? `cùng kỳ ${prevNoun}` : prevNoun;
+  const prevNoun = t('{unit} trước', { unit });
+  const versus = inProgress ? t('cùng kỳ {prevNoun}', { prevNoun }) : prevNoun;
   /** Tăng là tốt với thu nhập, xấu với chi tiêu */
   const toneOf = (up: boolean): InsightTone => (up === expense ? 'bad' : 'good');
   const insights: Insight[] = [];
@@ -93,8 +94,11 @@ export function buildInsights(input: InsightInput): Insight[] {
       tone: ratio > 1.05 ? 'bad' : ratio < 0.95 ? 'good' : 'neutral',
       icon: 'speedometer-outline',
       text:
-        `Theo tốc độ hiện tại, cuối ${unit} ${verb} khoảng ${format(projection)}` +
-        (previousFullTotal > 0 ? ` (${prevNoun} ${format(previousFullTotal)})` : ''),
+        t('Theo tốc độ hiện tại, cuối {unit} {verb} khoảng {projection}', {
+          unit,
+          verb,
+          projection: format(projection),
+        }) + (previousFullTotal > 0 ? ` (${prevNoun} ${format(previousFullTotal)})` : ''),
     });
   }
 
@@ -106,14 +110,19 @@ export function buildInsights(input: InsightInput): Insight[] {
         key: 'total',
         tone: 'neutral',
         icon: 'remove-outline',
-        text: `${noun} gần như không đổi so với ${versus}`,
+        text: t('{noun} gần như không đổi so với {versus}', { noun, versus }),
       });
     } else {
       insights.push({
         key: 'total',
         tone: toneOf(change > 0),
         icon: change > 0 ? 'trending-up' : 'trending-down',
-        text: `${noun} ${change > 0 ? 'tăng' : 'giảm'} ${formatPercent(change)} so với ${versus}`,
+        text: t('{noun} {change} {change2} so với {versus}', {
+          noun,
+          change: change > 0 ? 'tăng' : 'giảm',
+          change2: formatPercent(change),
+          versus,
+        }),
       });
     }
   }
@@ -129,7 +138,11 @@ export function buildInsights(input: InsightInput): Insight[] {
       key: `up-${increase.key}`,
       tone: toneOf(true),
       icon: 'trending-up',
-      text: `${increase.name} tăng ${formatPercent(increase.change)} so với ${versus}`,
+      text: t('{name} tăng {change} so với {versus}', {
+        name: increase.name,
+        change: formatPercent(increase.change),
+        versus,
+      }),
     });
   }
 
@@ -141,20 +154,31 @@ export function buildInsights(input: InsightInput): Insight[] {
       key: `spike-${spike.key}`,
       tone: 'bad',
       icon: 'flash-outline',
-      text: `${spike.name} cao bất thường: gấp ${formatRatio(spike.ratio)} lần mức trung bình 3 ${unit} trước`,
+      text: t('{name} cao bất thường: gấp {ratio} lần mức trung bình 3 {unit} trước', {
+        name: spike.name,
+        ratio: formatRatio(spike.ratio),
+        unit,
+      }),
     });
   }
 
   // 5. Danh mục giảm mạnh nhất (chỉ khi kỳ đã có số liệu cùng kỳ)
   const decrease = categories
-    .filter((c) => c.change != null && c.change <= -20 && notable(c.delta, Math.max(total, previousTotal)))
+    .filter(
+      (c) =>
+        c.change != null && c.change <= -20 && notable(c.delta, Math.max(total, previousTotal)),
+    )
     .sort((a, b) => a.delta - b.delta)[0];
   if (decrease && decrease.change != null && !mentioned.has(decrease.key)) {
     insights.push({
       key: `down-${decrease.key}`,
       tone: toneOf(false),
       icon: 'trending-down',
-      text: `${decrease.name} giảm ${formatPercent(decrease.change)} so với ${versus}`,
+      text: t('{name} giảm {change} so với {versus}', {
+        name: decrease.name,
+        change: formatPercent(decrease.change),
+        versus,
+      }),
     });
   }
 
@@ -164,7 +188,10 @@ export function buildInsights(input: InsightInput): Insight[] {
       key: 'weekday',
       tone: 'neutral',
       icon: 'calendar-outline',
-      text: `${WEEKDAY_NAMES[topWeekday.weekday - 1]} là ngày bạn chi nhiều nhất (trung bình ${format(topWeekday.average)})`,
+      text: t('{weekday} là ngày bạn chi nhiều nhất (trung bình {average})', {
+        weekday: WEEKDAY_NAMES[topWeekday.weekday - 1],
+        average: format(topWeekday.average),
+      }),
     });
   }
 
@@ -174,7 +201,11 @@ export function buildInsights(input: InsightInput): Insight[] {
       key: 'average',
       tone: 'neutral',
       icon: 'today-outline',
-      text: `Trung bình mỗi ${mode === 'month' ? 'ngày' : 'tháng'} ${verb} ${format(average)}`,
+      text: t('Trung bình mỗi {mode} {verb} {average}', {
+        mode: mode === 'month' ? 'ngày' : 'tháng',
+        verb,
+        average: format(average),
+      }),
     });
   }
 
@@ -185,7 +216,11 @@ export function buildInsights(input: InsightInput): Insight[] {
       key: 'share',
       tone: 'neutral',
       icon: 'pie-chart-outline',
-      text: `${top.name} chiếm ${formatPercent(top.share * 100)} tổng ${expense ? 'chi' : 'thu'}`,
+      text: t('{name} chiếm {share} tổng {expense}', {
+        name: top.name,
+        share: formatPercent(top.share * 100),
+        expense: expense ? 'chi' : 'thu',
+      }),
     });
   }
 
@@ -195,7 +230,11 @@ export function buildInsights(input: InsightInput): Insight[] {
       key: 'top-day',
       tone: 'neutral',
       icon: 'flash-outline',
-      text: `Ngày ${verb} nhiều nhất: ${formatDate(topDay.date, false)} — ${format(topDay.amount)}`,
+      text: t('Ngày {verb} nhiều nhất: {false} — {amount}', {
+        verb,
+        false: formatDate(topDay.date, false),
+        amount: format(topDay.amount),
+      }),
     });
   }
 

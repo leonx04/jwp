@@ -1,4 +1,5 @@
 // Danh sách kế hoạch trả góp của một ví trả sau (màn chi tiết ví).
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Alert, Pressable, View } from 'react-native';
@@ -89,7 +90,7 @@ function PlanRow({ plan }: { plan: InstallmentInfo }) {
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Xoá kế hoạch trả góp ${plan.title}`}
+          accessibilityLabel={t('Xoá kế hoạch trả góp {title}', { title: plan.title })}
           hitSlop={10}
           onPress={remove}
           style={styles.delete}
