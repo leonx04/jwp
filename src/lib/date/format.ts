@@ -1,4 +1,6 @@
 // Hiển thị ngày giờ kiểu Việt Nam. Tự viết (không dùng Intl) để mọi máy ra kết quả giống nhau.
+import { t } from '@/lib/i18n';
+
 import { diffDays, parseDate, toVnDate, toVnTime, todayVn, weekdayOf, type DateString } from './vn';
 
 export const WEEKDAY_NAMES = [
@@ -23,27 +25,27 @@ export function formatDate(date: DateString, withYear = true): string {
 /** 'tháng 10/2026' */
 export function formatMonth(date: DateString): string {
   const { year, month } = parseDate(date);
-  return `tháng ${month}/${year}`;
+  return t('tháng {month}/{year}', { month, year });
 }
 
 /** Tiêu đề nhóm ngày: 'Hôm nay' · 'Hôm qua' · 'Ngày mai' · 'Thứ Hai, 05/10' (thêm năm nếu khác năm nay) */
 export function formatDayHeader(date: DateString, now: number = Date.now()): string {
   const today = todayVn(now);
   const diff = diffDays(today, date);
-  if (diff === 0) return 'Hôm nay';
-  if (diff === -1) return 'Hôm qua';
-  if (diff === 1) return 'Ngày mai';
+  if (diff === 0) return t('Hôm nay');
+  if (diff === -1) return t('Hôm qua');
+  if (diff === 1) return t('Ngày mai');
   const sameYear = parseDate(date).year === parseDate(today).year;
-  return `${WEEKDAY_NAMES[weekdayOf(date) - 1]}, ${formatDate(date, !sameYear)}`;
+  return `${t(WEEKDAY_NAMES[weekdayOf(date) - 1])}, ${formatDate(date, !sameYear)}`;
 }
 
 /** Khoảng cách tương đối: 'hôm nay' · 'ngày mai' · 'còn 3 ngày' · 'quá hạn 2 ngày' */
 export function formatRelativeDue(date: DateString, now: number = Date.now()): string {
   const diff = diffDays(todayVn(now), date);
-  if (diff === 0) return 'hôm nay';
-  if (diff === 1) return 'ngày mai';
-  if (diff > 1) return `còn ${diff} ngày`;
-  return `quá hạn ${-diff} ngày`;
+  if (diff === 0) return t('hôm nay');
+  if (diff === 1) return t('ngày mai');
+  if (diff > 1) return t('còn {n} ngày', { n: diff });
+  return t('quá hạn {n} ngày', { n: -diff });
 }
 
 /** Thời điểm → '05/10/2026 08:30' theo giờ VN */
@@ -54,9 +56,9 @@ export function formatDateTime(ms: number): string {
 /** Thời điểm → 'cách đây 3 ngày' kiểu ngắn gọn cho lịch sử giá */
 export function formatAgo(ms: number, now: number = Date.now()): string {
   const days = diffDays(toVnDate(ms), todayVn(now));
-  if (days <= 0) return 'hôm nay';
-  if (days === 1) return 'hôm qua';
-  if (days < 30) return `${days} ngày trước`;
-  if (days < 365) return `${Math.floor(days / 30)} tháng trước`;
-  return `${Math.floor(days / 365)} năm trước`;
+  if (days <= 0) return t('hôm nay');
+  if (days === 1) return t('hôm qua');
+  if (days < 30) return t('{n} ngày trước', { n: days });
+  if (days < 365) return t('{n} tháng trước', { n: Math.floor(days / 30) });
+  return t('{n} năm trước', { n: Math.floor(days / 365) });
 }

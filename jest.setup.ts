@@ -10,3 +10,8 @@ jest.mock('expo-sqlite/kv-store', () => {
     },
   };
 });
+
+// Máy thử mặc định tiếng Việt để chuỗi hiển thị khớp bản gốc
+jest.mock('expo-localization', () => ({
+  getLocales: () => [{ languageCode: 'vi', languageTag: 'vi-VN' }],
+}));

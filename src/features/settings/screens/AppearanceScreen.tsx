@@ -11,6 +11,7 @@ import {
   SegmentedControl,
   SwitchRow,
 } from '@/components/ui';
+import { LANGUAGES } from '@/lib/i18n';
 import { CURRENCY_SYMBOLS, type CurrencySymbol } from '@/lib/money';
 import { ACCENTS, ACCENT_KEYS, createStyles, useTheme, type ThemePreference } from '@/theme';
 
@@ -21,6 +22,11 @@ const THEME_OPTIONS = [
   { value: 'light', label: 'Sáng' },
   { value: 'dark', label: 'Tối' },
 ] as const satisfies readonly { value: ThemePreference; label: string }[];
+
+const LANGUAGE_OPTIONS = [
+  { value: 'system', label: 'Theo máy' },
+  ...LANGUAGES.map((l) => ({ value: l.code, label: l.label })),
+] as const;
 
 const SYMBOL_OPTIONS = CURRENCY_SYMBOLS.map((symbol) => ({ value: symbol, label: symbol }));
 
@@ -65,6 +71,15 @@ export function AppearanceScreen() {
           onValueChange={(transfersAsIncomeExpense) =>
             settings.update({ transfersAsIncomeExpense })
           }
+        />
+      </Card>
+
+      <SectionTitle>Ngôn ngữ</SectionTitle>
+      <Card>
+        <SegmentedControl
+          options={LANGUAGE_OPTIONS}
+          value={settings.language}
+          onChange={(language) => settings.update({ language })}
         />
       </Card>
 

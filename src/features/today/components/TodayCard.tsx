@@ -1,4 +1,5 @@
 // Thẻ "Hôm nay": còn được tiêu bao nhiêu, đã tiêu bao nhiêu, còn mấy ngày tới lương. Bấm → tab Lịch.
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { memo } from 'react';
@@ -24,15 +25,24 @@ export const TodayCard = memo(function TodayCard({ status }: { status: TodayStat
   const overspent = status.over > 0;
   const short = status.available < 0;
   // Tách rõ: thiếu cho các khoản phải trả, và phần ngưỡng an toàn đang giữ lại
-  const when = status.nextIncome ? 'trước kỳ thu tới' : '30 ngày tới';
+  const when = t(status.nextIncome ? 'trước kỳ thu tới' : '30 ngày tới');
   const billsShort = Math.max(0, -(status.available + status.reserve));
   const shortText =
     billsShort > 0
-      ? `Chưa đủ tiền cho các khoản phải trả ${when}: thiếu ${mask(format.compact(billsShort))}` +
+      ? t('Chưa đủ tiền cho các khoản phải trả {when}: thiếu {amount}', {
+          when,
+          amount: mask(format.compact(billsShort)),
+        }) +
         (status.reserve > 0
-          ? ` (chưa tính ${mask(format.compact(status.reserve))} ngưỡng an toàn)`
+          ? t(' (chưa tính {amount} ngưỡng an toàn)', {
+              amount: mask(format.compact(status.reserve)),
+            })
           : '')
-      : `Đủ trả các khoản ${when} nhưng chưa giữ đủ ngưỡng an toàn ${mask(format.compact(status.reserve))} · thiếu ${mask(format.compact(-status.available))}`;
+      : t('Đủ trả các khoản {when} nhưng chưa giữ đủ ngưỡng an toàn {reserve} · thiếu {short}', {
+          when,
+          reserve: mask(format.compact(status.reserve)),
+          short: mask(format.compact(-status.available)),
+        });
   const barColor = overspent
     ? colors.warning
     : status.progress > 0.8
@@ -68,7 +78,9 @@ export const TodayCard = memo(function TodayCard({ status }: { status: TodayStat
           adjustsFontSizeToFit
           style={styles.amount}
         >
-          {overspent ? `Vượt ${mask(format.money(status.over))}` : mask(format.money(status.left))}
+          {overspent
+            ? t('Vượt {amount}', { amount: mask(format.money(status.over)) })
+            : mask(format.money(status.left))}
         </AppText>
 
         <ProgressBar value={status.progress} color={barColor} />
@@ -78,7 +90,7 @@ export const TodayCard = memo(function TodayCard({ status }: { status: TodayStat
             Đã tiêu {mask(format.compact(status.spent))} / {mask(format.compact(status.budget))}
           </AppText>
           <AppText variant="caption" color="textMuted" style={styles.tabular}>
-            {status.days > 1 ? `chia đều ${status.days} ngày` : 'đến hết hôm nay'}
+            {status.days > 1 ? t('chia đều {days} ngày', { days: status.days }) : 'đến hết hôm nay'}
           </AppText>
         </View>
 

@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, type Href } from 'expo-router';
@@ -115,7 +116,7 @@ export function OverviewScreen() {
     <Screen
       tabBar
       largeTitle
-      title={userName ? `Chào ${userName}` : 'Tổng quan'}
+      title={userName ? t('Chào {name}', { name: userName }) : 'Tổng quan'}
       subtitle={`${greeting()} · ${WEEKDAY_NAMES[weekdayOf(todayVn()) - 1]}, ${formatDate(todayVn(), false)}`}
       headerRight={
         <IconButton
@@ -268,7 +269,9 @@ export function OverviewScreen() {
                       size={36}
                     />
                     <AppText variant="caption" color="textMuted" numberOfLines={1}>
-                      {owedById.has(account.id) ? `${account.name} · dư nợ` : account.name}
+                      {owedById.has(account.id)
+                        ? t('{name} · dư nợ', { name: account.name })
+                        : account.name}
                     </AppText>
                     <AppText
                       variant="heading"

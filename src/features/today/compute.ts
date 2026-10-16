@@ -4,6 +4,7 @@
 // tiêu hôm nay. Nếu lấy nó trừ tiếp "đã tiêu hôm nay" sẽ bị trừ hai lần (tiêu đúng mức vẫn báo "vượt").
 // → Dựng lại số dư ĐẦU NGÀY (cộng trả phần đã tiêu hôm nay từ các ví tính vào tổng), chia đều cho số
 // ngày tới kỳ thu tiếp theo → hạn mức hôm nay; còn lại = hạn mức − đã tiêu (gồm cả tiêu bằng ví trả sau).
+import { t } from '@/lib/i18n';
 import type { Forecast, ForecastEvent } from '@/features/forecast/forecast';
 import { addDays, diffDays, type DateString } from '@/lib/date';
 
@@ -128,9 +129,9 @@ export function computeToday({
 export function incomeLabel(info: IncomeInfo): string {
   const title = info.title.trim();
   const name = !title || /lương/i.test(title) ? 'lương' : title;
-  if (info.days <= 0) return `Hôm nay nhận ${name}`;
-  if (info.days === 1) return `Mai nhận ${name}`;
-  return `Còn ${info.days} ngày tới ${name}`;
+  if (info.days <= 0) return t('Hôm nay nhận {name}', { name: t(name) });
+  if (info.days === 1) return t('Mai nhận {name}', { name: t(name) });
+  return t('Còn {days} ngày tới {name}', { days: info.days, name: t(name) });
 }
 
 export type DayAllowance = {
