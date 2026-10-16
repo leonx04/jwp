@@ -13,6 +13,7 @@ import { notifications } from './notifications';
 import { capture } from './capture';
 import { backup } from './backup';
 import { fragments } from './fragments';
+import { ask } from './ask';
 import { flow } from './flow';
 import { profile } from './profile';
 import { quickadd } from './quickadd';
@@ -54,5 +55,6 @@ export const en: Record<string, string> = {
   ...quickadd,
   ...profile,
   ...flow,
+  ...ask,
   ...wrapped,
 };

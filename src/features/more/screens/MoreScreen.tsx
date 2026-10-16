@@ -28,6 +28,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#0EA5E9',
       },
       {
+        icon: 'chatbubble-ellipses-outline',
+        title: 'Hỏi app',
+        subtitle: 'Hỏi bằng tiếng Việt: tháng này tiêu bao nhiêu, cafe mấy lần…',
+        href: '/ask',
+        color: '#7C3AED',
+      },
+      {
         icon: 'sparkles-outline',
         title: 'Tổng kết',
         subtitle: 'Kỳ này bạn chi gì nhiều nhất, ngày nào, nơi nào — vuốt từng thẻ',
