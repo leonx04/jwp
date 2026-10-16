@@ -215,6 +215,23 @@ export function OverviewScreen() {
       <InboxBanner />
       <ReportBanner />
 
+      {/* Gõ nhanh: một câu → giao dịch */}
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => router.push('/quick-add')}
+        style={({ pressed }) => [
+          styles.quickBar,
+          { backgroundColor: rgba(colors.primary, colors.dark ? 0.2 : 0.1) },
+          pressed && { opacity: 0.7 },
+        ]}
+      >
+        <Ionicons name="sparkles" size={18} color={colors.primary} />
+        <AppText color="textMuted" numberOfLines={1} style={{ flex: 1 }}>
+          Gõ nhanh: cafe 35k hôm qua…
+        </AppText>
+        <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+      </Pressable>
+
       {/* Thao tác nhanh: một thẻ, bốn nút tròn màu */}
       <Card style={styles.actions}>
         {QUICK_ACTIONS.map((action) => {
@@ -384,6 +401,14 @@ const useStyles = createStyles((t) => ({
     marginBottom: t.spacing.xs,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  quickBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: t.spacing.md,
+    paddingVertical: 14,
+    borderRadius: 999,
   },
   actions: {
     flexDirection: 'row',
