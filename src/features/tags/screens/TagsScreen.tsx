@@ -7,11 +7,13 @@ import { AppText, Button, Card, EmptyState, ListRow, Screen, TextField } from '@
 import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 
+import { useTagProposals } from '../hooks';
 import { ensureTag, listTags } from '../repository';
 
 export function TagsScreen() {
   const { data: tags = [] } = useLiveData(['tags', 'transaction_tags'], () => listTags(db));
   const [name, setName] = useState('');
+  const { data: proposals } = useTagProposals();
 
   const add = () => {
     if (!name.trim()) return;
@@ -30,6 +32,14 @@ export function TagsScreen() {
         Tag giúp gom giao dịch theo chủ đề (vd #du-lịch-đà-lạt, #công-ty) bất kể danh mục. Gắn tag
         khi thêm giao dịch, app sẽ tự gợi ý tag hay dùng.
       </AppText>
+      {proposals?.length ? (
+        <Button
+          title={`Gợi ý ${proposals.length} tag từ lịch sử`}
+          icon="sparkles-outline"
+          variant="secondary"
+          onPress={() => router.push('/tags/suggest')}
+        />
+      ) : null}
       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
         <View style={{ flex: 1 }}>
           <TextField

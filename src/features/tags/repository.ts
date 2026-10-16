@@ -64,3 +64,23 @@ export function saveTag(
 export function deleteTag(db: AppDatabase, id: string): void {
   db.delete(tags).where(eq(tags.id, id)).run();
 }
+
+/** Gắn tag vào nhiều giao dịch (bỏ qua giao dịch đã có tag). Trả về số giao dịch được gắn mới. */
+export function attachTag(
+  db: AppDatabase,
+  tagId: string,
+  transactionIds: readonly string[],
+): number {
+  let added = 0;
+  db.transaction((tx) => {
+    for (const transactionId of transactionIds) {
+      const res = tx
+        .insert(transactionTags)
+        .values({ transactionId, tagId })
+        .onConflictDoNothing()
+        .run();
+      added += res.changes;
+    }
+  });
+  return added;
+}

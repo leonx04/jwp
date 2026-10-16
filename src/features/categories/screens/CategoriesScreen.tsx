@@ -1,15 +1,39 @@
 import { router } from 'expo-router';
+import { Alert, View } from 'react-native';
 
 import { IconButton } from '@/components/glass/IconButton';
-import { Card, EmptyState, ListRow, Screen } from '@/components/ui';
+import { showSnackbar } from '@/components/feedback/snackbarStore';
+import { Button, Card, EmptyState, ListRow, Screen } from '@/components/ui';
 import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 import { DEFAULT_CATEGORY_ICON, toAppIcon } from '@/lib/icons';
 
-import { listCategories } from '../repository';
+import { proposeIconChanges } from '../iconSuggest';
+import { listCategories, saveCategory } from '../repository';
 
 export function CategoriesScreen() {
   const { data: categories = [] } = useLiveData(['categories'], () => listCategories(db));
+  const changes = proposeIconChanges(categories);
+  const applyIcons = () =>
+    Alert.alert(
+      `Đổi biểu tượng cho ${changes.length} danh mục?`,
+      changes.map((c) => c.name).join(', '),
+      [
+        { text: 'Huỷ', style: 'cancel' },
+        {
+          text: 'Đổi',
+          onPress: () => {
+            for (const c of changes) {
+              const cat = categories.find((x) => x.id === c.id);
+              if (cat)
+                saveCategory(db, { id: cat.id, name: cat.name, color: cat.color, icon: c.to });
+            }
+            showSnackbar({ text: `Đã đổi biểu tượng ${changes.length} danh mục`, tone: 'success' });
+          },
+        },
+      ],
+    );
+
   return (
     <Screen
       title="Danh mục"
@@ -21,6 +45,16 @@ export function CategoriesScreen() {
         />
       }
     >
+      {changes.length ? (
+        <View>
+          <Button
+            title={`Gợi ý biểu tượng phù hợp (${changes.length})`}
+            icon="sparkles-outline"
+            variant="secondary"
+            onPress={applyIcons}
+          />
+        </View>
+      ) : null}
       <Card style={{ gap: 0, paddingVertical: 6 }}>
         {categories.length ? (
           categories.map((c) => (
