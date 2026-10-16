@@ -1,6 +1,6 @@
 // Gợi ý tag từ lịch sử: các cụm từ lặp lại trong tiêu đề giao dịch ("ăn sáng", "cà phê", "nước", "sửa xe"…)
 // → mỗi cụm là một tag gắn vào mọi giao dịch có cụm đó. Hàm thuần, chỉ đề xuất — người dùng xem rồi mới tạo.
-import { normalizeForSearch } from '@/lib/text';
+import { normalizeForSearch, removeDiacritics } from '@/lib/text';
 
 export type TagTx = { id: string; title: string; date: number };
 
@@ -80,16 +80,25 @@ const MAX_TITLE_LENGTH = 40;
 
 type Token = { raw: string; key: string };
 
+const hasLetters = (text: string) => /\p{L}/u.test(text);
+const hasMarks = (text: string) => removeDiacritics(text) !== text;
+
+/** Tiêu đề do ngân hàng / máy sinh: viết hoa hết, hoặc toàn chữ không dấu nhiều từ ("RUT TIEN BANG QRC", "Nguyen Xuan Dung chuyen tien") */
+function looksMachineMade(title: string): boolean {
+  if (hasLetters(title) && title === title.toUpperCase()) return true;
+  return !hasMarks(title) && title.split(/\s+/).length >= 3;
+}
+
 function tokenize(title: string): Token[] | null {
   const trimmed = title.trim();
-  if (!trimmed || trimmed.length > MAX_TITLE_LENGTH) return null;
+  if (!trimmed || trimmed.length > MAX_TITLE_LENGTH || looksMachineMade(trimmed)) return null;
   const raw = trimmed
     .toLowerCase()
     .split(/[^\p{L}\p{N}]+/u)
     .filter(Boolean);
   // Có từ chứa số hoặc từ quá dài (mã giao dịch) → tiêu đề do máy sinh ra
   if (raw.some((w) => /\d/.test(w) || w.length > 14)) return null;
-  return raw.map((w) => ({ raw: w, key: normalizeForSearch(w) }));
+  return raw.map((w) => ({ raw: w.normalize('NFC'), key: normalizeForSearch(w) }));
 }
 
 const isStop = (t: Token) => STOPWORDS.has(t.key) || t.key.length < 2;
@@ -97,7 +106,10 @@ const isStop = (t: Token) => STOPWORDS.has(t.key) || t.key.length < 2;
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 type Candidate = {
+  /** Khoá GIỮ DẤU: "băng" ≠ "bang" — tránh gắn nhầm tag vào chữ khác dấu */
   key: string;
+  /** Khoá bỏ dấu, dùng so với tag đã có / từ loại trừ */
+  normKey: string;
   words: string[];
   txIds: Set<string>;
   days: Set<string>;
@@ -129,10 +141,12 @@ export function proposeTags(
       for (let i = 0; i + n <= tokens.length; i++) {
         const slice = tokens.slice(i, i + n);
         if (isStop(slice[0]) || isStop(slice[n - 1])) continue;
-        const key = slice.map((t) => t.key).join(' ');
+        const key = slice.map((t) => t.raw).join(' ');
+        const normKey = slice.map((t) => t.key).join(' ');
         const c = candidates.get(key) ?? {
           key,
-          words: key.split(' '),
+          normKey,
+          words: normKey.split(' '),
           txIds: new Set<string>(),
           days: new Set<string>(),
           forms: new Map<string, number>(),
@@ -165,7 +179,7 @@ export function proposeTags(
   const out: TagProposal[] = [];
   for (const c of survivors) {
     // Tag đã có: coi như đã phủ các giao dịch này để cụm ngắn hơn không bị gợi ý lại
-    if (existingTagKeys.has(c.key)) {
+    if (existingTagKeys.has(c.normKey)) {
       c.txIds.forEach((id) => covered.add(id));
       continue;
     }
@@ -174,7 +188,7 @@ export function proposeTags(
     c.txIds.forEach((id) => covered.add(id));
     const form = [...c.forms.entries()].sort((a, b) => b[1] - a[1])[0][0];
     out.push({
-      key: c.key,
+      key: c.normKey,
       name: capitalize(form),
       txIds: [...c.txIds],
       count: c.txIds.size,
@@ -182,5 +196,7 @@ export function proposeTags(
     });
     if (out.length >= max) break;
   }
-  return out;
+  // Tag không phân biệt dấu khi lưu: hai gợi ý trùng khoá bỏ dấu thì chỉ giữ cụm phổ biến hơn
+  const seen = new Set<string>();
+  return out.filter((p) => !seen.has(p.key) && !!seen.add(p.key));
 }

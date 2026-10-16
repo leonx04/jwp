@@ -43,4 +43,17 @@ describe('proposeTags', () => {
     const result = proposeTags(data, { existingTagKeys: new Set(['an sang']) });
     expect(result.map((p) => p.name)).not.toContain('Ăn sáng');
   });
+
+  it('không gắn nhầm tag có dấu vào chữ khác dấu, bỏ qua tiêu đề do ngân hàng sinh', () => {
+    const rows: TagTx[] = [
+      ...days('Mua băng keo', ['2026-09-01', '2026-09-02', '2026-09-03']),
+      // "BANG" (= bằng) trong tin nhắn ngân hàng: không được dính vào tag "băng"
+      ...days('RUT TIEN BANG QRC', ['2026-09-04', '2026-09-05', '2026-09-06']),
+      ...days('Nguyen Xuan Dung chuyen tien', ['2026-09-04', '2026-09-05', '2026-09-06']),
+    ];
+    const proposals = proposeTags(rows);
+    const tape = proposals.find((p) => p.name.toLowerCase().includes('băng'));
+    expect(tape?.txIds).toHaveLength(3);
+    expect(proposals.some((p) => p.samples.some((x) => /RUT TIEN|Nguyen/.test(x)))).toBe(false);
+  });
 });

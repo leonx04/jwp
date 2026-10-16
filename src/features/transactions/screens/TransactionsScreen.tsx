@@ -150,7 +150,7 @@ function TransactionsList() {
       <LargeTitle title="Giao dịch" />
       <TextField
         icon="search"
-        placeholder="Tìm (không cần dấu): ca phe, luong…"
+        placeholder="Tìm: cà phê, lương… (gõ có dấu = khớp đúng dấu)"
         value={search}
         onChangeText={setSearch}
         returnKeyType="search"

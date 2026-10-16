@@ -4,7 +4,7 @@ import { sql, type SQL } from 'drizzle-orm';
 import { accounts, categories, tags, transactionTags, transactions } from '@/db/schema';
 import type { TransactionType } from '@/db/schema';
 import type { AppDatabase } from '@/db/types';
-import { normalizeForSearch } from '@/lib/text';
+import { matchesSearch, parseSearchQuery } from '@/lib/text';
 
 export type TransactionFilter = {
   /** Thời điểm bắt đầu (ms, gồm) */
@@ -71,11 +71,6 @@ function buildWhere(filter: TransactionFilter): SQL {
   }
   if (filter.minAmount != null) parts.push(sql`t.amount >= ${filter.minAmount}`);
   if (filter.maxAmount != null) parts.push(sql`t.amount <= ${filter.maxAmount}`);
-  const q = filter.search ? normalizeForSearch(filter.search) : '';
-  if (q) {
-    const like = `%${q.replace(/[%_]/g, '')}%`;
-    parts.push(sql`(t.title_key like ${like} or lower(coalesce(t.note, '')) like ${like})`);
-  }
   return sql.join(parts, sql` and `);
 }
 
@@ -103,13 +98,21 @@ export function listTransactions(
     left join ${categories} c on c.id = t.category_id
     where ${buildWhere(filter)}
     order by t.date desc, t.created_at desc
-    limit ${filter.limit ?? 100000}
+    limit ${filter.search?.trim() ? 100000 : (filter.limit ?? 100000)}
   `);
-  return rows.map((r) => ({
+  const items = rows.map((r) => ({
     ...r,
     tagNames: r.tagNames ? r.tagNames.split(SEP) : [],
     isAdjustment: !!r.isAdjustment,
   }));
+  // Tìm kiếm tiếng Việt chính xác (có dấu → đúng dấu; không dấu → mọi dấu; khớp đầu từ) — xem lib/text/search
+  if (!filter.search?.trim()) return items;
+  const query = parseSearchQuery(filter.search);
+  return items
+    .filter((r) =>
+      matchesSearch(query, r.title, r.note, r.categoryName, r.accountName, ...r.tagNames),
+    )
+    .slice(0, filter.limit ?? 100000);
 }
 
 export type PeriodSummary = { income: number; expense: number; count: number };

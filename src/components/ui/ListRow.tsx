@@ -39,11 +39,11 @@ export function ListRow({
     >
       {icon && <IconBadge icon={icon} color={iconColor} size={38} />}
       <View style={styles.texts}>
-        <AppText variant="bodyMedium" numberOfLines={1}>
+        <AppText variant="bodyMedium">
           {title}
         </AppText>
         {subtitle ? (
-          <AppText variant="caption" color="textMuted" numberOfLines={2}>
+          <AppText variant="caption" color="textMuted">
             {subtitle}
           </AppText>
         ) : null}
