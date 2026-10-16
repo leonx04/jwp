@@ -17,6 +17,10 @@ export function recordLabel(direction: DebtDirection, type: DebtRecordType): str
   return 'Tính lãi';
 }
 
+/** Nút "đã trả" nói theo người dùng: cho vay → họ trả tôi; đi vay → tôi trả họ */
+export const repayAction = (direction: DebtDirection) =>
+  direction === 'lent' ? 'Họ đã trả tôi' : 'Tôi đã trả';
+
 export function statusText(item: Pick<DebtItem, 'status' | 'daysToDue' | 'debt'>): string {
   const { status, daysToDue, debt } = item;
   switch (status) {

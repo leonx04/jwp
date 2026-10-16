@@ -10,7 +10,7 @@ import { ProgressBar } from '@/features/today/components/ProgressBar';
 import { formatDate, toVnDate } from '@/lib/date';
 import { useTheme } from '@/theme';
 
-import { DIRECTION_LABEL, recordLabel, statusText } from '../components/display';
+import { DIRECTION_LABEL, recordLabel, repayAction, statusText } from '../components/display';
 import { useDebt } from '../hooks';
 import { deleteDebt, deleteDebtRecord, setDebtClosed } from '../repository';
 
@@ -41,6 +41,7 @@ export function DebtDetailScreen() {
   const tone = lent ? colors.income : colors.expense;
   const ratio = item.total > 0 ? item.repaid / item.total : 0;
   const open = item.status !== 'closed';
+  const settled = item.remaining <= 0;
 
   const record = (type: 'repay' | 'increase' | 'interest') =>
     router.push({ pathname: '/debt/record', params: { debtId: debt.id, type } });
@@ -122,30 +123,44 @@ export function DebtDetailScreen() {
         ) : null}
       </Card>
 
-      {open ? (
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <View style={{ flex: 1 }}>
-            <Button
-              title={recordLabel(item.direction, 'repay')}
-              icon="checkmark"
-              onPress={() => record('repay')}
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Button
-              title={recordLabel(item.direction, 'increase')}
-              variant="secondary"
-              icon="add"
-              onPress={() => record('increase')}
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Button
-              title="Lãi"
-              variant="secondary"
-              icon="trending-up-outline"
-              onPress={() => record('interest')}
-            />
+      {/* Đã trả hết: một nút to để đóng sổ */}
+      {open && settled ? (
+        <Card style={{ gap: 10 }}>
+          <AppText variant="bodyMedium">Khoản này đã trả hết.</AppText>
+          <Button
+            title="Đóng khoản nợ"
+            icon="checkmark-done"
+            onPress={() => setDebtClosed(db, debt.id, true)}
+          />
+        </Card>
+      ) : null}
+
+      {open && !settled ? (
+        <View style={{ gap: 8 }}>
+          <Button
+            title={repayAction(item.direction)}
+            icon="checkmark"
+            onPress={() => record('repay')}
+          />
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <View style={{ flex: 1 }}>
+              <Button
+                title={recordLabel(item.direction, 'increase')}
+                variant="secondary"
+                size="sm"
+                icon="add"
+                onPress={() => record('increase')}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button
+                title="Tính lãi"
+                variant="secondary"
+                size="sm"
+                icon="trending-up-outline"
+                onPress={() => record('interest')}
+              />
+            </View>
           </View>
         </View>
       ) : null}
@@ -195,12 +210,14 @@ export function DebtDetailScreen() {
           icon="create-outline"
           onPress={() => router.push({ pathname: '/debt/edit', params: { id: debt.id } })}
         />
-        <Button
-          title={open ? 'Đóng khoản nợ' : 'Mở lại khoản nợ'}
-          variant="secondary"
-          icon={open ? 'archive-outline' : 'refresh-outline'}
-          onPress={() => setDebtClosed(db, debt.id, open)}
-        />
+        {open && settled ? null : (
+          <Button
+            title={open ? 'Đóng khoản nợ (không theo dõi nữa)' : 'Mở lại khoản nợ'}
+            variant="secondary"
+            icon={open ? 'archive-outline' : 'refresh-outline'}
+            onPress={() => setDebtClosed(db, debt.id, open)}
+          />
+        )}
         <Button
           title="Xoá khoản nợ"
           variant="danger"

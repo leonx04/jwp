@@ -22,7 +22,7 @@ export function WalletChips({ value, onChange }: WalletChipsProps) {
       contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
     >
       <Chip
-        label="Không ghi vào ví"
+        label="Chỉ ghi sổ (không đụng ví)"
         icon="remove-circle-outline"
         selected={value === null}
         onPress={() => onChange(null)}
