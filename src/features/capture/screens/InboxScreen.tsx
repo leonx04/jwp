@@ -16,11 +16,13 @@ import { toAppIcon } from '@/lib/icons';
 import { usePendingCaptures } from '../hooks';
 import { dismissCapture, setCaptureAccount } from '../repository';
 import type { PendingWithGuess } from '../rulesRepository';
+import { dismissCaptures, type PendingPair, type PendingSingle } from '../transfers';
 
 export function InboxScreen() {
   const { data: pending } = usePendingCaptures();
   const { data: accounts = [] } = useLiveData(['accounts'], () => listAccounts(db));
   const { data: categories = [] } = useLiveData(['categories'], () => listCategories(db));
+  const count = pending ? pending.pairs.length + pending.singles.length : 0;
 
   return (
     <Screen title="Chờ xác nhận">
@@ -29,7 +31,7 @@ export function InboxScreen() {
         điền sẵn số tiền, ví và nội dung.
       </AppText>
 
-      {pending && pending.length === 0 ? (
+      {pending && count === 0 ? (
         <Card>
           <EmptyState
             icon="mail-open-outline"
@@ -47,10 +49,90 @@ export function InboxScreen() {
         </Card>
       ) : null}
 
-      {pending?.map((p) => (
+      {pending?.pairs.map((p) => (
+        <TransferCard key={p.out.capture.id} pair={p} accounts={accounts} />
+      ))}
+      {pending?.singles.map((p) => (
         <CaptureCard key={p.capture.id} item={p} accounts={accounts} categories={categories} />
       ))}
     </Screen>
+  );
+}
+
+/** Hai thông báo ngược chiều, cùng số tiền, sát nhau → một lần chuyển giữa 2 ví của bạn */
+function TransferCard({
+  pair,
+  accounts,
+}: {
+  pair: PendingPair;
+  accounts: { id: string; name: string }[];
+}) {
+  const format = useMoneyFormat();
+  const { out, in: into, duplicateOf } = pair;
+  const name = (id: string | null) => accounts.find((a) => a.id === id)?.name ?? '?';
+  const when = `${formatDate(toVnDate(out.capture.postedAt))} ${toVnTime(out.capture.postedAt)}`;
+
+  const record = () =>
+    router.push({
+      pathname: '/transaction/new',
+      params: {
+        type: 'transfer',
+        amount: String(out.capture.amount ?? 0),
+        accountId: out.capture.accountId ?? undefined,
+        toAccountId: into.capture.accountId ?? undefined,
+        title: 'Chuyển tiền giữa ví',
+        date: String(out.capture.postedAt),
+        captureId: `${out.capture.id},${into.capture.id}`,
+      },
+    });
+
+  return (
+    <Card style={{ gap: 10 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={{ flex: 1 }}>
+          <AppText variant="label" color="textMuted">
+            CHUYỂN TIỀN GIỮA VÍ CỦA BẠN
+          </AppText>
+          <AppText
+            variant="heading"
+            style={{ fontVariant: ['tabular-nums'] }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
+            {format.money(out.capture.amount ?? 0)}
+          </AppText>
+          <AppText variant="caption" color="textMuted">
+            {name(out.capture.accountId)} → {name(into.capture.accountId)}
+          </AppText>
+        </View>
+        <AppText variant="caption" color="textMuted">
+          {when}
+        </AppText>
+      </View>
+      <AppText variant="caption" color="textMuted">
+        Hai thông báo (một trừ, một cộng) cùng số tiền, sát nhau → gộp thành một lần chuyển tiền,
+        không tính là chi tiêu hay thu nhập.
+      </AppText>
+      {duplicateOf ? (
+        <AppText variant="caption" color="warning">
+          Có vẻ bạn đã ghi lần chuyển này rồi.
+        </AppText>
+      ) : null}
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={{ flex: 1 }}>
+          <Button title="Ghi chuyển khoản" icon="checkmark" size="sm" onPress={record} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Button
+            title={duplicateOf ? 'Đã ghi rồi' : 'Bỏ qua'}
+            variant="secondary"
+            size="sm"
+            onPress={() => dismissCaptures(db, [out.capture.id, into.capture.id])}
+          />
+        </View>
+      </View>
+    </Card>
   );
 }
 
@@ -59,12 +141,12 @@ function CaptureCard({
   accounts,
   categories,
 }: {
-  item: PendingWithGuess;
+  item: PendingSingle;
   accounts: { id: string; name: string; color: string; icon: string | null; isCredit: boolean }[];
   categories: { id: string; name: string }[];
 }) {
   const format = useMoneyFormat();
-  const { capture: c, duplicateOf, guess } = item;
+  const { capture: c, duplicateOf, guess, ownerHint } = item;
   const guessedCategory = guess ? categories.find((x) => x.id === guess.categoryId) : undefined;
   const bank = BANKS.find((b) => b.code === c.bankCode) ?? null;
   const income = c.type === 'income';
@@ -161,6 +243,36 @@ function CaptureCard({
             Đối chiếu
           </AppText>
         </AppText>
+      ) : null}
+
+      {ownerHint ? (
+        <View style={{ gap: 6 }}>
+          <AppText variant="caption" color="primary">
+            Có tên bạn trong nội dung — có thể là chuyển từ/đến ví khác của chính bạn.
+          </AppText>
+          <Button
+            title="Ghi là chuyển khoản"
+            variant="secondary"
+            size="sm"
+            icon="swap-horizontal"
+            onPress={() =>
+              router.push({
+                pathname: '/transaction/new',
+                params: {
+                  type: 'transfer',
+                  amount: String(c.amount ?? 0),
+                  // Chi → ví này là nơi gửi; thu → ví này là nơi nhận. Ví còn lại bạn chọn trong form.
+                  ...(c.type === 'income'
+                    ? { toAccountId: accountId ?? undefined }
+                    : { accountId: accountId ?? undefined }),
+                  title: 'Chuyển tiền giữa ví',
+                  date: String(c.postedAt),
+                  captureId: c.id,
+                },
+              })
+            }
+          />
+        </View>
       ) : null}
 
       <View style={{ flexDirection: 'row', gap: 8 }}>

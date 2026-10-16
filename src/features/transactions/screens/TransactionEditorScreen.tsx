@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { budgetAlert, budgetSnapshot } from '@/features/budgets/alerts';
-import { acceptCapture } from '@/features/capture/repository';
+import { acceptCaptures } from '@/features/capture/transfers';
 import { matchRule, MIN_PATTERN_LENGTH, patternKey } from '@/features/capture/rules';
 import { listRules } from '@/features/capture/rulesRepository';
 import { FuelSection } from '@/features/fuel/FuelSection';
@@ -292,7 +292,8 @@ export function TransactionEditorScreen() {
         debtId: draft.debtId,
         isAdjustment: draft.isAdjustment,
       });
-      if (params.captureId) acceptCapture(db, params.captureId, savedId);
+      // captureId có thể là nhiều id cách nhau bởi dấu phẩy (hai thông báo → một chuyển khoản)
+      if (params.captureId) acceptCaptures(db, params.captureId.split(','), savedId);
       if (accountId) {
         applyInstallment(db, {
           transactionId: savedId,
