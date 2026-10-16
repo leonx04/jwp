@@ -8,6 +8,12 @@ export const fragments: Record<string, string> = {
   'Thu dự kiến': 'Income',
   'Chi dự kiến': 'Spending',
   'Tìm (không cần dấu): ca phe, luong…': 'Search: coffee, salary…',
+  '% so với': '% vs',
+  '% so với tháng trước': '% vs last month',
+  '1. Mở Ivy Wallet → Cài đặt → Backup data → lưu file .zip.':
+    '1. Open Ivy Wallet → Settings → Backup data → save the .zip file.',
+  '2. Bấm nút dưới đây và chọn file đó (.zip hoặc file .json bên trong).':
+    '2. Tap the button below and choose that file (.zip or the .json inside).',
   // Tổng quan / Ví
   'ví đang dùng': 'wallets in use',
   // Thống kê
