@@ -39,7 +39,7 @@ import {
   vnDateToMs,
 } from '@/lib/date';
 import { toAppIcon } from '@/lib/icons';
-import { createStyles, useTheme } from '@/theme';
+import { createStyles, rgba, useTheme } from '@/theme';
 
 import { TransactionRow } from '../components/TransactionRow';
 import { groupByDay, summarize, type GroupedRow, type TransactionEntry } from '../grouping';
@@ -184,15 +184,15 @@ function TransactionsList() {
         </View>
       ) : null}
 
-      <Card style={styles.summary}>
+      <View style={styles.summary}>
         <SummaryCell label="Thu" value={format.compact(totals.income)} color={colors.income} />
         <SummaryCell label="Chi" value={format.compact(totals.expense)} color={colors.expense} />
         <SummaryCell
           label="Chênh lệch"
           value={`${totals.net > 0 ? '+' : ''}${format.compact(totals.net)}`}
-          color={totals.net < 0 ? colors.expense : colors.text}
+          color={totals.net < 0 ? colors.expense : colors.primary}
         />
-      </Card>
+      </View>
 
       <SegmentedControl options={TYPE_OPTIONS} value={type} onChange={setType} />
 
@@ -287,7 +287,9 @@ function TransactionsList() {
 
 function SummaryCell({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <View style={{ flex: 1, gap: 2 }}>
+    <View
+      style={{ flex: 1, gap: 2, padding: 12, borderRadius: 20, backgroundColor: rgba(color, 0.1) }}
+    >
       <AppText variant="label" color="textMuted">
         {label}
       </AppText>
@@ -378,6 +380,7 @@ const useStyles = createStyles((t) => ({
   },
   summary: {
     flexDirection: 'row',
+    gap: t.spacing.sm,
   },
   bleed: {
     marginHorizontal: -t.spacing.lg,

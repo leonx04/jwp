@@ -1,8 +1,11 @@
 import Constants from 'expo-constants';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, type Href } from 'expo-router';
+import { Pressable, View } from 'react-native';
 
 import { AppText, Card, ListRow, Screen, SectionTitle } from '@/components/ui';
 import type { IconName } from '@/lib/icons';
+import { rgba, useTheme } from '@/theme';
 
 type Item = { icon: IconName; title: string; subtitle: string; href: Href; color?: string };
 
@@ -134,22 +137,74 @@ const SECTIONS: { title: string; items: Item[] }[] = [
   },
 ];
 
+/** Sáu chức năng dùng nhiều nhất → ô bento lớn ở đầu màn */
+const FEATURED: { icon: IconName; title: string; href: Href; color: string }[] = [
+  { icon: 'stats-chart', title: 'Thống kê', href: '/stats', color: '#7C3AED' },
+  { icon: 'speedometer', title: 'Ngân sách', href: '/budgets', color: '#F59E0B' },
+  { icon: 'wallet', title: 'Ví', href: '/accounts', color: '#16A34A' },
+  { icon: 'people', title: 'Sổ nợ', href: '/debts', color: '#E11D48' },
+  { icon: 'flag', title: 'Quỹ tiết kiệm', href: '/goals', color: '#0EA5E9' },
+  { icon: 'document-text', title: 'Báo cáo tháng', href: '/report', color: '#DB2777' },
+];
+
+const FEATURED_HREFS = new Set(FEATURED.map((f) => String(f.href)));
+
 export function MoreScreen() {
+  const { colors } = useTheme();
   return (
     <Screen tabBar largeTitle title="Thêm">
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+        {FEATURED.map((f) => (
+          <Pressable
+            key={f.title}
+            accessibilityRole="button"
+            onPress={() => router.push(f.href)}
+            style={({ pressed }) => [
+              {
+                width: '48%',
+                flexGrow: 1,
+                minHeight: 104,
+                padding: 16,
+                borderRadius: 28,
+                justifyContent: 'space-between',
+                backgroundColor: rgba(f.color, colors.dark ? 0.18 : 0.11),
+              },
+              pressed && { opacity: 0.7 },
+            ]}
+          >
+            <View
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 15,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: rgba(f.color, colors.dark ? 0.32 : 0.2),
+              }}
+            >
+              <Ionicons name={f.icon} size={22} color={f.color} />
+            </View>
+            <AppText variant="heading" numberOfLines={1}>
+              {f.title}
+            </AppText>
+          </Pressable>
+        ))}
+      </View>
       {SECTIONS.map((section) => (
         <Card key={section.title} style={{ gap: 0, paddingVertical: 8 }}>
           <SectionTitle>{section.title}</SectionTitle>
-          {section.items.map((item) => (
-            <ListRow
-              key={item.title}
-              icon={item.icon}
-              iconColor={item.color}
-              title={item.title}
-              subtitle={item.subtitle}
-              onPress={() => router.push(item.href)}
-            />
-          ))}
+          {section.items
+            .filter((item) => !FEATURED_HREFS.has(String(item.href)))
+            .map((item) => (
+              <ListRow
+                key={item.title}
+                icon={item.icon}
+                iconColor={item.color}
+                title={item.title}
+                subtitle={item.subtitle}
+                onPress={() => router.push(item.href)}
+              />
+            ))}
         </Card>
       ))}
       <AppText variant="caption" color="textMuted" style={{ textAlign: 'center' }}>
