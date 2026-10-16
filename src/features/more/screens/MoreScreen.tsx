@@ -21,6 +21,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#7C3AED',
       },
       {
+        icon: 'git-network-outline',
+        title: 'Dòng chảy đồng lương',
+        subtitle: 'Lương vào đi đâu: sơ đồ từ thu nhập tới từng khoản chi',
+        href: '/flow',
+        color: '#0EA5E9',
+      },
+      {
         icon: 'trending-up-outline',
         title: 'Mô phỏng tăng lương',
         subtitle: 'Lương tăng thì tiền dư, tiết kiệm và các quỹ thay đổi ra sao',
