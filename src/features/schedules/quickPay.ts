@@ -32,14 +32,14 @@ export function quickPay(db: AppDatabase, o: Occurrence, today = todayVn()): Qui
   const bill = isCreditBill(o.scheduleId);
   const link = bill ? {} : { scheduleId: o.scheduleId, scheduleDueDate: o.dueDate };
 
-  return db.transaction((): QuickPayResult => {
+  return db.transaction((tx): QuickPayResult => {
     const credit = db.select().from(accounts).where(eq(accounts.id, o.schedule.accountId)).get();
     // Khoản chi từ ví trả sau: ghi khoản chi lên ví đó rồi chuyển tiền trả nợ từ ví thanh toán
     if (o.type === 'expense' && credit?.isCredit && !bill) {
       const payer = payerFor(db, credit.id);
       if (!payer) return { kind: 'needs-form' };
       const chargeDay = o.date <= today ? o.date : today;
-      const charge = saveTransaction(db, {
+      const charge = saveTransaction(tx, {
         type: 'expense',
         amount: o.amount,
         accountId: credit.id,
@@ -47,7 +47,7 @@ export function quickPay(db: AppDatabase, o: Occurrence, today = todayVn()): Qui
         title: o.schedule.title,
         date: vnDateToMs(chargeDay, '12:00'),
       });
-      const pay = saveTransaction(db, {
+      const pay = saveTransaction(tx, {
         type: 'transfer',
         amount: o.amount,
         accountId: payer,
@@ -59,7 +59,7 @@ export function quickPay(db: AppDatabase, o: Occurrence, today = todayVn()): Qui
       return { kind: 'done', ids: [pay, charge] };
     }
     if (!o.schedule.accountId) return { kind: 'needs-form' };
-    const id = saveTransaction(db, {
+    const id = saveTransaction(tx, {
       type: o.type,
       amount: o.amount,
       accountId: o.schedule.accountId,
@@ -75,8 +75,8 @@ export function quickPay(db: AppDatabase, o: Occurrence, today = todayVn()): Qui
 
 /** Hoàn tác = xoá các giao dịch vừa ghi (kỳ của lịch tự trở lại chưa trả) */
 export function undoQuickPay(db: AppDatabase, ids: readonly string[]): void {
-  db.transaction(() => {
-    for (const id of ids) deleteTransaction(db, id);
+  db.transaction((tx) => {
+    for (const id of ids) deleteTransaction(tx, id);
   });
 }
 
