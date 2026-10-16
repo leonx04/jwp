@@ -29,17 +29,17 @@ import { useLiveData } from '@/db/useLiveData';
 import { listAccounts } from '@/features/accounts/repository';
 import { listCategories } from '@/features/categories/repository';
 import { useMoneyFormat, useSettings } from '@/features/settings';
+import { statsPeriod, statsYearOf } from '@/features/stats/periods';
 import { listTags } from '@/features/tags/repository';
 import {
   addDays,
   formatDayHeader,
   formatMonth,
-  periodContaining,
-  shiftPeriod,
   todayVn,
   vnDateToMs,
 } from '@/lib/date';
 import { toAppIcon } from '@/lib/icons';
+import { removeDiacritics } from '@/lib/text';
 import { createStyles, rgba, useTheme } from '@/theme';
 
 import { TransactionRow } from '../components/TransactionRow';
@@ -50,6 +50,13 @@ import { deleteTransaction, restoreSnapshot } from '../repository';
 const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 type TypeFilter = 'all' | TransactionType;
+type PeriodMode = 'month' | 'year' | 'all';
+
+const PERIOD_OPTIONS = [
+  { value: 'month', label: 'Tháng' },
+  { value: 'year', label: 'Năm' },
+  { value: 'all', label: 'Tất cả' },
+] as const;
 
 const TYPE_OPTIONS = [
   { value: 'all', label: 'Tất cả' },
@@ -97,18 +104,18 @@ function TransactionsList() {
   const [search, setSearch] = useState('');
   const query = useDebounced(search.trim(), 250);
   const [offset, setOffset] = useState(0);
-  const [allTime, setAllTime] = useState(false);
+  const [mode, setMode] = useState<PeriodMode>('month');
   const [type, setType] = useState<TypeFilter>('all');
   const [accountId, setAccountId] = useState<string | undefined>(params.accountId);
   const [categoryId, setCategoryId] = useState<string | undefined>(params.categoryId);
   const [tagId, setTagId] = useState<string | undefined>(params.tagId);
 
   const period = useMemo(
-    () => shiftPeriod(periodContaining(todayVn(), startDay), offset, startDay),
-    [offset, startDay],
+    () => statsPeriod(mode === 'year' ? 'year' : 'month', offset, todayVn(), startDay),
+    [mode, offset, startDay],
   );
   // Đang tìm kiếm → tìm trong toàn bộ lịch sử
-  const wholeHistory = allTime || !!query;
+  const wholeHistory = mode === 'all' || !!query;
 
   const { data: items = [] } = useTransactions({
     from: wholeHistory ? undefined : vnDateToMs(period.start),
@@ -150,39 +157,51 @@ function TransactionsList() {
       <LargeTitle title="Giao dịch" />
       <TextField
         icon="search"
-        placeholder="Tìm: cà phê, lương… (gõ có dấu = khớp đúng dấu)"
+        placeholder="Tìm giao dịch, tag, ghi chú…"
         value={search}
         onChangeText={setSearch}
         returnKeyType="search"
       />
+      {search.trim() ? (
+        <AppText variant="caption" color="textMuted">
+          {removeDiacritics(search) !== search
+            ? 'Đang tìm đúng dấu'
+            : 'Gõ có dấu (vd “cà phê”) để chỉ ra đúng chữ có dấu'}
+        </AppText>
+      ) : null}
 
       {!query ? (
+        <SegmentedControl
+          options={PERIOD_OPTIONS}
+          value={mode}
+          onChange={(next) => {
+            setMode(next);
+            setOffset(0);
+          }}
+        />
+      ) : null}
+
+      {!query && mode !== 'all' ? (
         <View style={styles.periodRow}>
           <IconButton
             icon="chevron-back"
             accessibilityLabel={t('Kỳ trước')}
-            onPress={() => {
-              setAllTime(false);
-              setOffset(offset - 1);
-            }}
+            onPress={() => setOffset(offset - 1)}
           />
-          <Pressable style={styles.periodLabel} onPress={() => setAllTime(!allTime)}>
+          <View style={styles.periodLabel}>
             <AppText variant="heading">
-              {allTime ? 'Toàn bộ thời gian' : capitalize(formatMonth(period.start))}
+              {mode === 'year'
+                ? t('Năm {year}', { year: statsYearOf(period.start, startDay) })
+                : capitalize(formatMonth(period.start))}
             </AppText>
             <AppText variant="caption" color="textMuted">
-              {allTime
-                ? 'Chạm để xem theo tháng'
-                : `${period.start.slice(8)}/${period.start.slice(5, 7)} – ${period.end.slice(8)}/${period.end.slice(5, 7)}`}
+              {`${period.start.slice(8)}/${period.start.slice(5, 7)} – ${period.end.slice(8)}/${period.end.slice(5, 7)}`}
             </AppText>
-          </Pressable>
+          </View>
           <IconButton
             icon="chevron-forward"
             accessibilityLabel={t('Kỳ sau')}
-            onPress={() => {
-              setAllTime(false);
-              setOffset(offset + 1);
-            }}
+            onPress={() => setOffset(offset + 1)}
           />
         </View>
       ) : null}

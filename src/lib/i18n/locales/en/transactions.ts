@@ -26,8 +26,10 @@ export const transactions: Record<string, string> = {
   'Thêm tag / ghi chú': 'Add tags / note',
   'Giao dịch của Sổ nợ — hãy xoá trong Sổ nợ.':
     'A Debt book transaction — delete it in the Debt book.',
-  'Tìm: cà phê, lương… (gõ có dấu = khớp đúng dấu)':
-    'Search: coffee, salary… (accents = exact match)',
+  'Tìm giao dịch, tag, ghi chú…': 'Search transactions, tags, notes…',
+  'Đang tìm đúng dấu': 'Matching accents exactly',
+  'Gõ có dấu (vd “cà phê”) để chỉ ra đúng chữ có dấu':
+    'Type accents (e.g. “cà phê”) to match accented letters exactly',
   'Toàn bộ thời gian': 'All time',
   'Chạm để xem theo tháng': 'Tap to view by month',
   'Chênh lệch': 'Net',

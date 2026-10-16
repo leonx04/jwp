@@ -7,8 +7,6 @@ export const fragments: Record<string, string> = {
   // Nhãn ngắn (tránh bị cắt)
   'Thu dự kiến': 'Income',
   'Chi dự kiến': 'Spending',
-  'Tìm: cà phê, lương… (gõ có dấu = khớp đúng dấu)':
-    'Search: coffee, salary… (accents = exact match)',
   '% so với': '% vs',
   '% so với tháng trước': '% vs last month',
   '1. Mở Ivy Wallet → Cài đặt → Backup data → lưu file .zip.':
