@@ -28,6 +28,7 @@ import { useAutoBackup } from '@/features/backup/hooks';
 import { useCaptureSync } from '@/features/capture/hooks';
 import { useMorningBriefingSync } from '@/features/notifications/hooks/useMorningBriefingSync';
 import { useStartupTasks } from '@/features/startup/useStartupTasks';
+import { useLanguage } from '@/lib/i18n';
 import { useTheme } from '@/theme';
 
 // Giữ màn hình chờ đến khi font sẵn sàng → không bị nháy font mặc định
@@ -41,11 +42,13 @@ export default function RootLayout() {
     BeVietnamPro_700Bold,
   });
   const ready = fontsLoaded || fontError != null;
+  // Đổi ngôn ngữ → dựng lại toàn bộ cây để mọi chuỗi t() được tính lại
+  const language = useLanguage();
 
   if (!ready) return null;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView key={language} style={{ flex: 1 }}>
       <AppThemeProvider>
         <DatabaseProvider>
           <RootNavigator />

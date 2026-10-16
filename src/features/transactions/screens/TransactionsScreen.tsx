@@ -1,5 +1,6 @@
 // Danh sách giao dịch: tìm kiếm không dấu, lọc theo kỳ / loại / ví / danh mục / tag,
 // nhóm theo ngày kiểu "inset grouped", vuốt trái để xoá (có hoàn tác).
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams } from 'expo-router';
@@ -45,6 +46,8 @@ import { TransactionRow } from '../components/TransactionRow';
 import { groupByDay, summarize, type GroupedRow, type TransactionEntry } from '../grouping';
 import { useTransactions } from '../hooks';
 import { deleteTransaction, restoreSnapshot } from '../repository';
+
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 type TypeFilter = 'all' | TransactionType;
 
@@ -165,7 +168,7 @@ function TransactionsList() {
           />
           <Pressable style={styles.periodLabel} onPress={() => setAllTime(!allTime)}>
             <AppText variant="heading">
-              {allTime ? 'Toàn bộ thời gian' : `T${formatMonth(period.start).slice(1)}`}
+              {allTime ? 'Toàn bộ thời gian' : capitalize(formatMonth(period.start))}
             </AppText>
             <AppText variant="caption" color="textMuted">
               {allTime
@@ -257,7 +260,7 @@ function TransactionsList() {
             title={query ? 'Không tìm thấy' : 'Chưa có giao dịch'}
             description={
               query
-                ? `Không có giao dịch nào khớp "${query}".`
+                ? t('Không có giao dịch nào khớp "{query}".', { query })
                 : 'Bấm nút ＋ để thêm giao dịch đầu tiên của kỳ này.'
             }
           />

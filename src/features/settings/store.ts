@@ -55,6 +55,8 @@ export type SettingsState = {
   hideBalance: boolean;
   /** Rung nhẹ khi chạm nút, chọn mục, báo kết quả */
   haptics: boolean;
+  /** Ngôn ngữ giao diện: theo hệ thống hoặc chọn tay */
+  language: 'system' | 'vi' | 'en';
   suggestionsEnabled: boolean;
   notifications: NotificationPrefs;
   /** Đã hoàn tất màn bắt đầu (tạo dữ liệu mặc định hoặc import) */
@@ -99,6 +101,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   transfersAsIncomeExpense: false,
   hideBalance: false,
   haptics: true,
+  language: 'system',
   suggestionsEnabled: true,
   notifications: DEFAULT_NOTIFICATION_PREFS,
   onboarded: false,

@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { t } from '@/lib/i18n';
 import type { AppIcon } from '@/lib/icons';
 import { normalizeForSearch } from '@/lib/text';
 import { createStyles, useTheme } from '@/theme';
@@ -158,7 +159,7 @@ export function SelectField(props: Single | Multi) {
                 <TextInput
                   value={query}
                   onChangeText={setQuery}
-                  placeholder={props.onCreate ? 'Tìm hoặc gõ tên mới…' : 'Tìm…'}
+                  placeholder={props.onCreate ? t('Tìm hoặc gõ tên mới…') : t('Tìm…')}
                   placeholderTextColor={colors.textMuted}
                   selectionColor={colors.primary}
                   style={[styles.searchInput, { color: colors.text }]}
@@ -176,7 +177,7 @@ export function SelectField(props: Single | Multi) {
                   <Pressable style={styles.row} onPress={create}>
                     <IconBadge icon="add" size={34} />
                     <AppText style={{ flex: 1 }} color="primary">
-                      Tạo “{trimmed}”
+                      {t('Tạo “{name}”', { name: trimmed })}
                     </AppText>
                   </Pressable>
                 ) : !props.multiple && props.clearable && props.value ? (

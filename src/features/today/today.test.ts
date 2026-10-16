@@ -195,8 +195,18 @@ describe('đã tiêu hôm nay (DB)', () => {
 
   it('chỉ tính khoản chi ngoài lịch; trả góp tính 1 kỳ; ví trả sau có tính nhưng không trừ số dư', () => {
     const db = createTestDb();
-    const cash = saveAccount(db, { name: 'Tiền mặt', color: '#000', icon: 'wallet-outline', includeInBalance: true });
-    const fund = saveAccount(db, { name: 'Quỹ', color: '#000', icon: 'wallet-outline', includeInBalance: false });
+    const cash = saveAccount(db, {
+      name: 'Tiền mặt',
+      color: '#000',
+      icon: 'wallet-outline',
+      includeInBalance: true,
+    });
+    const fund = saveAccount(db, {
+      name: 'Quỹ',
+      color: '#000',
+      icon: 'wallet-outline',
+      includeInBalance: false,
+    });
     const spay = saveAccount(db, {
       name: 'SPayLater',
       color: '#EE4D2D',
@@ -205,14 +215,58 @@ describe('đã tiêu hôm nay (DB)', () => {
       credit: { limit: 5_000_000, statementDay: 31, dueDay: 10, paymentAccountId: cash },
     });
 
-    saveTransaction(db, { type: 'income', amount: 5_000_000, accountId: cash, title: 'Lương', date: at('08:00') });
-    saveTransaction(db, { type: 'expense', amount: 50_000, accountId: cash, title: 'Phở', date: at('07:30') });
-    saveTransaction(db, { type: 'expense', amount: 40_000, accountId: spay, title: 'Trà sữa', date: at('15:00') });
+    saveTransaction(db, {
+      type: 'income',
+      amount: 5_000_000,
+      accountId: cash,
+      title: 'Lương',
+      date: at('08:00'),
+    });
+    saveTransaction(db, {
+      type: 'expense',
+      amount: 50_000,
+      accountId: cash,
+      title: 'Phở',
+      date: at('07:30'),
+    });
+    saveTransaction(db, {
+      type: 'expense',
+      amount: 40_000,
+      accountId: spay,
+      title: 'Trà sữa',
+      date: at('15:00'),
+    });
     // Ngày hôm qua, quỹ riêng, chuyển khoản, điều chỉnh: không tính
-    saveTransaction(db, { type: 'expense', amount: 70_000, accountId: cash, title: 'Cơm', date: at('20:00', '2026-10-10') });
-    saveTransaction(db, { type: 'expense', amount: 999_000, accountId: fund, title: 'Quỹ', date: at('09:00') });
-    saveTransaction(db, { type: 'transfer', amount: 300_000, accountId: cash, toAccountId: spay, title: 'Trả bill', date: at('10:00') });
-    saveTransaction(db, { type: 'expense', amount: 10_000, accountId: cash, title: 'Lệch', date: at('11:00'), isAdjustment: true });
+    saveTransaction(db, {
+      type: 'expense',
+      amount: 70_000,
+      accountId: cash,
+      title: 'Cơm',
+      date: at('20:00', '2026-10-10'),
+    });
+    saveTransaction(db, {
+      type: 'expense',
+      amount: 999_000,
+      accountId: fund,
+      title: 'Quỹ',
+      date: at('09:00'),
+    });
+    saveTransaction(db, {
+      type: 'transfer',
+      amount: 300_000,
+      accountId: cash,
+      toAccountId: spay,
+      title: 'Trả bill',
+      date: at('10:00'),
+    });
+    saveTransaction(db, {
+      type: 'expense',
+      amount: 10_000,
+      accountId: cash,
+      title: 'Lệch',
+      date: at('11:00'),
+      isAdjustment: true,
+    });
     // Khoản trả theo lịch: đã nằm trong dự báo
     const rent = saveSchedule(db, {
       type: 'expense',
@@ -232,7 +286,13 @@ describe('đã tiêu hôm nay (DB)', () => {
       scheduleDueDate: TODAY,
     });
     // Mua trả góp 6 kỳ bằng ví trả sau → chỉ tính 1 kỳ
-    const phone = saveTransaction(db, { type: 'expense', amount: 3_000_000, accountId: spay, title: 'Điện thoại', date: at('16:00') });
+    const phone = saveTransaction(db, {
+      type: 'expense',
+      amount: 3_000_000,
+      accountId: spay,
+      title: 'Điện thoại',
+      date: at('16:00'),
+    });
     saveInstallmentPlan(db, {
       transactionId: phone,
       accountId: spay,

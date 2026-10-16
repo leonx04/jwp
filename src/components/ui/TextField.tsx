@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { forwardRef } from 'react';
 import { TextInput, View, type TextInputProps } from 'react-native';
 
+import { t as translate } from '@/lib/i18n';
 import type { IconName } from '@/lib/icons';
 import { createStyles, useTheme } from '@/theme';
 
@@ -36,6 +37,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
           multiline={multiline}
           style={[styles.input, multiline && styles.multiline, style]}
           {...rest}
+          placeholder={rest.placeholder ? translate(rest.placeholder) : undefined}
         />
       </View>
     </View>

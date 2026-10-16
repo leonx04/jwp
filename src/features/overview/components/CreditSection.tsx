@@ -1,4 +1,5 @@
 // Mục "Trả sau" trên Tổng quan: thẻ từng ví trả sau + cảnh báo bill trả sau so với thu nhập.
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { memo } from 'react';
@@ -52,7 +53,13 @@ export const CreditSection = memo(function CreditSection({ credit, load }: Credi
             >
               {hideBalance
                 ? 'Cân nhắc trước khi mua trả sau thêm.'
-                : `Phải trả ${format.compact(load.billsTotal)} · thu nhập TB ${format.compact(load.avgMonthlyIncome)}/tháng. Cân nhắc trước khi mua trả sau thêm.`}
+                : t(
+                    'Phải trả {bills} · thu nhập TB {income}/tháng. Cân nhắc trước khi mua trả sau thêm.',
+                    {
+                      bills: format.compact(load.billsTotal),
+                      income: format.compact(load.avgMonthlyIncome),
+                    },
+                  )}
             </AppText>
           </View>
         </GlassSurface>

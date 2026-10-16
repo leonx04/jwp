@@ -1,0 +1,36 @@
+// Cài đặt giao diện và màu chủ đạo
+export const settings: Record<string, string> = {
+  'Hệ thống': 'System',
+  Sáng: 'Light',
+  Tối: 'Dark',
+  'Theo máy': 'Follow device',
+  'Chế độ': 'Mode',
+  'Đen tuyền (AMOLED)': 'True black (AMOLED)',
+  'Nền đen hoàn toàn, tiết kiệm pin trên màn OLED': 'Pure black background, saves battery on OLED',
+  'Chỉ áp dụng khi đang ở chế độ tối': 'Only applies in dark mode',
+  'Tính chuyển khoản là thu / chi': 'Count transfers as income / expense',
+  'Tắt (khuyên dùng): chuyển giữa các ví của bạn không làm tăng thu hay chi':
+    'Off (recommended): moving money between your wallets does not change income or expense',
+  'Ngôn ngữ': 'Language',
+  'Phản hồi': 'Feedback',
+  'Rung khi chạm': 'Vibrate on tap',
+  'Rung nhẹ khi bấm nút, chọn mục và báo kết quả':
+    'A light buzz on buttons, selections and results',
+  'Màu chủ đạo': 'Accent color',
+  'Ký hiệu tiền': 'Currency symbol',
+  'Đầy đủ': 'Full',
+  'Rút gọn': 'Short',
+  'Chi · Thu · Chuyển': 'Expense · Income · Transfer',
+  // Tên màu chủ đạo
+  Chàm: 'Indigo',
+  'Xanh dương': 'Blue',
+  Tím: 'Violet',
+  'Xanh trời': 'Sky',
+  'Xanh ngọc': 'Teal',
+  'Xanh lá': 'Green',
+  'Vàng nghệ': 'Amber',
+  Cam: 'Orange',
+  'Hồng đỏ': 'Rose',
+  Hồng: 'Pink',
+  'Xám than': 'Slate',
+};

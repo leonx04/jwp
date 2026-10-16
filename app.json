@@ -19,9 +19,7 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "permissions": [
-        "android.permission.SCHEDULE_EXACT_ALARM"
-      ],
+      "permissions": ["android.permission.SCHEDULE_EXACT_ALARM"],
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -60,14 +58,12 @@
           "android": {
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
-            "buildArchs": [
-              "arm64-v8a",
-              "armeabi-v7a"
-            ],
+            "buildArchs": ["arm64-v8a", "armeabi-v7a"],
             "extraProguardRules": "-keep class com.google.mlkit.vision.text.** { *; }\n-keep class expo.modules.jwpocr.** { *; }\n-dontwarn com.google.mlkit.vision.text.**\n"
           }
         }
-      ]
+      ],
+      ["expo-localization", { "supportedLocales": ["vi", "en"] }]
     ],
     "experiments": {
       "typedRoutes": true
