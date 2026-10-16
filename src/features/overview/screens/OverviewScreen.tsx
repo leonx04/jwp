@@ -27,7 +27,7 @@ import { DebtsCard } from '@/features/debts/components/DebtsCard';
 import { ReportBanner } from '@/features/report/components/ReportBanner';
 import { GoalsCard } from '@/features/goals/components/GoalsCard';
 import { TodayCard, useTodayStatus } from '@/features/today';
-import { CreditSection } from '../components/CreditSection';
+import { CreditSection, hasCreditActivity } from '../components/CreditSection';
 import { bnplLoad } from '../bnpl';
 import { getAverageMonthlyIncome } from '../queries';
 import { useLiveData } from '@/db/useLiveData';
@@ -106,6 +106,10 @@ export function OverviewScreen() {
   // Ví trả sau: hiện DƯ NỢ (dương, gồm cả khoản theo lịch) thay vì số dư âm
   const owedById = useMemo(
     () => new Map((overview?.credit ?? []).map((c) => [c.account.id, c.status.owed])),
+    [overview],
+  );
+  const activeCredit = useMemo(
+    () => (overview?.credit ?? []).filter(hasCreditActivity),
     [overview],
   );
   const total = balances ? totalBalance(balances) : 0;
@@ -296,7 +300,7 @@ export function OverviewScreen() {
       ) : null}
 
       {todayStatus ? <TodayCard status={todayStatus} /> : null}
-      {overview?.credit.length ? <CreditSection credit={overview.credit} load={load} /> : null}
+      {activeCredit.length ? <CreditSection credit={activeCredit} load={load} /> : null}
       <UpcomingCard />
       <BudgetsCard />
       <DebtsCard />

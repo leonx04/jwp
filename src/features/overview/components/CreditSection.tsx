@@ -19,6 +19,13 @@ type CreditSectionProps = {
   load: BnplLoad | null;
 };
 
+/** Ví trả sau có gì đáng hiện: còn dư nợ, có trả góp, hoặc có bill kỳ này / kỳ tới. Hết nợ thì ẩn cho gọn. */
+export const hasCreditActivity = ({ status, installments }: CreditSummary): boolean =>
+  status.owed > 0 ||
+  installments.length > 0 ||
+  (status.current?.dueAmount ?? 0) > 0 ||
+  (status.next?.estimatedAmount ?? 0) > 0;
+
 export const CreditSection = memo(function CreditSection({ credit, load }: CreditSectionProps) {
   const { colors, spacing } = useTheme();
   const format = useMoneyFormat();
