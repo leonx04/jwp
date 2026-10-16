@@ -54,12 +54,12 @@ const QUICK_ACTIONS: {
   { label: 'Chi tiêu', icon: 'arrow-up', href: '/transaction/new?type=expense', tone: 'expense' },
   { label: 'Thu nhập', icon: 'arrow-down', href: '/transaction/new?type=income', tone: 'income' },
   {
-    label: 'Chuyển tiền',
+    label: 'Chuyển',
     icon: 'swap-horizontal',
     href: '/transaction/new?type=transfer',
     tone: 'primary',
   },
-  { label: 'Quét biên lai', icon: 'scan-outline', href: '/receipt-scan', tone: 'primary' },
+  { label: 'Quét bill', icon: 'scan-outline', href: '/receipt-scan', tone: 'primary' },
 ];
 
 function greeting(now = new Date()): string {

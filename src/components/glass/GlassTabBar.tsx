@@ -59,8 +59,8 @@ export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
               style={[
                 styles.item,
                 selected
-                  ? { backgroundColor: colors.primary, paddingHorizontal: 16, flexGrow: 1.4 }
-                  : { width: 48, flexGrow: 1 },
+                  ? { backgroundColor: colors.primary, paddingHorizontal: 16 }
+                  : { width: 44 },
               ]}
               onPress={() => {
                 if (selected) return;
@@ -130,7 +130,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 8,
-    gap: 4,
+    gap: 2,
+    justifyContent: 'space-between',
   },
   item: {
     height: TAB_BAR_HEIGHT - 16,
