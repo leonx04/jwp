@@ -6,6 +6,10 @@ export const budgets: Record<string, string> = {
   'Chưa đặt tên ngân sách.': 'Give the budget a name.',
   'Hạn mức phải lớn hơn 0.': 'The limit must be greater than 0.',
   'Hạn mức quá lớn.': 'The limit is too large.',
+  'Vượt ngân sách': 'Over budget',
+  'Đã chi {spent} / {limit}': 'Spent {spent} / {limit}',
+  '{spent} / {limit} · tối đa {perDay}/ngày ({daysLeft} ngày)':
+    '{spent} / {limit} · up to {perDay}/day ({daysLeft} days)',
   'Vượt {remaining}': 'Over by {remaining}',
   'Còn {remaining} · tối đa {perDay}/ngày ({daysLeft} ngày)':
     '{remaining} left · up to {perDay}/day ({daysLeft} days)',
