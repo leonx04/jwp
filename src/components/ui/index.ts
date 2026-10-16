@@ -18,3 +18,4 @@ export { TextField } from './TextField';
 export { AmountKeypad } from './AmountKeypad';
 export { BankMark } from './BankMark';
 export { MoneyField } from './MoneyField';
+export { SelectField, type SelectOption } from './SelectField';

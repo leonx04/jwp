@@ -16,6 +16,7 @@ import {
   MoneyField,
   Screen,
   SectionTitle,
+  SelectField,
   SwitchRow,
   TextField,
 } from '@/components/ui';
@@ -347,38 +348,30 @@ export function ReceiptScanScreen() {
                     : `Biên lai ghi nguồn tiền từ ${d.sourceName} nhưng chưa có ví khớp. Hãy chọn ví đúng.`}
                 </AppText>
               ) : null}
-              <AppText variant="label" color="textMuted">
-                Danh mục
-              </AppText>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                {d.categoryHint && !d.categoryId ? (
-                  <Chip
-                    label={`Tạo danh mục "${d.categoryHint}"`}
-                    icon="add"
-                    onPress={() => {
-                      const id = saveCategory(db, {
-                        name: d.categoryHint,
-                        color: '#7C3AED',
-                        icon: 'pricetag-outline',
-                      });
-                      setCategories(listCategories(db));
-                      patch(d.key, { categoryId: id, categoryHint: '' });
-                    }}
-                  />
-                ) : null}
-                {categories.map((c) => (
-                  <Chip
-                    key={c.id}
-                    label={c.name}
-                    icon={c.icon ? toAppIcon(c.icon, 'pricetag-outline') : undefined}
-                    color={c.color}
-                    selected={d.categoryId === c.id}
-                    onPress={() =>
-                      patch(d.key, { categoryId: d.categoryId === c.id ? null : c.id })
-                    }
-                  />
-                ))}
-              </View>
+              <SelectField
+                label="Danh mục"
+                title="Chọn danh mục"
+                placeholder={d.categoryHint ? `Gợi ý: ${d.categoryHint}` : 'Chưa phân loại'}
+                icon="pricetag-outline"
+                clearable
+                options={categories.map((c) => ({
+                  id: c.id,
+                  label: c.name,
+                  icon: c.icon ? toAppIcon(c.icon, 'pricetag-outline') : null,
+                  color: c.color,
+                }))}
+                value={d.categoryId}
+                onChange={(categoryId) => patch(d.key, { categoryId })}
+                onCreate={(name) => {
+                  const id = saveCategory(db, {
+                    name,
+                    color: '#7C3AED',
+                    icon: 'pricetag-outline',
+                  });
+                  setCategories(listCategories(db));
+                  return id;
+                }}
+              />
               {isFuel(d) ? (
                 <View style={{ gap: 6 }}>
                   <MoneyField

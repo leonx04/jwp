@@ -11,6 +11,7 @@ import {
   Chip,
   Screen,
   SectionTitle,
+  SelectField,
   SwitchRow,
   TextField,
 } from '@/components/ui';
@@ -103,19 +104,20 @@ export function RuleEditScreen() {
         />
       </View>
 
-      <SectionTitle>Danh mục</SectionTitle>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-        {categories.map((c) => (
-          <Chip
-            key={c.id}
-            label={c.name}
-            icon={c.icon ? toAppIcon(c.icon, 'pricetag-outline') : undefined}
-            color={c.color}
-            selected={categoryId === c.id}
-            onPress={() => setCategoryId(c.id)}
-          />
-        ))}
-      </View>
+      <SelectField
+        label="Danh mục"
+        title="Chọn danh mục"
+        placeholder="Chọn danh mục"
+        icon="pricetag-outline"
+        options={categories.map((c) => ({
+          id: c.id,
+          label: c.name,
+          icon: c.icon ? toAppIcon(c.icon, 'pricetag-outline') : null,
+          color: c.color,
+        }))}
+        value={categoryId}
+        onChange={setCategoryId}
+      />
 
       <Card style={{ gap: 0, paddingVertical: 6 }}>
         <SwitchRow
