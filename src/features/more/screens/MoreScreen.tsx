@@ -21,6 +21,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#7C3AED',
       },
       {
+        icon: 'trending-up-outline',
+        title: 'Mô phỏng tăng lương',
+        subtitle: 'Lương tăng thì tiền dư, tiết kiệm và các quỹ thay đổi ra sao',
+        href: '/salary',
+        color: '#16A34A',
+      },
+      {
         icon: 'document-text-outline',
         title: 'Báo cáo tháng',
         subtitle: 'Còn lại bao nhiêu, so tháng trước, khoản chi lớn, chia sẻ',
@@ -184,9 +191,7 @@ export function MoreScreen() {
             >
               <Ionicons name={f.icon} size={22} color={f.color} />
             </View>
-            <AppText variant="heading">
-              {f.title}
-            </AppText>
+            <AppText variant="heading">{f.title}</AppText>
           </Pressable>
         ))}
       </View>

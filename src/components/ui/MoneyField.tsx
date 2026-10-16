@@ -1,62 +1,98 @@
+// Ô nhập tiền: bấm mở bảng bàn phím số của app (có sẵn máy tính + − × ÷), KHÔNG mở bàn phím hệ thống.
+// Giá trị do màn hình cha quản lý (controlled) nên đổi từ bên ngoài (vd nút "+10%") là hiện ngay.
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Modal, Pressable, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useMoneyFormat } from '@/features/settings/hooks/useMoneyFormat';
-import { groupThousands, parseMoney } from '@/lib/money';
+import { createStyles } from '@/theme';
 
+import { AmountKeypad } from './AmountKeypad';
 import { AppText } from './AppText';
-import { TextField } from './TextField';
+import { Button } from './Button';
+import { KeypadField } from './KeypadField';
 
 type MoneyFieldProps = {
   label?: string;
   value: number;
   onChange: (value: number) => void;
   placeholder?: string;
-  /** Mặc định bàn phím số. 'default' = bàn phím chữ (để gõ tắt '1tr5', '150k') */
+  /** Giữ để tương thích; không còn dùng vì ô dùng bàn phím số của app */
   keyboardType?: 'default' | 'numeric';
 };
 
-/** Ô nhập tiền: bàn phím số mặc định, hiểu "1.500.000" (vẫn đọc được "1tr5", "150k" nếu dùng bàn phím chữ) */
 export function MoneyField({
   label,
   value,
   onChange,
   placeholder = 'vd: 1.500.000',
-  keyboardType = 'numeric',
 }: MoneyFieldProps) {
+  const styles = useStyles();
+  const insets = useSafeAreaInsets();
   const format = useMoneyFormat();
-  const [text, setText] = useState(value ? groupThousands(value) : '');
-  const parsed = text.trim() ? parseMoney(text) : 0;
-  const invalid = parsed === null;
+  const [open, setOpen] = useState(false);
+  const title = label ?? 'Số tiền';
 
   return (
-    <View style={{ gap: 4 }}>
-      <TextField
-        label={label}
+    <View>
+      <KeypadField
         icon="cash-outline"
-        keyboardType={keyboardType}
+        label={title}
+        text={value ? format.money(value) : ''}
         placeholder={placeholder}
-        value={text}
-        onChangeText={(next) => {
-          setText(next);
-          const amount = next.trim() ? parseMoney(next) : 0;
-          if (amount !== null && amount >= 0) onChange(amount);
-        }}
-        onBlur={() => {
-          if (!invalid && parsed) setText(groupThousands(parsed));
-        }}
+        active={open}
+        onPress={() => setOpen(true)}
       />
-      {text.trim() ? (
-        <AppText
-          variant="caption"
-          color={invalid ? 'expense' : 'textMuted'}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.6}
-        >
-          {invalid ? 'Không đọc được số tiền' : `= ${format.money(parsed ?? 0)}`}
-        </AppText>
-      ) : null}
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+        <View style={styles.root}>
+          <Pressable
+            style={styles.backdrop}
+            onPress={() => setOpen(false)}
+            accessibilityLabel="Đóng"
+          />
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 12) + 8 }]}>
+            <View style={styles.handle} />
+            <AppText variant="label" color="textMuted" style={{ textAlign: 'center' }}>
+              {title}
+            </AppText>
+            <AppText
+              variant="display"
+              style={{ textAlign: 'center', fontVariant: ['tabular-nums'] }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.5}
+            >
+              {format.money(value)}
+            </AppText>
+            <AmountKeypad value={value} onChange={onChange} />
+            <Button title="Xong" icon="checkmark" onPress={() => setOpen(false)} />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
+
+const useStyles = createStyles((t) => ({
+  root: { flex: 1, justifyContent: 'flex-end' },
+  backdrop: {
+    ...({ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 } as const),
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  sheet: {
+    backgroundColor: t.colors.surface,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: t.spacing.lg,
+    paddingTop: 8,
+    gap: t.spacing.md,
+  },
+  handle: {
+    alignSelf: 'center',
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: t.colors.border,
+    marginBottom: 4,
+  },
+}));
