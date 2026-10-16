@@ -76,7 +76,16 @@ const REMIND_OPTIONS = [
 ];
 
 export function ScheduleEditScreen() {
-  const params = useLocalSearchParams<{ id?: string; type?: TransactionType }>();
+  // Có thể mở sẵn form điền sẵn qua liên kết: jwp://schedule/edit?title=…&amount=…&accountName=…&startDate=YYYY-MM-DD&frequency=once
+  const params = useLocalSearchParams<{
+    id?: string;
+    type?: TransactionType;
+    title?: string;
+    amount?: string;
+    accountName?: string;
+    startDate?: string;
+    frequency?: Frequency;
+  }>();
   const id = params.id;
   const existing = id ? getSchedule(db, id) : undefined;
   const styles = useStyles();
@@ -84,13 +93,21 @@ export function ScheduleEditScreen() {
   const { data: categories = [] } = useLiveData(['categories'], () => listCategories(db));
 
   const [type, setType] = useState<TransactionType>(existing?.type ?? params.type ?? 'expense');
-  const [amount, setAmount] = useState(existing?.amount ?? 0);
-  const [title, setTitle] = useState(existing?.title ?? '');
-  const [accountId, setAccountId] = useState<string | null>(existing?.accountId ?? null);
+  const [amount, setAmount] = useState(existing?.amount ?? (Number(params.amount) || 0));
+  const [title, setTitle] = useState(existing?.title ?? params.title ?? '');
+  const [accountId, setAccountId] = useState<string | null>(
+    existing?.accountId ??
+      (params.accountName
+        ? (listAccounts(db).find((a) => a.name.toLowerCase() === params.accountName?.toLowerCase())
+            ?.id ?? null)
+        : null),
+  );
   const [toAccountId, setToAccountId] = useState<string | null>(existing?.toAccountId ?? null);
   const [categoryId, setCategoryId] = useState<string | null>(existing?.categoryId ?? null);
-  const [startDate, setStartDate] = useState(existing?.startDate ?? todayVn());
-  const [frequency, setFrequency] = useState<Frequency>(existing?.frequency ?? 'monthly');
+  const [startDate, setStartDate] = useState(existing?.startDate ?? params.startDate ?? todayVn());
+  const [frequency, setFrequency] = useState<Frequency>(
+    existing?.frequency ?? params.frequency ?? 'monthly',
+  );
   const [interval, setInterval] = useState(existing?.interval ?? 1);
   const [weekdays, setWeekdays] = useState<number[]>(
     existing?.weekdays ? existing.weekdays.split(',').map(Number) : [],
