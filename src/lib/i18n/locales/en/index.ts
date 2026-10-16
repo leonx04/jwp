@@ -13,6 +13,7 @@ import { notifications } from './notifications';
 import { capture } from './capture';
 import { backup } from './backup';
 import { fragments } from './fragments';
+import { quickadd } from './quickadd';
 import { salary } from './salary';
 import { common } from './common';
 import { components } from './components';
@@ -47,4 +48,5 @@ export const en: Record<string, string> = {
   ...backup,
   ...fragments,
   ...salary,
+  ...quickadd,
 };
