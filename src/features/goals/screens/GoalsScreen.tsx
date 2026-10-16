@@ -1,4 +1,5 @@
 // Quỹ / mục tiêu tiết kiệm: tiến độ từng mục tiêu, cần góp bao nhiêu mỗi tháng để kịp hạn.
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 
 import { IconButton } from '@/components/glass/IconButton';
@@ -14,7 +15,7 @@ export function GoalsScreen() {
   return (
     <Screen
       title="Quỹ tiết kiệm"
-      headerRight={<IconButton icon="add" accessibilityLabel="Thêm mục tiêu" onPress={add} />}
+      headerRight={<IconButton icon="add" accessibilityLabel={t('Thêm mục tiêu')} onPress={add} />}
     >
       {goals && goals.length === 0 ? (
         <Card>

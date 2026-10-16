@@ -54,12 +54,12 @@ export function ReportScreen() {
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <IconButton
             icon="chevron-back"
-            accessibilityLabel="Tháng trước"
+            accessibilityLabel={t('Tháng trước')}
             onPress={() => setOffset(offset - 1)}
           />
           <IconButton
             icon="chevron-forward"
-            accessibilityLabel="Tháng sau"
+            accessibilityLabel={t('Tháng sau')}
             disabled={offset >= 0}
             onPress={() => setOffset(Math.min(0, offset + 1))}
           />

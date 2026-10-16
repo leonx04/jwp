@@ -126,7 +126,7 @@ export function SelectField(props: Single | Multi) {
       ) : null}
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={props.label ?? props.placeholder}
+        accessibilityLabel={t(props.label ?? props.placeholder)}
         onPress={() => setOpen(true)}
         style={({ pressed }) => [styles.box, pressed && { opacity: 0.7 }]}
       >
@@ -147,7 +147,7 @@ export function SelectField(props: Single | Multi) {
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={close}>
         <View style={styles.root}>
-          <Pressable style={styles.backdrop} onPress={close} accessibilityLabel="Đóng" />
+          <Pressable style={styles.backdrop} onPress={close} accessibilityLabel={t('Đóng')} />
           <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 12) + 4 }]}>
             <View style={styles.handle} />
             <AppText variant="heading" style={styles.title}>

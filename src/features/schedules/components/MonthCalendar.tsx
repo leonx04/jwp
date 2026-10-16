@@ -68,7 +68,7 @@ export function MonthCalendar({ lookup }: { lookup: OccurrenceLookup }) {
         <View
           style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
         >
-          <IconButton icon="chevron-back" accessibilityLabel="Tháng trước" onPress={() => go(-1)} />
+          <IconButton icon="chevron-back" accessibilityLabel={t('Tháng trước')} onPress={() => go(-1)} />
           <Pressable
             accessibilityRole="button"
             onPress={() => {
@@ -78,7 +78,7 @@ export function MonthCalendar({ lookup }: { lookup: OccurrenceLookup }) {
           >
             <AppText variant="heading">{title}</AppText>
           </Pressable>
-          <IconButton icon="chevron-forward" accessibilityLabel="Tháng sau" onPress={() => go(1)} />
+          <IconButton icon="chevron-forward" accessibilityLabel={t('Tháng sau')} onPress={() => go(1)} />
         </View>
 
         {data ? (
@@ -238,7 +238,7 @@ function DaySheet({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable
-        accessibilityLabel="Đóng"
+        accessibilityLabel={t('Đóng')}
         onPress={onClose}
         style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }}
       />
@@ -293,7 +293,7 @@ function DaySheet({
             </View>
           ) : null}
           <View style={{ width: 8 }} />
-          <IconButton icon="close" accessibilityLabel="Đóng" onPress={onClose} />
+          <IconButton icon="close" accessibilityLabel={t('Đóng')} onPress={onClose} />
         </View>
         <ScrollView
           style={{ flexShrink: 1 }}

@@ -12,6 +12,7 @@ import { credit } from './credit';
 import { notifications } from './notifications';
 import { capture } from './capture';
 import { backup } from './backup';
+import { fragments } from './fragments';
 import { common } from './common';
 import { components } from './components';
 import { more } from './more';
@@ -43,4 +44,5 @@ export const en: Record<string, string> = {
   ...notifications,
   ...capture,
   ...backup,
+  ...fragments,
 };

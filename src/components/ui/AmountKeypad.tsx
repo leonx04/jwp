@@ -123,7 +123,7 @@ export function AmountKeypad({ value, onChange }: AmountKeypadProps) {
       <View style={styles.exprRow}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={calc ? 'Tắt máy tính' : 'Bật máy tính'}
+          accessibilityLabel={t(calc ? 'Tắt máy tính' : 'Bật máy tính')}
           onPress={toggle}
           style={[styles.calcToggle, calc && { backgroundColor: colors.primary }]}
         >
@@ -144,7 +144,7 @@ export function AmountKeypad({ value, onChange }: AmountKeypadProps) {
             </AppText>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Bằng"
+              accessibilityLabel={t('Bằng')}
               onPress={equals}
               style={[styles.equals, { backgroundColor: colors.primary }]}
             >
@@ -161,7 +161,7 @@ export function AmountKeypad({ value, onChange }: AmountKeypadProps) {
             <Pressable
               key={key}
               accessibilityRole="keyboardkey"
-              accessibilityLabel={key === 'backspace' ? 'Xoá' : key}
+              accessibilityLabel={t(key === 'backspace' ? 'Xoá' : key)}
               onPress={() => press(key)}
               onLongPress={key === 'backspace' ? clear : undefined}
               style={({ pressed }) => [styles.key, pressed && styles.pressed]}

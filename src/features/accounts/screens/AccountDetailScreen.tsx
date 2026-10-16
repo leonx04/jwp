@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Pressable, View } from 'react-native';
@@ -108,7 +109,7 @@ export function AccountDetailScreen() {
       headerRight={
         <IconButton
           icon="create-outline"
-          accessibilityLabel="Sửa ví"
+          accessibilityLabel={t('Sửa ví')}
           onPress={() => router.push({ pathname: '/account/edit', params: { id } })}
         />
       }

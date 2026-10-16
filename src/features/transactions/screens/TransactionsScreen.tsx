@@ -160,7 +160,7 @@ function TransactionsList() {
         <View style={styles.periodRow}>
           <IconButton
             icon="chevron-back"
-            accessibilityLabel="Kỳ trước"
+            accessibilityLabel={t('Kỳ trước')}
             onPress={() => {
               setAllTime(false);
               setOffset(offset - 1);
@@ -178,7 +178,7 @@ function TransactionsList() {
           </Pressable>
           <IconButton
             icon="chevron-forward"
-            accessibilityLabel="Kỳ sau"
+            accessibilityLabel={t('Kỳ sau')}
             onPress={() => {
               setAllTime(false);
               setOffset(offset + 1);
@@ -326,7 +326,7 @@ function DeleteAction({
     <Animated.View style={[styles.deleteAction, { backgroundColor: colors.expense }, fade]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Xoá"
+        accessibilityLabel={t('Xoá')}
         onPress={onPress}
         style={styles.deletePress}
       >

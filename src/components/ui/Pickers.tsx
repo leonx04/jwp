@@ -340,7 +340,7 @@ function IconPickerSheet({
     <View style={styles.sheetRoot}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Đóng"
+        accessibilityLabel={t('Đóng')}
         style={[StyleSheet.absoluteFill, styles.backdrop]}
         onPress={onClose}
       />
@@ -354,7 +354,7 @@ function IconPickerSheet({
           </AppText>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Đóng"
+            accessibilityLabel={t('Đóng')}
             hitSlop={8}
             onPress={onClose}
             style={({ pressed }) => [styles.closeButton, pressed && { opacity: 0.7 }]}

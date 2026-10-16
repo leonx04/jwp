@@ -34,12 +34,23 @@ export function useLanguage(): Language {
   return resolveLanguage(pref);
 }
 
+/** Tra đúng chuỗi; không có thì thử bản bỏ khoảng trắng đầu/cuối (đoạn chữ cạnh biểu thức JSX hay có dấu cách) */
+function lookup(dictionary: Record<string, string>, source: string): string {
+  const exact = dictionary[source];
+  if (exact !== undefined) return exact;
+  const core = source.trim();
+  const translated = core !== source ? dictionary[core] : undefined;
+  if (translated === undefined) return source;
+  const start = source.indexOf(core);
+  return source.slice(0, start) + translated + source.slice(start + core.length);
+}
+
 export function t(
   source: string,
   params?: Record<string, string | number | null | undefined>,
 ): string {
   const lang = getLanguage();
-  const text = lang === 'vi' ? source : (DICTIONARIES[lang][source] ?? source);
+  const text = lang === 'vi' ? source : lookup(DICTIONARIES[lang], source);
   if (!params) return text;
   return text.replace(/\{(\w+)\}/g, (match, key: string) =>
     key in params ? String(params[key] ?? '') : match,

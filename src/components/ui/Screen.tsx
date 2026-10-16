@@ -1,6 +1,7 @@
 // Khung chung cho mọi màn hình: nền lỏng + nội dung + header kính nổi (làm mờ thật nội dung cuộn phía sau).
 // - Màn trong stack: truyền `title` → header gọn có nút quay lại / đóng.
 // - Màn tab: `largeTitle` → tiêu đề lớn nằm trong nội dung, header gọn chỉ hiện khi cuộn xuống.
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import {
   createContext,
@@ -256,7 +257,7 @@ function GlassHeader({
         {leading !== 'none' ? (
           <IconButton
             icon={leading === 'close' ? 'close' : 'chevron-back'}
-            accessibilityLabel={leading === 'close' ? 'Đóng' : 'Quay lại'}
+            accessibilityLabel={t(leading === 'close' ? 'Đóng' : 'Quay lại')}
             onPress={() => router.back()}
           />
         ) : null}

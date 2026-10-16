@@ -168,5 +168,5 @@ export function formatLunar(date: DateString): string {
   const dayText =
     day === 15 ? 'Rằm' : day <= 10 ? t('Mùng {day}', { day }) : t('Ngày {day}', { day });
   const monthText = month === 1 ? 'Giêng' : month === 12 ? 'Chạp' : String(month);
-  return `${dayText} tháng ${monthText}${leap ? ' nhuận' : ''} năm ${lunarYearName(year)}`;
+  return t('{dayText} tháng {monthText}{leap} năm {year}', { dayText, monthText, leap: leap ? ' nhuận' : '', year: lunarYearName(year) });
 }

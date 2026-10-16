@@ -291,7 +291,7 @@ export function ReceiptScanScreen() {
             <Card key={d.key} style={{ gap: 10 }}>
               <Pressable
                 accessibilityRole="imagebutton"
-                accessibilityLabel="Phóng to ảnh biên lai"
+                accessibilityLabel={t('Phóng to ảnh biên lai')}
                 onPress={() => setZoomUri(d.uri)}
               >
                 <Image

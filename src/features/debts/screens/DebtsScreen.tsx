@@ -47,7 +47,7 @@ export function DebtsScreen() {
   return (
     <Screen
       title="Sổ nợ"
-      headerRight={<IconButton icon="add" accessibilityLabel="Thêm khoản nợ" onPress={add} />}
+      headerRight={<IconButton icon="add" accessibilityLabel={t('Thêm khoản nợ')} onPress={add} />}
     >
       <View style={{ flexDirection: 'row', gap: 12 }}>
         <Card style={{ flex: 1, gap: 2 }}>
@@ -171,7 +171,7 @@ function DebtRow({ item, showPerson = false }: { item: DebtItem; showPerson?: bo
         icon={lent ? 'arrow-up-circle-outline' : 'arrow-down-circle-outline'}
         iconColor={lent ? '#16A34A' : '#DC2626'}
         title={showPerson ? `${item.person.name} · ${label}` : label}
-        subtitle={`${lent ? 'Họ nợ bạn' : 'Bạn nợ họ'} · ${statusText(item)}`}
+        subtitle={`${t(lent ? 'Họ nợ bạn' : 'Bạn nợ họ')} · ${statusText(item)}`}
         onPress={() => router.push({ pathname: '/debt/[id]', params: { id: item.debt.id } })}
         right={
           <AppText
