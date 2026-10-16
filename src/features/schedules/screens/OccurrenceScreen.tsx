@@ -110,7 +110,7 @@ export function OccurrenceScreen() {
     const previous = o.date;
     skipOccurrence(db, scheduleId, dueDate);
     showSnackbar({
-      text: t('Đã bỏ qua kỳ {false}', { false: formatDate(previous, false) }),
+      text: t('Đã bỏ qua kỳ {date}', { date: formatDate(previous, false) }),
       actionLabel: 'Hoàn tác',
       // Hoàn tác giữ lại ngày đã dời (nếu có)
       onAction: () => moveTo(previous),
@@ -138,8 +138,8 @@ export function OccurrenceScreen() {
     showSnackbar({
       text:
         next === dueDate
-          ? t('Đã đưa về ngày gốc {false}', { false: formatDate(next, false) })
-          : t('Đã dời sang {false}', { false: formatDate(next, false) }),
+          ? t('Đã đưa về ngày gốc {date}', { date: formatDate(next, false) })
+          : t('Đã dời sang {date}', { date: formatDate(next, false) }),
       tone: 'success',
       actionLabel: 'Hoàn tác',
       onAction: () => moveTo(previous),
@@ -164,7 +164,7 @@ export function OccurrenceScreen() {
         <AppText color="textMuted">
           {formatDate(o.date)} · {formatRelativeDue(o.date)}
           {o.date !== o.dueDate
-            ? t(' (dời từ {false})', { false: formatDate(o.dueDate, false) })
+            ? t(' (dời từ {date})', { date: formatDate(o.dueDate, false) })
             : ''}
         </AppText>
       </Card>
@@ -214,7 +214,7 @@ export function OccurrenceScreen() {
             />
             {o.date !== o.dueDate ? (
               <Button
-                title={t('Về ngày gốc {false}', { false: formatDate(o.dueDate, false) })}
+                title={t('Về ngày gốc {date}', { date: formatDate(o.dueDate, false) })}
                 icon="arrow-undo-outline"
                 variant="secondary"
                 onPress={() => clearOccurrence(db, scheduleId, dueDate)}

@@ -76,9 +76,9 @@ export function buildInsights(input: InsightInput): Insight[] {
     limit = 6,
   } = input;
   const expense = type === 'expense';
-  const noun = expense ? 'Chi tiêu' : 'Thu nhập';
-  const verb = expense ? 'chi' : 'thu';
-  const unit = mode === 'month' ? 'tháng' : 'năm';
+  const noun = t(expense ? 'Chi tiêu' : 'Thu nhập');
+  const verb = t(expense ? 'chi' : 'thu');
+  const unit = t(mode === 'month' ? 'tháng' : 'năm');
   const prevNoun = t('{unit} trước', { unit });
   const versus = inProgress ? t('cùng kỳ {prevNoun}', { prevNoun }) : prevNoun;
   /** Tăng là tốt với thu nhập, xấu với chi tiêu */
@@ -117,10 +117,10 @@ export function buildInsights(input: InsightInput): Insight[] {
         key: 'total',
         tone: toneOf(change > 0),
         icon: change > 0 ? 'trending-up' : 'trending-down',
-        text: t('{noun} {change} {change2} so với {versus}', {
+        text: t('{noun} {direction} {percent} so với {versus}', {
           noun,
-          change: change > 0 ? 'tăng' : 'giảm',
-          change2: formatPercent(change),
+          direction: t(change > 0 ? 'tăng' : 'giảm'),
+          percent: formatPercent(change),
           versus,
         }),
       });
@@ -138,9 +138,9 @@ export function buildInsights(input: InsightInput): Insight[] {
       key: `up-${increase.key}`,
       tone: toneOf(true),
       icon: 'trending-up',
-      text: t('{name} tăng {change} so với {versus}', {
+      text: t('{name} tăng {percent} so với {versus}', {
         name: increase.name,
-        change: formatPercent(increase.change),
+        percent: formatPercent(increase.change),
         versus,
       }),
     });
@@ -174,9 +174,9 @@ export function buildInsights(input: InsightInput): Insight[] {
       key: `down-${decrease.key}`,
       tone: toneOf(false),
       icon: 'trending-down',
-      text: t('{name} giảm {change} so với {versus}', {
+      text: t('{name} giảm {percent} so với {versus}', {
         name: decrease.name,
-        change: formatPercent(decrease.change),
+        percent: formatPercent(decrease.change),
         versus,
       }),
     });
@@ -202,7 +202,7 @@ export function buildInsights(input: InsightInput): Insight[] {
       tone: 'neutral',
       icon: 'today-outline',
       text: t('Trung bình mỗi {mode} {verb} {average}', {
-        mode: mode === 'month' ? 'ngày' : 'tháng',
+        mode: t(mode === 'month' ? 'ngày' : 'tháng'),
         verb,
         average: format(average),
       }),
@@ -219,7 +219,7 @@ export function buildInsights(input: InsightInput): Insight[] {
       text: t('{name} chiếm {share} tổng {expense}', {
         name: top.name,
         share: formatPercent(top.share * 100),
-        expense: expense ? 'chi' : 'thu',
+        expense: t(expense ? 'chi' : 'thu'),
       }),
     });
   }
@@ -230,9 +230,9 @@ export function buildInsights(input: InsightInput): Insight[] {
       key: 'top-day',
       tone: 'neutral',
       icon: 'flash-outline',
-      text: t('Ngày {verb} nhiều nhất: {false} — {amount}', {
+      text: t('Ngày {verb} nhiều nhất: {date} — {amount}', {
         verb,
-        false: formatDate(topDay.date, false),
+        date: formatDate(topDay.date, false),
         amount: format(topDay.amount),
       }),
     });

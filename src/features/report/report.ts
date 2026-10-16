@@ -148,16 +148,20 @@ export function buildMonthlyReport(input: ReportInput): MonthlyReport {
 
 function buildHighlights(r: MonthlyReport, format: (amount: number) => string): Highlight[] {
   const out: Highlight[] = [];
-  const since = r.inProgress ? 'cùng kỳ tháng trước' : 'tháng trước';
+  const since = t(r.inProgress ? 'cùng kỳ tháng trước' : 'tháng trước');
 
   if (r.expenseChange !== null && r.previousExpense > 0 && r.expense !== r.previousExpense) {
     const less = r.expense < r.previousExpense;
     out.push({
       key: 'expense-change',
       tone: less ? 'good' : 'bad',
-      text: `Chi tiêu ${less ? 'giảm' : 'tăng'} ${pct(r.expenseChange)} so với ${since} (${
-        less ? '−' : '+'
-      }${format(Math.abs(r.expense - r.previousExpense))}).`,
+      text: t('Chi tiêu {direction} {percent} so với {since} ({sign}{amount}).', {
+        direction: t(less ? 'giảm' : 'tăng'),
+        percent: pct(r.expenseChange),
+        since,
+        sign: less ? '−' : '+',
+        amount: format(Math.abs(r.expense - r.previousExpense)),
+      }),
     });
   }
 
@@ -219,8 +223,8 @@ function buildHighlights(r: MonthlyReport, format: (amount: number) => string): 
     out.push({
       key: 'top-day',
       tone: 'neutral',
-      text: t('Ngày chi nhiều nhất: {false}, {amount}.', {
-        false: formatDate(r.topDay.date, false),
+      text: t('Ngày chi nhiều nhất: {date}, {amount}.', {
+        date: formatDate(r.topDay.date, false),
         amount: format(r.topDay.amount),
       }),
     });

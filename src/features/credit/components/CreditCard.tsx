@@ -72,11 +72,11 @@ export function statementLine(
       icon: 'calendar-outline',
       tone: 'text',
       text: t(
-        'Chưa tới kỳ chốt · dự kiến phải trả {estimatedAmount} trước {false} (bill chốt {false2})',
+        'Chưa tới kỳ chốt · dự kiến phải trả {estimatedAmount} trước {date} (bill chốt {closeDate})',
         {
           estimatedAmount: money(next.estimatedAmount),
-          false: formatDate(next.dueDate, false),
-          false2: formatDate(next.closeDate, false),
+          date: formatDate(next.dueDate, false),
+          closeDate: formatDate(next.closeDate, false),
         },
       ),
     };
@@ -109,9 +109,9 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
   const extras: string[] = [];
   if (status.next && status.next.estimatedAmount > 0) {
     extras.push(
-      t('Kỳ sau ~{estimatedAmount} · hạn {false}', {
+      t('Kỳ sau ~{estimatedAmount} · hạn {date}', {
         estimatedAmount: compact(status.next.estimatedAmount),
-        false: formatDate(status.next.dueDate, false),
+        date: formatDate(status.next.dueDate, false),
       }),
     );
   }
@@ -124,7 +124,7 @@ export const CreditCard = memo(function CreditCard({ summary, onPress }: CreditC
         ...(account.paymentAccountId ? { accountId: account.paymentAccountId } : {}),
         toAccountId: account.id,
         amount: String(current?.dueAmount ?? 0),
-        title: t('Trả bill {name}', { name: account.name }),
+        title: `Trả bill ${account.name}`,
       },
     });
 

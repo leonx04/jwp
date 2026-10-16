@@ -46,7 +46,7 @@ export function payCreditCharge(
       amount: o.amount,
       accountId: payerAccountId,
       toAccountId: creditId,
-      title: o.schedule.title ? t('Trả {title}', { title: o.schedule.title }) : 'Trả nợ ví trả sau',
+      title: o.schedule.title ? `Trả ${o.schedule.title}` : 'Trả nợ ví trả sau',
       date: vnDateToMs(today, '12:00'),
       scheduleId: o.scheduleId,
       scheduleDueDate: o.dueDate,

@@ -149,7 +149,7 @@ export function ScheduleScreen() {
                 color={colors.expense}
               />
               <Stat
-                label={t('Thấp nhất {false}', { false: formatDate(forecast.lowest.date, false) })}
+                label={t('Thấp nhất {date}', { date: formatDate(forecast.lowest.date, false) })}
                 value={format.compact(forecast.lowest.balance)}
                 color={forecast.lowest.balance < 0 ? colors.expense : colors.text}
               />
@@ -161,8 +161,8 @@ export function ScheduleScreen() {
             <Alert
               tone="expense"
               icon="warning"
-              text={t('Ngày {false} số dư dự kiến âm {balance}', {
-                false: formatDate(forecast.firstNegative.date, false),
+              text={t('Ngày {date} số dư dự kiến âm {balance}', {
+                date: formatDate(forecast.firstNegative.date, false),
                 balance: format.money(-forecast.firstNegative.balance),
               })}
             />
@@ -170,8 +170,8 @@ export function ScheduleScreen() {
             <Alert
               tone="warning"
               icon="alert-circle"
-              text={t('Ngày {false} số dư xuống dưới ngưỡng an toàn {safetyThreshold}', {
-                false: formatDate(forecast.firstBelowSafety.date, false),
+              text={t('Ngày {date} số dư xuống dưới ngưỡng an toàn {safetyThreshold}', {
+                date: formatDate(forecast.firstBelowSafety.date, false),
                 safetyThreshold: format.money(safetyThreshold),
               })}
             />

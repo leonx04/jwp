@@ -34,7 +34,7 @@ export function SchedulesScreen() {
           s.title ||
           (s.type === 'income' ? 'Khoản thu' : s.type === 'transfer' ? 'Chuyển khoản' : 'Khoản chi')
         }
-        subtitle={`${describeRule(scheduleRule(s))}${next ? t(' · kỳ tới {false}', { false: formatDate(next, false) }) : ''}`}
+        subtitle={`${describeRule(scheduleRule(s))}${next ? t(' · kỳ tới {date}', { date: formatDate(next, false) }) : ''}`}
         right={<AmountText amount={s.amount} flow={s.type} />}
         onPress={() => router.push({ pathname: '/schedule/edit', params: { id: s.id } })}
       />

@@ -131,7 +131,7 @@ export function nextOccurrence(
 export function describeRule(rule: RecurrenceRule): string {
   const n = Math.max(1, rule.interval);
   const every = (unit: string) =>
-    n === 1 ? t('Hằng {unit}', { unit }) : t('Mỗi {n} {unit}', { n, unit });
+    n === 1 ? t('Hằng {unit}', { unit: t(unit) }) : t('Mỗi {n} {unit}', { n, unit: t(unit) });
   const short = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
   let text: string;
   switch (rule.frequency) {
