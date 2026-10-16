@@ -41,7 +41,7 @@ export function Snackbar() {
   return (
     <Animated.View
       key={current.id}
-      entering={FadeInDown.springify().damping(18)}
+      entering={FadeInDown.duration(200)}
       exiting={FadeOutDown.duration(180)}
       pointerEvents="box-none"
       style={[

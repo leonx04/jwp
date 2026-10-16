@@ -82,10 +82,6 @@ export function DonutChart({
 
   const enter = useAnimatedStyle(() => ({
     opacity: progress.value,
-    transform: [
-      { rotate: `${(progress.value - 1) * 50}deg` },
-      { scale: 0.9 + progress.value * 0.1 },
-    ],
   }));
 
   const onPress = (event: GestureResponderEvent) => {
@@ -143,10 +139,7 @@ export function DonutChart({
       {center ? (
         <View
           pointerEvents="none"
-          style={[
-            styles.center,
-            { left: size / 2 - inner + 8, right: size / 2 - inner + 8 },
-          ]}
+          style={[styles.center, { left: size / 2 - inner + 8, right: size / 2 - inner + 8 }]}
         >
           {center}
         </View>

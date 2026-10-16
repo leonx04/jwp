@@ -8,7 +8,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withDelay,
-  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -27,12 +26,6 @@ export function AppIntro({ onShown }: { onShown?: () => void }) {
   useEffect(() => {
     // Đã vẽ khung đầu tiên → có thể ẩn màn chờ native mà không nháy
     onShown?.();
-    scale.set(
-      withSequence(
-        withTiming(1.06, { duration: 260, easing: Easing.out(Easing.cubic) }),
-        withTiming(0.9, { duration: 220, easing: Easing.in(Easing.cubic) }),
-      ),
-    );
     opacity.set(
       withDelay(
         300,

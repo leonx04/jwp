@@ -55,6 +55,19 @@ export function AppearanceScreen() {
         />
       </Card>
 
+      <SectionTitle>Thu chi</SectionTitle>
+      <Card>
+        <SwitchRow
+          icon="swap-horizontal-outline"
+          title="Tính chuyển khoản là thu / chi"
+          subtitle="Tắt (khuyên dùng): chuyển giữa các ví của bạn không làm tăng thu hay chi"
+          value={settings.transfersAsIncomeExpense}
+          onValueChange={(transfersAsIncomeExpense) =>
+            settings.update({ transfersAsIncomeExpense })
+          }
+        />
+      </Card>
+
       <SectionTitle>Màu chủ đạo</SectionTitle>
       <Card>
         <View style={styles.swatches}>

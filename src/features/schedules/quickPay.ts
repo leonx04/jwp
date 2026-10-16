@@ -26,9 +26,15 @@ export type QuickPayResult =
   | { kind: 'needs-form' };
 
 /** Ghi giao dịch cho một kỳ của lịch. Không hiện thông báo — chỗ gọi lo phần giao diện. */
-export function quickPay(db: AppDatabase, o: Occurrence, today = todayVn()): QuickPayResult {
+export function quickPay(
+  db: AppDatabase,
+  o: Occurrence,
+  today = todayVn(),
+  now = Date.now(),
+): QuickPayResult {
   if (o.schedule.isEstimate) return { kind: 'needs-form' };
-  const when = vnDateToMs(today, '12:00');
+  // Ghi đúng thời điểm bấm: giao dịch mới nằm trên cùng trong "Gần đây" thay vì lọt xuống dưới
+  const when = now;
   const bill = isCreditBill(o.scheduleId);
   const link = bill ? {} : { scheduleId: o.scheduleId, scheduleDueDate: o.dueDate };
 

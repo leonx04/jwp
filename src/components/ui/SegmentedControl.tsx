@@ -1,7 +1,12 @@
 import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
 import { Pressable, View, type LayoutChangeEvent } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { createStyles } from '@/theme';
 
@@ -31,7 +36,10 @@ export function SegmentedControl<T extends string>({
 
   const x = useSharedValue(0);
   useEffect(() => {
-    x.value = withSpring(selectedIndex * segmentWidth, { damping: 20, stiffness: 220 });
+    x.value = withTiming(selectedIndex * segmentWidth, {
+      duration: 200,
+      easing: Easing.out(Easing.cubic),
+    });
   }, [selectedIndex, segmentWidth, x]);
   const indicatorStyle = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
 
