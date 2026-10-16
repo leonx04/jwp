@@ -1,7 +1,7 @@
 // Các khoản dự kiến trong một khoảng ngày: kỳ của lịch thu chi + kỳ bill ví trả sau.
 // Dùng chung cho dự trù dòng tiền (hooks.ts) và lịch tháng (calendar.ts).
 import { getAccountBalances, type AccountBalance } from '@/features/accounts/queries';
-import { creditBillOccurrences } from '@/features/credit/bills';
+import { creditBillOccurrences, dropCoveredBills } from '@/features/credit/bills';
 import { getCreditSummaries, type CreditSummary } from '@/features/credit/queries';
 import type { AppDatabase } from '@/db/types';
 import type { DateString } from '@/lib/date';
@@ -44,13 +44,15 @@ export function loadPlanned(
   const overrides = listOverrides(db);
   const balances = getAccountBalances(db);
   const credit = getCreditSummaries(db, today);
-  const occurrences = [
-    ...expandOccurrences(schedules, overrides, { from, to, today, includeResolved }),
-    ...creditBillOccurrences(credit, {
+  const real = expandOccurrences(schedules, overrides, { from, to, today, includeResolved });
+  const bills = dropCoveredBills(
+    real,
+    creditBillOccurrences(credit, {
       today,
       to,
       fallbackPayer: fallbackBillPayer(balances, credit),
     }),
-  ].sort(byOccurrenceDate);
+  );
+  const occurrences = [...real, ...bills].sort(byOccurrenceDate);
   return { schedules, balances, credit, occurrences };
 }

@@ -1,6 +1,5 @@
 import { router } from 'expo-router';
 import { db } from '@/db';
-import { tryPayCreditCharge } from '@/features/credit/payCharge';
 import { useMoneyFormat } from '@/features/settings';
 import { Pressable, View } from 'react-native';
 
@@ -12,6 +11,7 @@ import { toAppIcon, type AppIcon } from '@/lib/icons';
 import { useTheme } from '@/theme';
 
 import type { Occurrence } from '../occurrences';
+import { quickPayWithToast } from '../quickPay';
 
 export type OccurrenceLookup = {
   accountName: (id: string) => string;
@@ -88,8 +88,8 @@ export function OccurrenceRow({
         accessibilityLabel="Đã thanh toán"
         color={colors.income}
         onPress={() => {
-          // Khoản chi từ ví trả sau: bấm ✓ = trả nợ
-          if (tryPayCreditCharge(db, o, format.money)) return;
+          // Bấm ✓ = ghi luôn theo đúng thông tin của lịch (có Hoàn tác); chỉ khoản ước tính mới mở form
+          if (quickPayWithToast(db, o, occurrenceTitle(o, lookup), format.money)) return;
           router.push({
             pathname: '/transaction/new',
             params: {

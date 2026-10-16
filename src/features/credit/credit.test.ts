@@ -7,7 +7,7 @@ import { deleteTransactions, saveTransaction } from '@/features/transactions/rep
 import { addDays, vnDateToMs } from '@/lib/date';
 import { createTestDb } from '@/test/testDb';
 
-import { creditBillOccurrences, isCreditBill } from './bills';
+import { creditBillOccurrences, dropCoveredBills, isCreditBill } from './bills';
 import { getCreditSummaries } from './queries';
 import { saveInstallmentPlan } from './repository';
 import { firstInstallmentDue, installmentAmounts } from './statement';
@@ -198,5 +198,29 @@ describe('ví trả sau trong DB', () => {
     expect(forecast.points.find((p) => p.date === '2026-10-10')?.balance).toBe(1_504_000);
     expect(forecast.walletWarnings).toHaveLength(0);
     expect(bills[0].schedule.accountId).toBe(bank);
+  });
+});
+
+describe('dropCoveredBills', () => {
+  const occ = (over: Record<string, unknown>, scheduleOver: Record<string, unknown> = {}) =>
+    ({
+      scheduleId: 's',
+      dueDate: '2026-11-01',
+      date: '2026-11-01',
+      amount: 1,
+      type: 'transfer',
+      status: 'upcoming',
+      transactionId: null,
+      schedule: { toAccountId: 'seasy', ...scheduleOver },
+      ...over,
+    }) as never;
+
+  it('có lịch thật chuyển vào cùng ví trả sau, gần ngày → bỏ bill ảo; khác ví / xa ngày / đã trả thì giữ', () => {
+    const bill = occ({ scheduleId: 'credit:seasy' });
+    expect(dropCoveredBills([occ({})], [bill])).toHaveLength(0);
+    expect(dropCoveredBills([occ({ date: '2026-11-04' })], [bill])).toHaveLength(0);
+    expect(dropCoveredBills([occ({ date: '2026-11-20' })], [bill])).toHaveLength(1);
+    expect(dropCoveredBills([occ({}, { toAccountId: 'other' })], [bill])).toHaveLength(1);
+    expect(dropCoveredBills([occ({ status: 'paid' })], [bill])).toHaveLength(1);
   });
 });

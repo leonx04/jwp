@@ -237,10 +237,10 @@ function DaySheet({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable
-          accessibilityLabel="Đóng"
-          onPress={onClose}
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }}
-        />
+        accessibilityLabel="Đóng"
+        onPress={onClose}
+        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }}
+      />
       <View
         style={{
           position: 'absolute',
