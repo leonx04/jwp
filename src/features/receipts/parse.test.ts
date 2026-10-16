@@ -26,7 +26,9 @@ describe('parseReceipt', () => {
   });
 
   it('nhận ra khoản thu khi nhận tiền', () => {
-    const text = ['Bạn đã nhận được tiền', '+250.000đ', 'Từ TRAN THI B', '12/10/2026 09:00'].join('\n');
+    const text = ['Bạn đã nhận được tiền', '+250.000đ', 'Từ TRAN THI B', '12/10/2026 09:00'].join(
+      '\n',
+    );
     const r = parseReceipt(text, null, { now: NOW });
     expect(r.amount).toBe(250_000);
     expect(r.type).toBe('income');
