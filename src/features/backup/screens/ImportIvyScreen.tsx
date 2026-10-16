@@ -1,6 +1,6 @@
 // Import Ivy Wallet: chọn file → xem trước → xác nhận → ghi (1 transaction) → kiểm tra lại.
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import * as Haptics from '@/lib/haptics';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';

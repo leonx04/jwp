@@ -1,6 +1,6 @@
 // Bộ chọn màu + bộ chọn biểu tượng hợp nhất (Ionicons theo nhóm + logo ngân hàng / ví điện tử).
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import * as Haptics from '@/lib/haptics';
 import {
   memo,
   useCallback,

@@ -53,6 +53,8 @@ export type SettingsState = {
   /** Tính chuyển khoản như thu/chi trong thống kê (tuỳ chọn giống Ivy) */
   transfersAsIncomeExpense: boolean;
   hideBalance: boolean;
+  /** Rung nhẹ khi chạm nút, chọn mục, báo kết quả */
+  haptics: boolean;
   suggestionsEnabled: boolean;
   notifications: NotificationPrefs;
   /** Đã hoàn tất màn bắt đầu (tạo dữ liệu mặc định hoặc import) */
@@ -96,6 +98,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   startDayOfMonth: 1,
   transfersAsIncomeExpense: false,
   hideBalance: false,
+  haptics: true,
   suggestionsEnabled: true,
   notifications: DEFAULT_NOTIFICATION_PREFS,
   onboarded: false,

@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import * as Haptics from '@/lib/haptics';
 import { Pressable, useColorScheme, View } from 'react-native';
 
 import {
@@ -65,6 +65,21 @@ export function AppearanceScreen() {
           onValueChange={(transfersAsIncomeExpense) =>
             settings.update({ transfersAsIncomeExpense })
           }
+        />
+      </Card>
+
+      <SectionTitle>Phản hồi</SectionTitle>
+      <Card>
+        <SwitchRow
+          icon="phone-portrait-outline"
+          title="Rung khi chạm"
+          subtitle="Rung nhẹ khi bấm nút, chọn mục và báo kết quả"
+          value={settings.haptics}
+          onValueChange={(haptics) => {
+            settings.update({ haptics });
+            // Bật lại thì rung thử một nhịp để người dùng biết đã có tác dụng
+            if (haptics) Haptics.selectionAsync().catch(() => {});
+          }}
         />
       </Card>
 

@@ -1,5 +1,5 @@
 // Thêm / sửa giao dịch: chi, thu, chuyển tiền giữa ví (có phí), tag, gợi ý theo lịch sử & số tiền.
-import * as Haptics from 'expo-haptics';
+import * as Haptics from '@/lib/haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { budgetAlert, budgetSnapshot } from '@/features/budgets/alerts';

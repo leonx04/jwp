@@ -1,7 +1,7 @@
 // Dock nổi "Bento Float": viên thuốc màu mực đậm (đảo màu so với nền — sáng ↔ tối) tách khỏi mép màn hình.
 // Mục đang chọn mở rộng thành viên màu chủ đạo kèm nhãn; mục khác chỉ còn icon. Nút ＋ tròn gradient bên phải.
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import * as Haptics from '@/lib/haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, usePathname, type Href } from 'expo-router';
 import type { RefObject } from 'react';
