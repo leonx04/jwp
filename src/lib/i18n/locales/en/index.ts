@@ -18,6 +18,7 @@ import { flow } from './flow';
 import { profile } from './profile';
 import { quickadd } from './quickadd';
 import { salary } from './salary';
+import { widget } from './widget';
 import { wrapped } from './wrapped';
 import { common } from './common';
 import { components } from './components';
@@ -57,4 +58,5 @@ export const en: Record<string, string> = {
   ...flow,
   ...ask,
   ...wrapped,
+  ...widget,
 };
