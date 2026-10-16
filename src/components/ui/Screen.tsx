@@ -38,7 +38,7 @@ import { useTheme } from '@/theme';
 
 import { AppText } from './AppText';
 
-/** Chiều cao thanh tab (chưa tính vùng an toàn) — màn tab cần chừa chỗ này ở cuối nội dung */
+/** Chiều cao dock nổi + khoảng hở — màn tab cần chừa chỗ này ở cuối nội dung */
 export const TAB_BAR_HEIGHT = 64;
 const HEADER_BAR = 56;
 const FOOTER_RADIUS = 28;
@@ -119,7 +119,7 @@ export function Screen({
       ? headerHeight + spacing.md
       : insets.top + spacing.sm;
   const bottom = tabBar
-    ? insets.bottom + TAB_BAR_HEIGHT + spacing.lg
+    ? insets.bottom + TAB_BAR_HEIGHT + spacing.xl + spacing.md
     : footer
       ? footerHeight + spacing.lg
       : insets.bottom + spacing.xl;

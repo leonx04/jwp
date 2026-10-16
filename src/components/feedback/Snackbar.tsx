@@ -46,7 +46,7 @@ export function Snackbar() {
       pointerEvents="box-none"
       style={[
         styles.wrap,
-        { bottom: insets.bottom + TAB_BAR_HEIGHT + spacing.md, paddingHorizontal: spacing.lg },
+        { bottom: insets.bottom + TAB_BAR_HEIGHT + spacing.xl, paddingHorizontal: spacing.lg },
       ]}
     >
       <View

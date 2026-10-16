@@ -151,18 +151,6 @@ export function OverviewScreen() {
         >
           {mask(format.money(total))}
         </AppText>
-        <View style={styles.heroStats}>
-          <HeroStat
-            icon="arrow-down"
-            label="Thu tháng này"
-            value={mask(format.compact(summary?.income ?? 0))}
-          />
-          <HeroStat
-            icon="arrow-up"
-            label="Chi tháng này"
-            value={mask(format.compact(summary?.expense ?? 0))}
-          />
-        </View>
         <Pressable
           accessibilityRole="button"
           onPress={() => router.push('/stats')}
@@ -174,6 +162,22 @@ export function OverviewScreen() {
           </AppText>
         </Pressable>
       </GlassSurface>
+
+      {/* Ô bento: thu / chi tháng này */}
+      <View style={styles.tiles}>
+        <StatTile
+          icon="arrow-down"
+          tone={colors.income}
+          label="Thu tháng này"
+          value={mask(format.compact(summary?.income ?? 0))}
+        />
+        <StatTile
+          icon="arrow-up"
+          tone={colors.expense}
+          label="Chi tháng này"
+          value={mask(format.compact(summary?.expense ?? 0))}
+        />
+      </View>
 
       {!hasAccounts && balances ? (
         <Card>
@@ -317,33 +321,36 @@ export function OverviewScreen() {
   );
 }
 
-function HeroStat({
+function StatTile({
   icon,
+  tone,
   label,
   value,
 }: {
   icon: IconName;
+  tone: string;
   label: string;
   value: string;
 }) {
   const styles = useStyles();
   const { colors } = useTheme();
   return (
-    <View style={styles.heroStat}>
-      <View style={[styles.statIcon, { backgroundColor: rgba(colors.onGradient, 0.2) }]}>
-        <Ionicons name={icon} size={14} color={colors.onGradient} />
+    <View style={[styles.tile, { backgroundColor: rgba(tone, colors.dark ? 0.16 : 0.1) }]}>
+      <View style={[styles.statIcon, { backgroundColor: rgba(tone, colors.dark ? 0.3 : 0.18) }]}>
+        <Ionicons name={icon} size={16} color={tone} />
       </View>
-      <View>
-        <AppText variant="label" style={{ color: rgba(colors.onGradient, 0.75) }}>
-          {label}
-        </AppText>
-        <AppText
-          variant="bodyMedium"
-          style={{ fontVariant: ['tabular-nums'], color: colors.onGradient }}
-        >
-          {value}
-        </AppText>
-      </View>
+      <AppText variant="label" color="textMuted">
+        {label}
+      </AppText>
+      <AppText
+        variant="title"
+        style={{ color: tone, fontVariant: ['tabular-nums'] }}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.6}
+      >
+        {value}
+      </AppText>
     </View>
   );
 }
@@ -353,21 +360,21 @@ const useStyles = createStyles((t) => ({
     padding: t.spacing.xl,
     gap: t.spacing.xs,
   },
-  heroStats: {
+  tiles: {
     flexDirection: 'row',
-    gap: t.spacing.lg,
-    marginTop: t.spacing.md,
+    gap: t.spacing.md,
   },
-  heroStat: {
+  tile: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: t.spacing.sm,
+    padding: t.spacing.lg,
+    borderRadius: t.radius.xl,
+    gap: t.spacing.xs,
   },
   statIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 12,
+    marginBottom: t.spacing.xs,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -379,7 +386,7 @@ const useStyles = createStyles((t) => ({
   action: {
     alignItems: 'center',
     gap: 8,
-    width: '25%',
+    flex: 1,
   },
   actionDot: {
     width: 52,

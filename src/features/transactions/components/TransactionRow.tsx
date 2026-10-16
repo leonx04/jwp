@@ -47,7 +47,6 @@ export const TransactionRow = memo(function TransactionRow({
   const secondary = [
     item.title && item.type !== 'transfer' ? (item.categoryName ?? 'Chưa phân loại') : null,
     accountText,
-    showTime ? toVnTime(item.date) : null,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -79,12 +78,19 @@ export const TransactionRow = memo(function TransactionRow({
           </View>
         ) : null}
       </View>
-      <AmountText
-        amount={item.amount}
-        flow={item.type}
-        variant="bodyMedium"
-        style={{ fontFamily: 'BeVietnamPro_600SemiBold' }}
-      />
+      <View style={styles.right}>
+        <AmountText
+          amount={item.amount}
+          flow={item.type}
+          variant="bodyMedium"
+          style={{ fontFamily: 'BeVietnamPro_600SemiBold', fontVariant: ['tabular-nums'] }}
+        />
+        {showTime ? (
+          <AppText variant="caption" color="textMuted">
+            {toVnTime(item.date)}
+          </AppText>
+        ) : null}
+      </View>
     </Pressable>
   );
 });
@@ -98,6 +104,10 @@ const useStyles = createStyles((t) => ({
   },
   texts: {
     flex: 1,
+    gap: 2,
+  },
+  right: {
+    alignItems: 'flex-end',
     gap: 2,
   },
   tags: {
