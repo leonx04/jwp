@@ -1,6 +1,7 @@
 // Ô chọn dạng dropdown: bấm mở bảng chọn từ dưới lên (có tìm kiếm), chọn một hoặc nhiều mục.
 // Thay cho hàng chip dài chiếm chỗ (danh mục, tag, ví…). Không dùng Reanimated trong Modal (Android hay kẹt).
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as Haptics from 'expo-haptics';
 import { useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -79,6 +80,7 @@ export function SelectField(props: Single | Multi) {
   };
 
   const toggle = (id: string) => {
+    Haptics.selectionAsync().catch(() => {});
     if (props.multiple) {
       props.onChange(
         selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id],
