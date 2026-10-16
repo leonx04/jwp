@@ -9,13 +9,13 @@ import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
 import { listAccounts } from '@/features/accounts/repository';
 import { listCategories } from '@/features/categories/repository';
-import { tryPayCreditCharge } from '@/features/credit/payCharge';
 import { useMoneyFormat } from '@/features/settings';
 import { formatDate, formatRelativeDue, toVnDate, todayVn, vnDateToMs } from '@/lib/date';
 import { describeRule } from '@/lib/recurrence';
 
 import { occurrenceTitle } from '../components/OccurrenceRow';
 import { findOccurrence, scheduleRule } from '../occurrences';
+import { quickPayWithToast } from '../quickPay';
 import {
   clearOccurrence,
   getSchedule,
@@ -78,8 +78,11 @@ export function OccurrenceScreen() {
   const resolved = o.status === 'paid' || o.status === 'skipped';
 
   const pay = () => {
-    // Khoản chi từ ví trả sau: bấm thanh toán = trả nợ
-    if (tryPayCreditCharge(db, o, format.money, () => router.back())) return;
+    // Ghi luôn theo thông tin của lịch (có Hoàn tác); khoản ước tính mới cần mở form nhập số thật
+    if (quickPayWithToast(db, o, title, format.money)) {
+      if (router.canGoBack()) router.back();
+      return;
+    }
     router.replace({
       pathname: '/transaction/new',
       params: {

@@ -50,10 +50,25 @@ describe('tổng thu chi theo ngày (giờ VN)', () => {
   it('gom theo ngày VN, bỏ điều chỉnh số dư; chuyển khoản chỉ tính khi bật cài đặt', () => {
     const { db, mb, tcb } = setup();
     // 23:30 ngày 10/10 giờ VN (= 16:30 UTC) vẫn thuộc ngày 10/10
-    saveTransaction(db, { type: 'expense', amount: 120_000, accountId: mb, date: vnDateToMs('2026-10-10', '23:30') });
+    saveTransaction(db, {
+      type: 'expense',
+      amount: 120_000,
+      accountId: mb,
+      date: vnDateToMs('2026-10-10', '23:30'),
+    });
     // 00:30 ngày 11/10 giờ VN (= 17:30 UTC ngày 10/10) thuộc ngày 11/10
-    saveTransaction(db, { type: 'expense', amount: 50_000, accountId: mb, date: vnDateToMs('2026-10-11', '00:30') });
-    saveTransaction(db, { type: 'income', amount: 15_000_000, accountId: mb, date: vnDateToMs('2026-10-11', '09:00') });
+    saveTransaction(db, {
+      type: 'expense',
+      amount: 50_000,
+      accountId: mb,
+      date: vnDateToMs('2026-10-11', '00:30'),
+    });
+    saveTransaction(db, {
+      type: 'income',
+      amount: 15_000_000,
+      accountId: mb,
+      date: vnDateToMs('2026-10-11', '09:00'),
+    });
     saveTransaction(db, {
       type: 'transfer',
       amount: 1_000_000,
@@ -69,7 +84,12 @@ describe('tổng thu chi theo ngày (giờ VN)', () => {
       date: vnDateToMs('2026-10-11', '11:00'),
     });
     // Ngoài khoảng
-    saveTransaction(db, { type: 'expense', amount: 1, accountId: mb, date: vnDateToMs('2026-11-09', '08:00') });
+    saveTransaction(db, {
+      type: 'expense',
+      amount: 1,
+      accountId: mb,
+      date: vnDateToMs('2026-11-09', '08:00'),
+    });
 
     const totals = getDailyTotals(db, { from: '2026-09-28', to: '2026-11-08' });
     expect(totals.get('2026-10-10')).toEqual({ income: 0, expense: 120_000, count: 1 });

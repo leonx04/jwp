@@ -22,7 +22,11 @@ export function useScheduleOverview(days: number) {
   return useLiveData(TABLES, () => {
     const today = todayVn();
     const to = addDays(today, days);
-    const { schedules, balances, credit, occurrences } = loadPlanned(db, { from: today, to, today });
+    const { schedules, balances, credit, occurrences } = loadPlanned(db, {
+      from: today,
+      to,
+      today,
+    });
 
     const forecast = computeForecast({
       today,

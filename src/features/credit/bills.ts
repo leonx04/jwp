@@ -1,7 +1,7 @@
 // Bill ví trả sau → các "kỳ thanh toán" ảo để hiện trong Lịch và tính vào dự báo dòng tiền
 // (trả bill = chuyển tiền từ ví thanh toán sang ví trả sau). Hàm thuần, test được.
 import type { Occurrence, ScheduleLike } from '@/features/schedules/occurrences';
-import type { DateString } from '@/lib/date';
+import { diffDays, type DateString } from '@/lib/date';
 
 import type { CreditStatus } from './statement';
 
@@ -47,6 +47,30 @@ function billSchedule(
     remindDaysBefore: 3,
     remindTime: '09:00',
   };
+}
+
+/** Lịch thật chuyển tiền vào ví trả sau gần hạn bill → coi là cùng một khoản */
+const SAME_BILL_DAYS = 5;
+
+/**
+ * Bỏ kỳ bill ảo nếu đã có lịch thật chuyển vào đúng ví trả sau đó (gần cùng ngày), để Lịch không hiện
+ * hai dòng cho một khoản phải trả.
+ */
+export function dropCoveredBills(
+  real: readonly Occurrence[],
+  bills: readonly Occurrence[],
+): Occurrence[] {
+  return bills.filter(
+    (bill) =>
+      !real.some(
+        (o) =>
+          o.type === 'transfer' &&
+          o.status !== 'paid' &&
+          o.status !== 'skipped' &&
+          o.schedule.toAccountId === bill.schedule.toAccountId &&
+          Math.abs(diffDays(o.date, bill.date)) <= SAME_BILL_DAYS,
+      ),
+  );
 }
 
 /**

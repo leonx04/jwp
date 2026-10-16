@@ -216,7 +216,10 @@ export type CalendarMonthData = {
 export function loadCalendarMonth(
   db: AppDatabase,
   month: DateString,
-  { today, transfersAsIncomeExpense = false }: { today: DateString; transfersAsIncomeExpense?: boolean },
+  {
+    today,
+    transfersAsIncomeExpense = false,
+  }: { today: DateString; transfersAsIncomeExpense?: boolean },
 ): CalendarMonthData {
   const grid = monthGrid(month);
   const totals = getDailyTotals(db, { from: grid.start, to: grid.end, transfersAsIncomeExpense });
