@@ -117,7 +117,7 @@ export function OverviewScreen() {
       tabBar
       largeTitle
       title={userName ? t('Chào {name}', { name: userName }) : 'Tổng quan'}
-      subtitle={`${greeting()} · ${WEEKDAY_NAMES[weekdayOf(todayVn()) - 1]}, ${formatDate(todayVn(), false)}`}
+      subtitle={`${t(greeting())} · ${t(WEEKDAY_NAMES[weekdayOf(todayVn()) - 1])}, ${formatDate(todayVn(), false)}`}
       headerRight={
         <IconButton
           icon={hideBalance ? 'eye-off-outline' : 'eye-outline'}
