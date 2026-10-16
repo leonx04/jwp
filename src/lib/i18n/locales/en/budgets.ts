@@ -7,6 +7,11 @@ export const budgets: Record<string, string> = {
   'Hạn mức phải lớn hơn 0.': 'The limit must be greater than 0.',
   'Hạn mức quá lớn.': 'The limit is too large.',
   'Vượt ngân sách': 'Over budget',
+  'Phân bổ thu nhập': 'Income allocation',
+  'Đã giao {total} / {income} thu nhập trung bình': 'Assigned {total} of {income} average income',
+  'Hạn mức đang vượt thu nhập {amount}': 'Limits exceed your income by {amount}',
+  'Còn {amount} chưa giao cho ngân sách nào (để tiết kiệm hoặc chi khác)':
+    '{amount} not assigned to any budget (for savings or other spending)',
   'Chu kỳ bắt đầu': 'Cycle starts',
   'Chu kỳ bắt đầu ngày': 'Cycle start day',
   'Theo cài đặt chung': 'Follow the general setting',

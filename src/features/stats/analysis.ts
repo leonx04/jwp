@@ -122,7 +122,12 @@ export function weekdayPattern(
   from: DateString,
   to: DateString,
 ): WeekdayStat[] {
-  const stats = Array.from({ length: 7 }, (_, i) => ({ weekday: i + 1, total: 0, days: 0, average: 0 }));
+  const stats = Array.from({ length: 7 }, (_, i) => ({
+    weekday: i + 1,
+    total: 0,
+    days: 0,
+    average: 0,
+  }));
   if (to < from) return stats;
   const span = diffDays(from, to) + 1;
   // Đếm số lần mỗi thứ xuất hiện mà không cần lặp từng ngày
@@ -198,7 +203,10 @@ export function cumulativeByDay(
 }
 
 /** Cộng dồn một dãy số; phần tử từ `stopAfter + 1` trở đi là null */
-export function cumulative(values: readonly number[], stopAfter = values.length - 1): (number | null)[] {
+export function cumulative(
+  values: readonly number[],
+  stopAfter = values.length - 1,
+): (number | null)[] {
   let running = 0;
   return values.map((v, i) => {
     if (i > stopAfter) return null;
@@ -285,7 +293,13 @@ export function foldSlices<T extends { key: string; amount: number; color: strin
   other: { name: string; color: string },
 ): { key: string; value: number; color: string; label: string; keys: string[] }[] {
   const sorted = [...items].filter((i) => i.amount > 0).sort((a, b) => b.amount - a.amount);
-  const toSlice = (i: T) => ({ key: i.key, value: i.amount, color: i.color, label: i.name, keys: [i.key] });
+  const toSlice = (i: T) => ({
+    key: i.key,
+    value: i.amount,
+    color: i.color,
+    label: i.name,
+    keys: [i.key],
+  });
   if (sorted.length <= max) return sorted.map(toSlice);
   const head = sorted.slice(0, max - 1).map(toSlice);
   const tail = sorted.slice(max - 1);

@@ -84,9 +84,10 @@ describe('theo ngày', () => {
 
   it('ngày chi nhiều nhất', () => {
     expect(topSpendingDay(days, 'expense')).toEqual({ date: '2026-10-03', amount: 500_000 });
-    expect(
-      topSpendingDay(days, 'expense', { start: '2026-10-04', end: '2026-10-31' }),
-    ).toEqual({ date: '2026-10-10', amount: 300_000 });
+    expect(topSpendingDay(days, 'expense', { start: '2026-10-04', end: '2026-10-31' })).toEqual({
+      date: '2026-10-10',
+      amount: 300_000,
+    });
     expect(topSpendingDay([], 'expense')).toBeNull();
   });
 
@@ -124,9 +125,20 @@ describe('dự báo & cộng dồn', () => {
 
   it('cộng dồn theo ngày, dừng ở hôm nay', () => {
     const period = { start: '2026-10-01', end: '2026-10-05' };
-    const days = [day('2026-09-30', 999), day('2026-10-01', 100), day('2026-10-03', 50), day('2026-10-05', 10)];
+    const days = [
+      day('2026-09-30', 999),
+      day('2026-10-01', 100),
+      day('2026-10-03', 50),
+      day('2026-10-05', 10),
+    ];
     expect(cumulativeByDay(days, 'expense', period)).toEqual([100, 100, 150, 150, 160]);
-    expect(cumulativeByDay(days, 'expense', period, '2026-10-03')).toEqual([100, 100, 150, null, null]);
+    expect(cumulativeByDay(days, 'expense', period, '2026-10-03')).toEqual([
+      100,
+      100,
+      150,
+      null,
+      null,
+    ]);
     expect(cumulative([1, 2, 3, 4], 1)).toEqual([1, 3, null, null]);
   });
 
@@ -136,7 +148,12 @@ describe('dự báo & cộng dồn', () => {
       { start: '2026-09-10', end: '2026-10-09' },
     ];
     const result = bucketByPeriods(
-      [day('2026-08-09', 1), day('2026-08-10', 10, 5), day('2026-09-09', 20), day('2026-09-10', 40)],
+      [
+        day('2026-08-09', 1),
+        day('2026-08-10', 10, 5),
+        day('2026-09-09', 20),
+        day('2026-09-10', 40),
+      ],
       periods,
     );
     expect(result.map((r) => [r.expense, r.income, r.count])).toEqual([
@@ -149,7 +166,12 @@ describe('dự báo & cộng dồn', () => {
 describe('bất thường & gộp phần nhỏ', () => {
   it('tìm danh mục tăng đột biến so với trung bình 3 tháng', () => {
     const spikes = findSpikes(
-      [cat('fun', 900_000, 'Giải trí'), cat('food', 3_000_000), cat('tiny', 30_000), cat('new', 500_000)],
+      [
+        cat('fun', 900_000, 'Giải trí'),
+        cat('food', 3_000_000),
+        cat('tiny', 30_000),
+        cat('new', 500_000),
+      ],
       // Tổng 3 tháng trước: fun 1,2Tr (tb 400k) · food 8,4Tr (tb 2,8Tr) · tiny 30k (tb 10k)
       [cat('fun', 1_200_000), cat('food', 8_400_000), cat('tiny', 30_000)],
       3,
@@ -175,12 +197,18 @@ describe('bất thường & gộp phần nhỏ', () => {
 
 describe('kỳ thống kê', () => {
   it('tháng & năm, kể cả tháng bắt đầu từ ngày 10', () => {
-    expect(statsPeriod('month', 0, '2026-10-11')).toEqual({ start: '2026-10-01', end: '2026-10-31' });
+    expect(statsPeriod('month', 0, '2026-10-11')).toEqual({
+      start: '2026-10-01',
+      end: '2026-10-31',
+    });
     expect(statsPeriod('month', -1, '2026-10-11', 10)).toEqual({
       start: '2026-09-10',
       end: '2026-10-09',
     });
-    expect(statsPeriod('year', 0, '2026-10-11')).toEqual({ start: '2026-01-01', end: '2026-12-31' });
+    expect(statsPeriod('year', 0, '2026-10-11')).toEqual({
+      start: '2026-01-01',
+      end: '2026-12-31',
+    });
     expect(yearPeriod(2026, 10)).toEqual({ start: '2026-01-10', end: '2027-01-09' });
     // 05/01/2027 thuộc kỳ 10/12/2026 – 09/01/2027 → năm 2026
     expect(statsYearOf('2027-01-05', 10)).toBe(2026);
@@ -241,7 +269,9 @@ describe('nhận xét tự động', () => {
 
   it('ghép câu tiếng Việt đúng ngữ cảnh', () => {
     const texts = buildInsights(base).map((i) => i.text);
-    expect(texts).toContain('Theo tốc độ hiện tại, cuối tháng chi khoảng 6200k (tháng trước 5100k)');
+    expect(texts).toContain(
+      'Theo tốc độ hiện tại, cuối tháng chi khoảng 6200k (tháng trước 5100k)',
+    );
     expect(texts).toContain('Chi tiêu giảm 20% so với cùng kỳ tháng trước');
     expect(texts).toContain('Ăn uống tăng 35% so với cùng kỳ tháng trước');
     expect(texts).toContain('Mua sắm giảm 57% so với cùng kỳ tháng trước');
@@ -281,7 +311,9 @@ describe('nhận xét tự động', () => {
       limit: 4,
     });
     expect(insights).toHaveLength(4);
-    expect(insights[3].text).toBe('Giải trí cao bất thường: gấp 2,3 lần mức trung bình 3 tháng trước');
+    expect(insights[3].text).toBe(
+      'Giải trí cao bất thường: gấp 2,3 lần mức trung bình 3 tháng trước',
+    );
     expect(buildInsights({ ...base, total: 0, previousTotal: 0, projection: null })).toEqual([]);
   });
 

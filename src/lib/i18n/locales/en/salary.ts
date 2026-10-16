@@ -35,4 +35,6 @@ export const salary: Record<string, string> = {
   'Đạt sau {months} tháng': 'Reached in {months} months',
   'Đây là ước tính: chi tiêu giữ ở mức trung bình hiện tại và chỉ tăng theo phần bạn chọn tiêu thêm. Các khoản hoá đơn lớn bất thường chưa được tính.':
     'This is an estimate: spending stays at today’s average and only grows by the share of the raise you choose to spend. Unusual large bills are not included.',
+  'Quỹ dự phòng: số dư hiện có đủ sống': 'Emergency fund: your balance covers',
+  '{months} tháng': '{months} months',
 };

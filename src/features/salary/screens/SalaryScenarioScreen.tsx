@@ -14,6 +14,8 @@ import {
   SelectField,
 } from '@/components/ui';
 import { db } from '@/db';
+import { useAccountBalances } from '@/features/accounts/hooks/useAccountBalances';
+import { totalBalance } from '@/features/accounts/queries';
 import { useGoals } from '@/features/goals/hooks';
 import { useMoneyFormat, useSettings } from '@/features/settings';
 import { addMonths, makeDate, parseDate, todayVn } from '@/lib/date';
@@ -21,6 +23,7 @@ import { t } from '@/lib/i18n';
 import { createStyles, rgba, useTheme } from '@/theme';
 
 import { projectSalary } from '../projection';
+import { runwayMonths } from '../runway';
 import { getTypicalMonth } from '../queries';
 
 const RAISE_STEPS = [5, 10, 20, 30] as const;
@@ -59,6 +62,7 @@ export function SalaryScenarioScreen() {
   const today = todayVn();
   const typical = useMemo(() => getTypicalMonth(db, today, startDay), [today, startDay]);
   const { data: goals = [] } = useGoals();
+  const { data: balances = [] } = useAccountBalances();
 
   const [income, setIncome] = useState(typical?.income ?? 0);
   const [expense, setExpense] = useState(typical?.expense ?? 0);
@@ -87,6 +91,7 @@ export function SalaryScenarioScreen() {
     [today, income, newIncome, from, expense, spend, yearly, goals],
   );
 
+  const runway = runwayMonths(totalBalance(balances), expense);
   const extra = projection.extraSurplusPerMonth;
   const valid = income > 0 && newIncome > 0;
 
@@ -194,6 +199,20 @@ export function SalaryScenarioScreen() {
               tone={colors.income}
             />
           </View>
+
+          {runway ? (
+            <Tile
+              label="Quỹ dự phòng: số dư hiện có đủ sống"
+              value={t('{months} tháng', { months: runway.months })}
+              tone={
+                runway.level === 'low'
+                  ? colors.expense
+                  : runway.level === 'ok'
+                    ? colors.warning
+                    : colors.income
+              }
+            />
+          ) : null}
 
           {projection.goals.length ? (
             <>
