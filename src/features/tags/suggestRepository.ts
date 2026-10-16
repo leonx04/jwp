@@ -1,4 +1,4 @@
-import { and, eq, ne } from 'drizzle-orm';
+import { and, eq, isNull, ne } from 'drizzle-orm';
 
 import { tags, transactions } from '@/db/schema';
 import type { AppDatabase } from '@/db/types';
@@ -6,12 +6,19 @@ import type { AppDatabase } from '@/db/types';
 import { attachTag, ensureTag } from './repository';
 import { proposeTags, type TagProposal } from './suggest';
 
-/** Gợi ý tag từ tiêu đề mọi giao dịch (bỏ điều chỉnh số dư, giao dịch sổ nợ) */
+/** Gợi ý tag từ tiêu đề giao dịch (bỏ điều chỉnh số dư và giao dịch của Sổ nợ) */
 export function listTagProposals(db: AppDatabase): TagProposal[] {
   const rows = db
     .select({ id: transactions.id, title: transactions.title, date: transactions.date })
     .from(transactions)
-    .where(and(eq(transactions.isAdjustment, false), ne(transactions.title, '')))
+    .where(
+      and(
+        eq(transactions.isAdjustment, false),
+        // Giao dịch vay / trả nợ đã có Sổ nợ lo, tiêu đề toàn tên người → không gợi ý tag
+        isNull(transactions.debtId),
+        ne(transactions.title, ''),
+      ),
+    )
     .all();
   const existing = new Set(
     db
