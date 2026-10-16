@@ -126,20 +126,25 @@ export function OverviewScreen() {
       }
     >
       {/* Thẻ số dư */}
-      <GlassSurface contentStyle={styles.hero}>
+      <GlassSurface
+        contentStyle={styles.hero}
+        background={colors.gradient[1]}
+        shadow={false}
+        style={{ boxShadow: `0 10px 28px ${rgba(colors.gradient[0], colors.dark ? 0.4 : 0.32)}` }}
+      >
         <LinearGradient
-          colors={[rgba(colors.primary, colors.dark ? 0.32 : 0.22), 'transparent']}
+          colors={colors.gradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFill}
           pointerEvents="none"
         />
-        <AppText variant="label" color="textMuted">
+        <AppText variant="label" style={{ color: rgba(colors.onGradient, 0.75) }}>
           TỔNG SỐ DƯ
         </AppText>
         <AppText
           variant="hero"
-          style={{ fontVariant: ['tabular-nums'] }}
+          style={{ fontVariant: ['tabular-nums'], color: colors.onGradient }}
           numberOfLines={1}
           adjustsFontSizeToFit
           minimumFontScale={0.6}
@@ -149,13 +154,11 @@ export function OverviewScreen() {
         <View style={styles.heroStats}>
           <HeroStat
             icon="arrow-down"
-            tone={colors.income}
             label="Thu tháng này"
             value={mask(format.compact(summary?.income ?? 0))}
           />
           <HeroStat
             icon="arrow-up"
-            tone={colors.expense}
             label="Chi tháng này"
             value={mask(format.compact(summary?.expense ?? 0))}
           />
@@ -166,7 +169,7 @@ export function OverviewScreen() {
           hitSlop={8}
           style={{ alignSelf: 'flex-end', marginTop: 4 }}
         >
-          <AppText variant="label" color="primary">
+          <AppText variant="label" style={{ color: colors.onGradient }}>
             Xem thống kê ›
           </AppText>
         </Pressable>
@@ -323,12 +326,10 @@ export function OverviewScreen() {
 
 function HeroStat({
   icon,
-  tone,
   label,
   value,
 }: {
   icon: IconName;
-  tone: string;
   label: string;
   value: string;
 }) {
@@ -336,14 +337,17 @@ function HeroStat({
   const { colors } = useTheme();
   return (
     <View style={styles.heroStat}>
-      <View style={[styles.statIcon, { backgroundColor: rgba(tone, colors.dark ? 0.22 : 0.14) }]}>
-        <Ionicons name={icon} size={14} color={tone} />
+      <View style={[styles.statIcon, { backgroundColor: rgba(colors.onGradient, 0.2) }]}>
+        <Ionicons name={icon} size={14} color={colors.onGradient} />
       </View>
       <View>
-        <AppText variant="label" color="textMuted">
+        <AppText variant="label" style={{ color: rgba(colors.onGradient, 0.75) }}>
           {label}
         </AppText>
-        <AppText variant="bodyMedium" style={{ fontVariant: ['tabular-nums'] }}>
+        <AppText
+          variant="bodyMedium"
+          style={{ fontVariant: ['tabular-nums'], color: colors.onGradient }}
+        >
           {value}
         </AppText>
       </View>
