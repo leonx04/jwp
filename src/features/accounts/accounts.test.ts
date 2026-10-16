@@ -1,6 +1,13 @@
 import { createTestDb } from '@/test/testDb';
 
-import { applyBankLogos, bankLogoCandidates, listAccounts, saveAccount } from './repository';
+import { getAccountBalances } from './queries';
+import {
+  applyBankLogos,
+  bankLogoCandidates,
+  listAccounts,
+  reorderAccounts,
+  saveAccount,
+} from './repository';
 
 const base = { color: '#000000', icon: 'wallet-outline', includeInBalance: true };
 
@@ -68,5 +75,20 @@ describe('ví trả sau', () => {
       creditLimit: null,
       statementDay: null,
     });
+  });
+});
+
+describe('sắp xếp thứ tự ví', () => {
+  it('reorderAccounts đổi thứ tự ở danh sách ví và số dư', () => {
+    const db = createTestDb();
+    const mk = (name: string) =>
+      saveAccount(db, { name, color: '#000', icon: 'cash-outline', includeInBalance: true });
+    const a = mk('A');
+    const b = mk('B');
+    const c = mk('C');
+    expect(getAccountBalances(db).map((x) => x.name)).toEqual(['A', 'B', 'C']);
+    reorderAccounts(db, [c, a, b]);
+    expect(getAccountBalances(db).map((x) => x.name)).toEqual(['C', 'A', 'B']);
+    expect(listAccounts(db).map((x) => x.name)).toEqual(['C', 'A', 'B']);
   });
 });
