@@ -1,24 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <defs>
     <linearGradient id="mark-bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#5B5BF6"/>
+      <stop offset="0" stop-color="#2A1E9E"/>
       <stop offset="1" stop-color="#7C3AED"/>
     </linearGradient>
-    <radialGradient id="mark-hl" cx="280" cy="160" r="760" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.18"/>
+    <radialGradient id="mark-hl" cx="250" cy="140" r="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
       <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="mark-gl" cx="160" cy="940" r="640" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38BDF8" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#38BDF8" stop-opacity="0"/>
     </radialGradient></defs>
   
-  <defs>
-    <mask id="mark-j" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
-      <rect width="1024" height="1024" fill="#FFFFFF"/>
-      <path d="M464 386 H548 V518 A66 66 0 0 1 416 518" fill="none" stroke="#000000" stroke-width="66" stroke-linecap="round" stroke-linejoin="round"/>
-    </mask>
-    <mask id="mark-under" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
-      <rect width="1024" height="1024" fill="#FFFFFF"/>
-      <circle cx="482" cy="482" r="226" fill="#000000"/>
-    </mask>
-  </defs>
-  <circle cx="554" cy="548" r="228" fill="url(#mark-bg)" fill-opacity="0.35" mask="url(#mark-under)"/>
-  <circle cx="482" cy="482" r="228" fill="url(#mark-bg)" mask="url(#mark-j)"/>
+  <path d="M724.85 370.25 V586.25 A180 180 0 0 1 544.85 766.25 H463.85" fill="none" stroke="#2A1E9E" stroke-width="108" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="360.35" cy="766.25" r="32.4" fill="#2A1E9E" fill-opacity="0.92"/>
+  <circle cx="292.85" cy="766.25" r="23.4" fill="#2A1E9E" fill-opacity="0.66"/>
+  <circle cx="238.85" cy="766.25" r="16.2" fill="#2A1E9E" fill-opacity="0.4"/>
+  <circle cx="724.85" cy="280.25" r="76.5" fill="#FFC857"/>
 </svg>

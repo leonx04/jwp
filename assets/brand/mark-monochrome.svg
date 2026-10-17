@@ -1,14 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <defs>
-    <mask id="mono-j" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
-      <rect width="1024" height="1024" fill="#FFFFFF"/>
-      <path d="M464 386 H548 V518 A66 66 0 0 1 416 518" fill="none" stroke="#000000" stroke-width="66" stroke-linecap="round" stroke-linejoin="round"/>
-    </mask>
     <mask id="mono-gap" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
       <rect width="1024" height="1024" fill="#FFFFFF"/>
-      <circle cx="482" cy="482" r="252" fill="#000000"/>
+      <circle cx="724.85" cy="280.25" r="99" fill="#000000"/>
     </mask>
   </defs>
-  <circle cx="554" cy="548" r="228" fill="#FFFFFF" mask="url(#mono-gap)"/>
-  <circle cx="482" cy="482" r="228" fill="#FFFFFF" mask="url(#mono-j)"/>
+  <path d="M724.85 370.25 V586.25 A180 180 0 0 1 544.85 766.25 H463.85" fill="none" stroke="#FFFFFF" stroke-width="108" stroke-linecap="round" stroke-linejoin="round" mask="url(#mono-gap)"/>
+  <circle cx="724.85" cy="280.25" r="76.5" fill="#FFFFFF"/>
+  <circle cx="360.35" cy="766.25" r="32.4" fill="#FFFFFF" fill-opacity="1"/>
+  <circle cx="292.85" cy="766.25" r="23.4" fill="#FFFFFF" fill-opacity="1"/>
+  <circle cx="238.85" cy="766.25" r="16.2" fill="#FFFFFF" fill-opacity="1"/>
 </svg>

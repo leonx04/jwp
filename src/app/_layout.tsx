@@ -107,6 +107,15 @@ function RootNavigator() {
           name="transaction/[id]"
           options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
         />
+        {/* Các màn "tạo nhanh" trượt từ dưới lên như tờ giấy mới, khác với màn xem chi tiết trượt ngang */}
+        <Stack.Screen
+          name="quick-add"
+          options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+        />
+        <Stack.Screen
+          name="settings/widgets"
+          options={{ animation: 'fade_from_bottom' }}
+        />
       </Stack>
       <Snackbar />
       <StatusBar style={theme.dark ? 'light' : 'dark'} />

@@ -1,7 +1,7 @@
-// Logo JWP dạng vector (react-native-svg) — cùng hình học với assets/splash-icon.png
+// Logo JWP "Dòng lương" dạng vector (react-native-svg) — cùng hình học với assets/splash-icon.png
 // (logoGeometry.ts do scripts/gen-brand-assets.js sinh ra) → nối tiếp màn chờ native không bị "nhảy".
 // Vẽ đồng bộ ngay khung hình đầu (không như <Image> phải giải mã ảnh) nên dùng được cho hiệu ứng mở app.
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 import Svg, {
   Circle,
   Defs,
@@ -14,15 +14,11 @@ import Svg, {
 
 import { LOGO, LOGO_CANVAS } from './logoGeometry';
 
-type BrandLogoProps = {
-  /** Cạnh ô logo (dp) */
-  size: number;
-};
-
-export const BrandLogo = memo(function BrandLogo({ size }: BrandLogoProps) {
-  const { gradient, highlight, backCoin, frontCoin, j } = LOGO;
+/** Nền ô logo: chàm đậm → tím, quầng sáng góc trên, ánh ngọc góc dưới */
+export function LogoTile() {
+  const { gradient, highlight, glow } = LOGO;
   return (
-    <Svg width={size} height={size} viewBox={`0 0 ${LOGO_CANVAS} ${LOGO_CANVAS}`}>
+    <>
       <Defs>
         <LinearGradient
           id="jwpTile"
@@ -45,29 +41,54 @@ export const BrandLogo = memo(function BrandLogo({ size }: BrandLogoProps) {
           <Stop offset="0" stopColor="#FFFFFF" stopOpacity={highlight.opacity} />
           <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
         </RadialGradient>
+        <RadialGradient
+          id="jwpAqua"
+          cx={glow.cx}
+          cy={glow.cy}
+          r={glow.r}
+          gradientUnits="userSpaceOnUse"
+        >
+          <Stop offset="0" stopColor={glow.color} stopOpacity={glow.opacity} />
+          <Stop offset="1" stopColor={glow.color} stopOpacity={0} />
+        </RadialGradient>
       </Defs>
       <Rect width={LOGO_CANVAS} height={LOGO_CANVAS} rx={LOGO.radius} fill="url(#jwpTile)" />
       <Rect width={LOGO_CANVAS} height={LOGO_CANVAS} rx={LOGO.radius} fill="url(#jwpGlow)" />
-      <Circle
-        cx={backCoin.cx}
-        cy={backCoin.cy}
-        r={backCoin.r}
-        fill="#FFFFFF"
-        fillOpacity={backCoin.opacity}
-      />
-      <Circle cx={frontCoin.cx} cy={frontCoin.cy} r={frontCoin.r} fill="#FFFFFF" />
-      {/* Chữ J "khoét" trên đồng xu: tô lại đúng màu nền + quầng sáng (ảnh PNG dùng mask, kết quả như nhau) */}
-      {['url(#jwpTile)', 'url(#jwpGlow)'].map((stroke) => (
-        <Path
-          key={stroke}
-          d={j.d}
-          fill="none"
-          stroke={stroke}
-          strokeWidth={j.width}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      ))}
+      <Rect width={LOGO_CANVAS} height={LOGO_CANVAS} rx={LOGO.radius} fill="url(#jwpAqua)" />
+    </>
+  );
+}
+
+export function LogoSvg({ size, children }: { size: number; children: ReactNode }) {
+  return (
+    <Svg width={size} height={size} viewBox={`0 0 ${LOGO_CANVAS} ${LOGO_CANVAS}`}>
+      {children}
     </Svg>
+  );
+}
+
+type BrandLogoProps = {
+  /** Cạnh ô logo (dp) */
+  size: number;
+};
+
+export const BrandLogo = memo(function BrandLogo({ size }: BrandLogoProps) {
+  const { j, head, drops, amber } = LOGO;
+  return (
+    <LogoSvg size={size}>
+      <LogoTile />
+      <Path
+        d={j.d}
+        fill="none"
+        stroke="#FFFFFF"
+        strokeWidth={j.width}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {drops.map((p) => (
+        <Circle key={p.cx} cx={p.cx} cy={p.cy} r={p.r} fill="#FFFFFF" fillOpacity={p.opacity} />
+      ))}
+      <Circle cx={head.cx} cy={head.cy} r={head.r} fill={amber} />
+    </LogoSvg>
   );
 });

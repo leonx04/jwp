@@ -6,9 +6,18 @@ import * as Haptics from '@/lib/haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, usePathname, type Href } from 'expo-router';
 import type { RefObject } from 'react';
-import { Pressable, StyleSheet, View, type View as RNView } from 'react-native';
+import { StyleSheet, View, type View as RNView } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { PressScale } from '@/components/motion/PressScale';
 import { AppText } from '@/components/ui/AppText';
 import { TAB_BAR_HEIGHT } from '@/components/ui/Screen';
 import type { IconName } from '@/lib/icons';
@@ -33,6 +42,9 @@ export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
+  // Dấu ＋ xoay khi bấm giữ
+  const spin = useSharedValue(0);
+  const plusStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${spin.get() * 90}deg` }] }));
 
   // Dock đảo màu: nền sáng → dock tối; nền tối → dock sáng
   const dockBg = colors.dark ? '#E9EDF5' : '#0E1320';
@@ -52,55 +64,66 @@ export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
         {items.map((item) => {
           const selected = item.path === pathname;
           return (
-            <Pressable
+            // Bọc ngoài để dock tự trượt mượt khi mục chọn đổi (rộng ra / thu gọn) thay vì nhảy
+            <Animated.View
               key={item.path}
-              accessibilityRole="tab"
-              accessibilityState={{ selected }}
-              accessibilityLabel={t(item.label)}
-              style={[
-                styles.item,
-                selected
-                  ? { backgroundColor: colors.primary, paddingHorizontal: 12 }
-                  : { width: 40 },
-              ]}
-              onPress={() => {
-                if (selected) return;
-                Haptics.selectionAsync().catch(() => {});
-                router.navigate(item.href);
-              }}
+              layout={LinearTransition.springify().damping(17).stiffness(190)}
             >
-              <Ionicons
-                name={selected ? item.iconActive : item.icon}
-                size={21}
-                color={selected ? colors.onPrimary : idle}
-              />
-              {selected ? (
-                <AppText
-                  variant="label"
-                  style={{ color: colors.onPrimary, fontSize: 12 }}
-                  numberOfLines={1}
-                >
-                  {item.label}
-                </AppText>
-              ) : null}
-            </Pressable>
+              <PressScale
+                accessibilityRole="tab"
+                accessibilityState={{ selected }}
+                accessibilityLabel={t(item.label)}
+                scaleTo={0.9}
+                style={[
+                  styles.item,
+                  selected
+                    ? { backgroundColor: colors.primary, paddingHorizontal: 12 }
+                    : { width: 40 },
+                ]}
+                onPress={() => {
+                  if (selected) return;
+                  Haptics.selectionAsync().catch(() => {});
+                  router.navigate(item.href);
+                }}
+              >
+                <Ionicons
+                  name={selected ? item.iconActive : item.icon}
+                  size={21}
+                  color={selected ? colors.onPrimary : idle}
+                />
+                {selected ? (
+                  <Animated.View
+                    entering={FadeIn.duration(180).delay(70)}
+                    exiting={FadeOut.duration(80)}
+                  >
+                    <AppText
+                      variant="label"
+                      style={{ color: colors.onPrimary, fontSize: 12 }}
+                      numberOfLines={1}
+                    >
+                      {item.label}
+                    </AppText>
+                  </Animated.View>
+                ) : null}
+              </PressScale>
+            </Animated.View>
           );
         })}
       </View>
 
-      <Pressable
+      <PressScale
         accessibilityRole="button"
         accessibilityLabel={t('Thêm giao dịch')}
+        scaleTo={0.9}
+        onPressIn={() => spin.set(withSpring(1, { damping: 14, stiffness: 260 }))}
+        onPressOut={() => spin.set(withSpring(0, { damping: 9, stiffness: 180 }))}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
           onAdd();
         }}
-        style={({ pressed }) => [
+        style={[
           styles.fab,
-          {
-            boxShadow: `0 10px 26px ${rgba(colors.gradient[0], colors.dark ? 0.55 : 0.45)}`,
-            transform: [{ scale: pressed ? 0.92 : 1 }],
-          },
+          { boxShadow: `0 10px 26px ${rgba(colors.gradient[0], colors.dark ? 0.55 : 0.45)}` },
         ]}
       >
         <LinearGradient
@@ -109,8 +132,10 @@ export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFill}
         />
-        <Ionicons name="add" size={32} color={colors.onGradient} />
-      </Pressable>
+        <Animated.View style={plusStyle}>
+          <Ionicons name="add" size={32} color={colors.onGradient} />
+        </Animated.View>
+      </PressScale>
     </View>
   );
 }

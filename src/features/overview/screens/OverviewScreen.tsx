@@ -16,6 +16,9 @@ import {
   Screen,
   SectionTitle,
 } from '@/components/ui';
+import { PressScale } from '@/components/motion/PressScale';
+import { Reveal } from '@/components/motion/Reveal';
+import { useCountUp } from '@/components/motion/useCountUp';
 import { db } from '@/db';
 import { totalBalance, useAccountBalances } from '@/features/accounts';
 import { createDefaultData } from '@/features/onboarding/defaults';
@@ -113,6 +116,10 @@ export function OverviewScreen() {
     [overview],
   );
   const total = balances ? totalBalance(balances) : 0;
+  // Số chạy tới giá trị mới (lần đầu từ 0)
+  const shownTotal = useCountUp(total);
+  const shownIncome = useCountUp(summary?.income ?? 0);
+  const shownExpense = useCountUp(summary?.expense ?? 0);
   const hasAccounts = (balances?.length ?? 0) > 0;
   const mask = (text: string) => (hideBalance ? '••••••' : text);
 
@@ -131,58 +138,62 @@ export function OverviewScreen() {
       }
     >
       {/* Thẻ số dư */}
-      <GlassSurface
-        contentStyle={styles.hero}
-        background={colors.gradient[1]}
-        shadow={false}
-        style={{ boxShadow: `0 10px 28px ${rgba(colors.gradient[0], colors.dark ? 0.4 : 0.32)}` }}
-      >
-        <LinearGradient
-          colors={colors.gradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-          pointerEvents="none"
-        />
-        <AppText variant="label" style={{ color: rgba(colors.onGradient, 0.75) }}>
-          TỔNG SỐ DƯ
-        </AppText>
-        <AppText
-          variant="hero"
-          style={{ fontVariant: ['tabular-nums'], color: colors.onGradient }}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.6}
+      <Reveal index={0}>
+        <GlassSurface
+          contentStyle={styles.hero}
+          background={colors.gradient[1]}
+          shadow={false}
+          style={{ boxShadow: `0 10px 28px ${rgba(colors.gradient[0], colors.dark ? 0.4 : 0.32)}` }}
         >
-          {mask(format.money(total))}
-        </AppText>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.push('/stats')}
-          hitSlop={8}
-          style={{ alignSelf: 'flex-end', marginTop: 4 }}
-        >
-          <AppText variant="label" style={{ color: colors.onGradient }}>
-            Xem thống kê ›
+          <LinearGradient
+            colors={colors.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+            pointerEvents="none"
+          />
+          <AppText variant="label" style={{ color: rgba(colors.onGradient, 0.75) }}>
+            TỔNG SỐ DƯ
           </AppText>
-        </Pressable>
-      </GlassSurface>
+          <AppText
+            variant="hero"
+            style={{ fontVariant: ['tabular-nums'], color: colors.onGradient }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
+            {mask(format.money(Math.round(shownTotal)))}
+          </AppText>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/stats')}
+            hitSlop={8}
+            style={{ alignSelf: 'flex-end', marginTop: 4 }}
+          >
+            <AppText variant="label" style={{ color: colors.onGradient }}>
+              Xem thống kê ›
+            </AppText>
+          </Pressable>
+        </GlassSurface>
+      </Reveal>
 
       {/* Ô bento: thu / chi tháng này */}
-      <View style={styles.tiles}>
-        <StatTile
-          icon="arrow-down"
-          tone={colors.income}
-          label="Thu tháng này"
-          value={mask(format.compact(summary?.income ?? 0))}
-        />
-        <StatTile
-          icon="arrow-up"
-          tone={colors.expense}
-          label="Chi tháng này"
-          value={mask(format.compact(summary?.expense ?? 0))}
-        />
-      </View>
+      <Reveal index={1}>
+        <View style={styles.tiles}>
+          <StatTile
+            icon="arrow-down"
+            tone={colors.income}
+            label="Thu tháng này"
+            value={mask(format.compact(Math.round(shownIncome)))}
+          />
+          <StatTile
+            icon="arrow-up"
+            tone={colors.expense}
+            label="Chi tháng này"
+            value={mask(format.compact(Math.round(shownExpense)))}
+          />
+        </View>
+      </Reveal>
 
       {!hasAccounts && balances ? (
         <Card>
@@ -216,48 +227,53 @@ export function OverviewScreen() {
       <ReportBanner />
 
       {/* Gõ nhanh: một câu → giao dịch */}
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => router.push('/quick-add')}
-        style={({ pressed }) => [
-          styles.quickBar,
-          { backgroundColor: rgba(colors.primary, colors.dark ? 0.2 : 0.1) },
-          pressed && { opacity: 0.7 },
-        ]}
-      >
-        <Ionicons name="sparkles" size={18} color={colors.primary} />
-        <AppText color="textMuted" numberOfLines={1} style={{ flex: 1 }}>
-          Gõ nhanh: cafe 35k hôm qua…
-        </AppText>
-        <Ionicons name="arrow-forward" size={16} color={colors.primary} />
-      </Pressable>
+      <Reveal index={2}>
+        <PressScale
+          accessibilityRole="button"
+          onPress={() => router.push('/quick-add')}
+          scaleTo={0.97}
+          style={[
+            styles.quickBar,
+            { backgroundColor: rgba(colors.primary, colors.dark ? 0.2 : 0.1) },
+          ]}
+        >
+          <Ionicons name="sparkles" size={18} color={colors.primary} />
+          <AppText color="textMuted" numberOfLines={1} style={{ flex: 1 }}>
+            Gõ nhanh: cafe 35k hôm qua…
+          </AppText>
+          <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+        </PressScale>
+      </Reveal>
 
       {/* Thao tác nhanh: một thẻ, bốn nút tròn màu */}
-      <Card style={styles.actions}>
-        {QUICK_ACTIONS.map((action) => {
-          const tone = colors[action.tone];
-          return (
-            <Pressable
-              key={action.label}
-              accessibilityRole="button"
-              onPress={() => router.push(action.href)}
-              style={({ pressed }) => [styles.action, pressed && { opacity: 0.6 }]}
-            >
-              <View
-                style={[
-                  styles.actionDot,
-                  { backgroundColor: rgba(tone, colors.dark ? 0.25 : 0.14) },
-                ]}
+      <Reveal index={3}>
+        <Card style={styles.actions}>
+          {QUICK_ACTIONS.map((action) => {
+            const tone = colors[action.tone];
+            return (
+              <PressScale
+                key={action.label}
+                accessibilityRole="button"
+                onPress={() => router.push(action.href)}
+                scaleTo={0.92}
+                style={styles.action}
               >
-                <Ionicons name={action.icon} size={22} color={tone} />
-              </View>
-              <AppText variant="label" color="text" numberOfLines={1}>
-                {action.label}
-              </AppText>
-            </Pressable>
-          );
-        })}
-      </Card>
+                <View
+                  style={[
+                    styles.actionDot,
+                    { backgroundColor: rgba(tone, colors.dark ? 0.25 : 0.14) },
+                  ]}
+                >
+                  <Ionicons name={action.icon} size={22} color={tone} />
+                </View>
+                <AppText variant="label" color="text" numberOfLines={1}>
+                  {action.label}
+                </AppText>
+              </PressScale>
+            );
+          })}
+        </Card>
+      </Reveal>
 
       {/* Ví */}
       {hasAccounts ? (

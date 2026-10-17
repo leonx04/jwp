@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
+import { PressScale } from '@/components/motion/PressScale';
 import type { AppIcon } from '@/lib/icons';
 import { createStyles, useTheme } from '@/theme';
 
@@ -31,11 +32,12 @@ export function ListRow({
   const { colors } = useTheme();
   const styles = useStyles();
   return (
-    <Pressable
+    <PressScale
       onPress={onPress}
       disabled={disabled || !onPress}
+      scaleTo={0.985}
       accessibilityRole={onPress ? 'button' : undefined}
-      style={({ pressed }) => [styles.row, pressed && styles.pressed, disabled && styles.disabled]}
+      style={[styles.row, disabled && styles.disabled]}
     >
       {icon && <IconBadge icon={icon} color={iconColor} size={38} />}
       <View style={styles.texts}>
@@ -50,7 +52,7 @@ export function ListRow({
       </View>
       {right ??
         (onPress ? <Ionicons name="chevron-forward" size={18} color={colors.textMuted} /> : null)}
-    </Pressable>
+    </PressScale>
   );
 }
 
@@ -64,9 +66,6 @@ const useStyles = createStyles((t) => ({
   texts: {
     flex: 1,
     gap: 2,
-  },
-  pressed: {
-    opacity: 0.6,
   },
   disabled: {
     opacity: 0.45,
