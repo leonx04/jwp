@@ -176,6 +176,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#7C3AED',
       },
       {
+        icon: 'apps-outline',
+        title: 'Widget màn hình chính',
+        subtitle: 'Thêm widget Hôm nay được tiêu và Ngân sách ra màn hình chính',
+        href: '/settings/widgets',
+        color: '#0EA5E9',
+      },
+      {
         icon: 'mail-unread-outline',
         title: 'Tự đọc thông báo ngân hàng',
         subtitle: 'Gợi ý ghi giao dịch từ thông báo / SMS biến động số dư',
