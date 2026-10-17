@@ -82,6 +82,20 @@
         {
           "widgets": [
             {
+              "name": "JwpCustom",
+              "label": "JWP · Tùy chỉnh",
+              "description": "Chọn hiện số dư, thu chi, ngân sách, quỹ, ví… theo ý bạn",
+              "minWidth": "110dp",
+              "minHeight": "40dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 1,
+              "maxResizeWidth": "320dp",
+              "maxResizeHeight": "200dp",
+              "resizeMode": "horizontal|vertical",
+              "widgetFeatures": "reconfigurable",
+              "updatePeriodMillis": 1800000
+            },
+            {
               "name": "JwpToday",
               "label": "JWP · Còn hôm nay",
               "description": "Hôm nay còn tiêu được bao nhiêu, nút + ghi nhanh",

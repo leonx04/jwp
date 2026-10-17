@@ -8,7 +8,7 @@ import { loadPlanned } from '@/features/schedules/planned';
 import { getSettings } from '@/features/settings/store';
 import { computeToday, incomeLabel } from '@/features/today/compute';
 import { getDaySpending } from '@/features/today/queries';
-import { addDays, todayVn } from '@/lib/date';
+import { addDays, diffDays, todayVn } from '@/lib/date';
 import { formatCompact, formatMoney } from '@/lib/money';
 
 export type WidgetToday = {
@@ -102,4 +102,43 @@ export function loadWidgetData(db: AppDatabase, now: number = Date.now()): Widge
   }
 
   return { today: todayData, budgets };
+}
+
+export type UpcomingEvent = {
+  title: string;
+  /** 'YYYY-MM-DD' */
+  date: string;
+  /** + thu / − chi */
+  amount: number;
+  /** Số ngày từ hôm nay (0 = hôm nay) */
+  days: number;
+};
+
+/** Các khoản thu / chi theo lịch sắp tới (kể cả hoá đơn ví trả sau), gần nhất trước */
+export function loadUpcoming(db: AppDatabase, now: number = Date.now(), count = 4): UpcomingEvent[] {
+  const settings = getSettings();
+  const today = todayVn(now);
+  try {
+    const { balances, occurrences } = loadPlanned(db, { from: today, to: addDays(today, FORECAST_DAYS), today });
+    const forecast = computeForecast({
+      today,
+      days: FORECAST_DAYS,
+      startBalance: totalBalance(balances),
+      accountBalances: new Map(balances.map((b) => [b.id, b.balance])),
+      includedAccounts: new Set(balances.filter((b) => b.includeInBalance).map((b) => b.id)),
+      occurrences,
+      safetyThreshold: settings.safetyThreshold,
+    });
+    return forecast.events
+      .map((e) => ({
+        title: e.occurrence.schedule.title,
+        date: e.date,
+        amount: e.occurrence.type === 'income' ? e.occurrence.amount : -e.occurrence.amount,
+        days: diffDays(today, e.date),
+      }))
+      .sort((a, b) => a.days - b.days)
+      .slice(0, count);
+  } catch {
+    return [];
+  }
 }

@@ -9,6 +9,11 @@ import { createStyles } from '@/theme';
 
 const WIDGETS = [
   {
+    name: 'JwpCustom',
+    title: 'Tùy chỉnh (khuyên dùng)',
+    text: 'Bạn chọn hiện gì: số dư, thu chi theo kỳ, ngân sách, quỹ tiết kiệm, dư nợ trả sau, khoản sắp tới, sổ nợ; chọn ví / ngân sách / quỹ cụ thể, màu và có ẩn số tiền hay không. Thêm nhiều widget, mỗi cái một kiểu.',
+  },
+  {
     name: 'JwpToday',
     title: 'Còn hôm nay',
     text: 'Cỡ 2×1: số tiền còn tiêu được hôm nay + thanh tiến độ + nút + ghi nhanh. Kéo to hơn để có thêm nút Chi / Thu.',

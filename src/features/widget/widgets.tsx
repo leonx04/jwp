@@ -198,7 +198,7 @@ export function BudgetWidget({ budgets, size }: { budgets: WidgetBudget[]; size:
   );
 }
 
-export const WIDGET_NAMES = ['JwpToday', 'JwpBudgets', 'JwpQuick'] as const;
+export const WIDGET_NAMES = ['JwpCustom', 'JwpToday', 'JwpBudgets', 'JwpQuick'] as const;
 export type WidgetName = (typeof WIDGET_NAMES)[number];
 
 /** Kích thước chưa biết (hiếm) → coi như cỡ nhỏ mặc định 2×1 */

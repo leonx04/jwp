@@ -6,19 +6,18 @@ import { requestWidgetUpdate } from 'react-native-android-widget';
 
 import { db } from '@/db';
 
-import { loadWidgetData } from './data';
-import { renderWidgetByName, WIDGET_NAMES } from './widgets';
+import { renderWidgetForInfo } from './render';
+import { WIDGET_NAMES } from './widgets';
 
 const WATCHED = new Set(['transactions', 'accounts', 'schedules', 'schedule_occurrences', 'budgets']);
 const DEBOUNCE_MS = 1500;
 
 function refreshWidgets() {
   try {
-    const data = loadWidgetData(db);
     for (const widgetName of WIDGET_NAMES) {
       void requestWidgetUpdate({
         widgetName,
-        renderWidget: (info) => renderWidgetByName(widgetName, data, info),
+        renderWidget: (info) => renderWidgetForInfo(db, info),
       }).catch(() => undefined);
     }
   } catch {
