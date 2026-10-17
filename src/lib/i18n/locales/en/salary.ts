@@ -37,4 +37,17 @@ export const salary: Record<string, string> = {
     'This is an estimate: spending stays at today’s average and only grows by the share of the raise you choose to spend. Unusual large bills are not included.',
   'Quỹ dự phòng: số dư hiện có đủ sống': 'Emergency fund: your balance covers',
   '{months} tháng': '{months} months',
+  'Đổi lương gộp ⇄ thực nhận': 'Gross ⇄ net salary',
+  'Gộp → thực nhận': 'Gross → net',
+  'Thực nhận → gộp': 'Net → gross',
+  'Lương gộp (trước thuế, bảo hiểm)': 'Gross salary (before tax and insurance)',
+  'Lương thực nhận mong muốn': 'Desired take-home salary',
+  'Số người phụ thuộc': 'Dependents',
+  'Lương gộp': 'Gross salary',
+  'Thuế TNCN': 'Personal income tax',
+  'Thực nhận': 'Take-home',
+  'Dùng làm thu nhập mới': 'Use as new income',
+  'Dùng làm thu nhập hiện tại': 'Use as current income',
+  'Ước tính theo giảm trừ 15,5 triệu (bản thân) và 6,2 triệu (mỗi người phụ thuộc), biểu thuế 5 bậc, bảo hiểm người lao động 10,5% có trần. Chưa tính phụ cấp miễn thuế, thưởng, làm thêm giờ — hãy đối chiếu với phiếu lương của bạn.':
+    'Estimate using a 15.5M personal and 6.2M per-dependent deduction, the 5-bracket tax table and 10.5% employee insurance with caps. Tax-exempt allowances, bonuses and overtime are not included — compare with your payslip.',
 };

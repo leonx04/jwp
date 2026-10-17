@@ -22,6 +22,7 @@ import { addMonths, makeDate, parseDate, todayVn } from '@/lib/date';
 import { t } from '@/lib/i18n';
 import { createStyles, rgba, useTheme } from '@/theme';
 
+import { GrossNetCard } from '../components/GrossNetCard';
 import { projectSalary } from '../projection';
 import { runwayMonths } from '../runway';
 import { getTypicalMonth } from '../queries';
@@ -163,6 +164,15 @@ export function SalaryScenarioScreen() {
         </AppText>
         <SegmentedControl options={YEARLY_OPTIONS} value={yearly} onChange={setYearly} />
       </Card>
+
+      <SectionTitle>Đổi lương gộp ⇄ thực nhận</SectionTitle>
+      <GrossNetCard
+        onUseNet={(net, target) => {
+          if (target === 'new') setNewIncome(net);
+          else setIncome(net);
+          setFieldKey((k) => k + 1);
+        }}
+      />
 
       {valid ? (
         <>
