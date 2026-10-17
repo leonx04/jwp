@@ -26,6 +26,15 @@ describe('planProfile', () => {
     applyPlan(db, plan);
     const [b] = listBudgetRows(db);
     expect(b).toMatchObject({ amount: 400_000, startDay: 17, weekendRule: 'after' });
+    // Gõ tên không dấu để khớp thì tên cũ có dấu vẫn được giữ nguyên
+    expect(b.name).toBe('Đổ xăng');
+  });
+
+  it('đổi tên ngân sách chỉ khi JSON ghi newName', () => {
+    const db = createTestDb();
+    saveBudget(db, { name: 'Cắt tóc', amount: 40_000 });
+    applyPlan(db, planProfile(db, JSON.stringify({ budgets: [{ name: 'cat toc', newName: 'Làm đẹp' }] }), noop));
+    expect(listBudgetRows(db)[0].name).toBe('Làm đẹp');
   });
 
   it('tạo ngân sách mới cần amount; nhận "400k"; tên danh mục sai chỉ cảnh báo', () => {

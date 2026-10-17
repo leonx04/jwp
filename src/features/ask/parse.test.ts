@@ -72,3 +72,10 @@ describe('parseQuestion', () => {
     expect(previousAskPeriod(week.period, 1)).toMatchObject({ start: '2026-10-05', end: '2026-10-11' });
   });
 });
+
+describe('chữ "ví" không bị coi là từ lọc', () => {
+  it('"số dư các ví" → tổng, không lọc theo tên ví', () => {
+    expect(parseQuestion('số dư các ví', '2026-10-16', 1)).toEqual({ kind: 'balance', terms: [] });
+    expect(parseQuestion('số dư ví momo', '2026-10-16', 1)).toEqual({ kind: 'balance', terms: ['momo'] });
+  });
+});

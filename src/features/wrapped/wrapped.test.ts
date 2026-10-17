@@ -51,3 +51,10 @@ describe('buildWrapped', () => {
     ).toBe('over');
   });
 });
+
+describe('khoản lớn nhất không có tiêu đề', () => {
+  it('dùng tên danh mục thay cho tiêu đề trống', () => {
+    const w = buildWrapped([tx('2026-10-02', 2_500_000, '', 'Gửi Mẹ')], period);
+    expect(w.biggest).toMatchObject({ title: 'Gửi Mẹ', amount: 2_500_000 });
+  });
+});

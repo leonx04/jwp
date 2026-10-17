@@ -44,7 +44,7 @@ const STOP = new Set(
     'toi minh em anh chi la cua cho vao o tai da dang se co khong ko nhung cac mot nhu the nao gi vay a ' +
     'bao nhieu may tong tat ca het tieu xai chi mat tra thu nhan kiem duoc luong khoan giao dich lan ' +
     'so voi sanh hon it nhat lon cao nhieu thang tuan nam ngay nay truoc roi ngoai qua hom danh muc ' +
-    'ngan sach du con tien app oi nhe di thi ma va hay vua moi gan day cung'
+    'ngan sach du con tien app oi nhe di thi ma va hay vua moi gan day cung vi'
   ).split(' '),
 );
 

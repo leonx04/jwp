@@ -95,7 +95,7 @@ export function buildWrapped(
     topCategories,
     priciestDay: dayEntry ? { date: dayEntry[0], ...dayEntry[1] } : null,
     favorite: fav ? { title: fav.title, count: fav.count, total: fav.total } : null,
-    biggest: big ? { title: big.title, amount: big.amount, date: toVnDate(big.date) } : null,
+    biggest: big ? { title: big.title || big.categoryName || '', amount: big.amount, date: toVnDate(big.date) } : null,
     busiestWeekday: wd ? { weekday: wd[0], amount: wd[1] } : null,
     noSpendDays,
     verdict,

@@ -126,6 +126,7 @@ export function planProfile(
           return;
         }
         const name = raw.name.trim();
+        const newName = typeof raw.newName === 'string' ? raw.newName.trim() : '';
         const existing = rows.find((r) => key(r.name) === key(name));
         const amount = raw.amount === undefined ? (existing?.amount ?? null) : toAmount(raw.amount);
         if (!amount) {
@@ -166,7 +167,8 @@ export function planProfile(
           run: () =>
             void saveBudget(db, {
               id: existing?.id,
-              name,
+              // Khớp ngân sách có sẵn thì GIỮ tên cũ (có dấu); chỉ đổi tên khi JSON ghi rõ "newName"
+              name: existing ? newName || existing.name : name,
               amount,
               startDay: finalStart,
               weekendRule: finalRule,
