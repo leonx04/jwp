@@ -20,6 +20,7 @@ import { fuel } from './fuel';
 import { profile } from './profile';
 import { quickadd } from './quickadd';
 import { salary } from './salary';
+import { tet } from './tet';
 import { widget } from './widget';
 import { wrapped } from './wrapped';
 import { common } from './common';
@@ -63,4 +64,5 @@ export const en: Record<string, string> = {
   ...ask,
   ...wrapped,
   ...widget,
+  ...tet,
 };
