@@ -49,6 +49,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#DB2777',
       },
       {
+        icon: 'gift-outline',
+        title: 'Quỹ Tết & thưởng',
+        subtitle: 'Thưởng Tết, chi phí Tết và mỗi tháng cần để dành bao nhiêu',
+        href: '/tet',
+        color: '#EF4444',
+      },
+      {
         icon: 'trending-up-outline',
         title: 'Mô phỏng tăng lương',
         subtitle: 'Lương tăng thì tiền dư, tiết kiệm và các quỹ thay đổi ra sao',

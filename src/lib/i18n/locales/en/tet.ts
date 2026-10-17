@@ -1,0 +1,33 @@
+// Quỹ Tết & thưởng
+export const tet: Record<string, string> = {
+  'Quỹ Tết & thưởng': 'Tet fund & bonus',
+  'Thưởng Tết, chi phí Tết và mỗi tháng cần để dành bao nhiêu':
+    'Tet bonus, Tet costs and how much to set aside each month',
+  'Quỹ Tết {year}': 'Tet fund {year}',
+  'Tết {year}': 'Tet {year}',
+  'Còn {n} ngày': '{n} days left',
+  'Thưởng dự kiến': 'Expected bonus',
+  'Thưởng Tết / lương tháng 13': 'Tet bonus / 13th-month salary',
+  'Không có': 'None',
+  'Nửa tháng lương': 'Half a month',
+  '1 tháng lương': '1 month of pay',
+  '2 tháng lương': '2 months of pay',
+  'Chi phí Tết dự kiến': 'Expected Tet costs',
+  'Quà, về quê, lì xì, mua sắm': 'Gifts, travel home, lucky money, shopping',
+  'Tết trước bạn chi thêm {amount}': 'Last Tet you spent {amount} extra',
+  'Chưa đủ lịch sử Tết trước để gợi ý, hãy nhập theo ước tính của bạn.':
+    'Not enough history from last Tet to suggest a figure — enter your own estimate.',
+  'Tính cả thưởng': 'Count the bonus',
+  'Không dựa vào thưởng': "Don't rely on the bonus",
+  'Thưởng đã đủ trang trải': 'The bonus covers it',
+  'Cần để dành mỗi tháng': 'To set aside each month',
+  'trong {n} tháng tới, đủ trước {date}': 'over the next {n} months, ready by {date}',
+  'Chi phí dự kiến': 'Expected costs',
+  'Đã có trong quỹ': 'Already in the fund',
+  'Còn phải để dành': 'Still to save',
+  'Bằng khoảng {pct}% thu nhập mỗi tháng của bạn.': 'About {pct}% of your monthly income.',
+  'Tạo quỹ Tết': 'Create Tet fund',
+  'Cập nhật quỹ Tết': 'Update Tet fund',
+  'Đã tạo quỹ Tết.': 'Tet fund created.',
+  'Đã cập nhật quỹ Tết.': 'Tet fund updated.',
+};
