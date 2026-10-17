@@ -10,13 +10,18 @@ import { createStyles } from '@/theme';
 const WIDGETS = [
   {
     name: 'JwpToday',
-    title: 'Hôm nay được tiêu',
-    text: 'Số tiền còn được tiêu hôm nay, thanh tiến độ, nút Chi / Thu / Gõ nhanh. Đổi màu khi sắp hết hoặc vượt.',
+    title: 'Còn hôm nay',
+    text: 'Cỡ 2×1: số tiền còn tiêu được hôm nay + thanh tiến độ + nút + ghi nhanh. Kéo to hơn để có thêm nút Chi / Thu.',
   },
   {
     name: 'JwpBudgets',
-    title: 'Ngân sách còn lại',
-    text: 'Ba ngân sách sát hạn mức nhất, mỗi cái có thanh tiến độ xanh, vàng hoặc đỏ.',
+    title: 'Ngân sách',
+    text: 'Cỡ 2×1: ngân sách sát hạn mức nhất. Kéo cao hơn để thấy thêm các ngân sách khác.',
+  },
+  {
+    name: 'JwpQuick',
+    title: 'Ghi nhanh',
+    text: 'Cỡ 1×1: chỉ một nút + để mở Gõ nhanh. Nhỏ nhất, hợp khi màn hình chính hết chỗ.',
   },
 ] as const;
 

@@ -28,3 +28,12 @@ describe('loadWidgetData', () => {
     expect(data.budgets).toEqual([]);
   });
 });
+
+describe('trạng thái màu widget', () => {
+  it('không còn tiền tiêu hôm nay (ngân sách ngày = 0) → cam, không phải xanh', () => {
+    const db = createTestDb();
+    saveAccount(db, { name: 'Tiền mặt', color: '#000', icon: 'wallet', includeInBalance: true });
+    const data = loadWidgetData(db, vnDateToMs('2026-10-16', '10:00'));
+    expect(data.today?.state).toBe('low');
+  });
+});

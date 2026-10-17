@@ -18,7 +18,7 @@ function refreshWidgets() {
     for (const widgetName of WIDGET_NAMES) {
       void requestWidgetUpdate({
         widgetName,
-        renderWidget: () => renderWidgetByName(widgetName, data),
+        renderWidget: (info) => renderWidgetByName(widgetName, data, info),
       }).catch(() => undefined);
     }
   } catch {

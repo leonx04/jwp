@@ -14,8 +14,11 @@ import { formatCompact, formatMoney } from '@/lib/money';
 export type WidgetToday = {
   /** Còn được tiêu hôm nay (đã định dạng) */
   leftText: string;
+  /** Bản rút gọn cho widget nhỏ: '245k', '1,5Tr' */
+  leftCompact: string;
   /** Vượt hạn mức hôm nay (đã định dạng), '' nếu chưa vượt */
   overText: string;
+  overCompact: string;
   spentText: string;
   /** 0–1: đã dùng bao nhiêu hạn mức hôm nay */
   progress: number;
@@ -66,10 +69,13 @@ export function loadWidgetData(db: AppDatabase, now: number = Date.now()): Widge
     });
     todayData = {
       leftText: formatMoney(status.left, { symbol }),
+      leftCompact: formatCompact(status.left, { symbol }),
       overText: status.over > 0 ? formatMoney(status.over, { symbol }) : '',
+      overCompact: status.over > 0 ? formatCompact(status.over, { symbol }) : '',
       spentText: formatCompact(status.spent, { symbol }),
       progress: status.progress,
-      state: status.over > 0 ? 'over' : status.budget > 0 && status.left / status.budget < 0.2 ? 'low' : 'ok',
+      // Hết sạch hoặc còn dưới 20% hạn mức hôm nay → cam; vượt → đỏ
+      state: status.over > 0 ? 'over' : status.left <= 0 || status.left / status.budget < 0.2 ? 'low' : 'ok',
       incomeText: status.nextIncome ? incomeLabel(status.nextIncome) : '',
     };
   } catch {

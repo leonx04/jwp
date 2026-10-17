@@ -83,25 +83,39 @@
           "widgets": [
             {
               "name": "JwpToday",
-              "label": "JWP · Hôm nay",
-              "description": "Hôm nay được tiêu bao nhiêu, nút thêm nhanh",
-              "minWidth": "250dp",
-              "minHeight": "110dp",
-              "targetCellWidth": 4,
-              "targetCellHeight": 2,
+              "label": "JWP · Còn hôm nay",
+              "description": "Hôm nay còn tiêu được bao nhiêu, nút + ghi nhanh",
+              "minWidth": "110dp",
+              "minHeight": "40dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 1,
+              "maxResizeWidth": "320dp",
+              "maxResizeHeight": "140dp",
               "resizeMode": "horizontal|vertical",
               "updatePeriodMillis": 1800000
             },
             {
               "name": "JwpBudgets",
               "label": "JWP · Ngân sách",
-              "description": "Các ngân sách sát hạn mức nhất",
-              "minWidth": "180dp",
-              "minHeight": "110dp",
-              "targetCellWidth": 3,
-              "targetCellHeight": 2,
+              "description": "Ngân sách sát hạn mức nhất (kéo cao để xem thêm)",
+              "minWidth": "110dp",
+              "minHeight": "40dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 1,
+              "maxResizeWidth": "320dp",
+              "maxResizeHeight": "180dp",
               "resizeMode": "horizontal|vertical",
               "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "JwpQuick",
+              "label": "JWP · Ghi nhanh",
+              "description": "Một nút + mở Gõ nhanh",
+              "minWidth": "40dp",
+              "minHeight": "40dp",
+              "targetCellWidth": 1,
+              "targetCellHeight": 1,
+              "resizeMode": "none"
             }
           ]
         }

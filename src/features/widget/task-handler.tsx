@@ -11,7 +11,9 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
     case 'WIDGET_ADDED':
     case 'WIDGET_UPDATE':
     case 'WIDGET_RESIZED':
-      props.renderWidget(renderWidgetByName(props.widgetInfo.widgetName, loadWidgetData(db)));
+      props.renderWidget(
+        renderWidgetByName(props.widgetInfo.widgetName, loadWidgetData(db), props.widgetInfo),
+      );
       break;
     default:
       break;
