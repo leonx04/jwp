@@ -5,18 +5,10 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { IconButton } from '@/components/glass/IconButton';
-import {
-  AppText,
-  Button,
-  Card,
-  EmptyState,
-  ListRow,
-  Screen,
-  SegmentedControl,
-} from '@/components/ui';
+import { AppText, Button, Card, EmptyState, Screen, SegmentedControl } from '@/components/ui';
 import { useMoneyFormat } from '@/features/settings';
 
-import { repayAction, statusText } from '../components/display';
+import { DebtRow } from '../components/DebtRow';
 import { useDebtProposals, useDebts } from '../hooks';
 import type { DebtItem } from '../queries';
 
@@ -121,9 +113,16 @@ export function DebtsScreen() {
 
       {activeGroups.map((group) => (
         <Card key={group.person.id} style={{ gap: 0, paddingVertical: 6 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 12 }}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={group.person.name}
+            onPress={() =>
+              router.push({ pathname: '/debts/person/[id]', params: { id: group.person.id } })
+            }
+            style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 12 }}
+          >
             <AppText variant="heading" numberOfLines={1} style={{ flex: 1 }}>
-              {group.person.name}
+              {group.person.name} ›
             </AppText>
             <AppText
               variant="bodyMedium"
@@ -133,7 +132,7 @@ export function DebtsScreen() {
               {group.net > 0 ? 'Nợ bạn ' : group.net < 0 ? 'Bạn nợ ' : ''}
               {format.money(Math.abs(group.net))}
             </AppText>
-          </View>
+          </Pressable>
           {group.items.map((d) => (
             <DebtRow key={d.debt.id} item={d} />
           ))}
@@ -157,51 +156,5 @@ export function DebtsScreen() {
         </>
       ) : null}
     </Screen>
-  );
-}
-
-function DebtRow({ item, showPerson = false }: { item: DebtItem; showPerson?: boolean }) {
-  const format = useMoneyFormat();
-  const lent = item.direction === 'lent';
-  const label = item.debt.title || (lent ? 'Cho vay' : 'Đi vay');
-  const active = item.status !== 'closed' && item.status !== 'settled';
-  return (
-    <View>
-      <ListRow
-        icon={lent ? 'arrow-up-circle-outline' : 'arrow-down-circle-outline'}
-        iconColor={lent ? '#16A34A' : '#DC2626'}
-        title={showPerson ? `${item.person.name} · ${label}` : label}
-        subtitle={`${t(lent ? 'Họ nợ bạn' : 'Bạn nợ họ')} · ${statusText(item)}`}
-        onPress={() => router.push({ pathname: '/debt/[id]', params: { id: item.debt.id } })}
-        right={
-          <AppText
-            variant="bodyMedium"
-            color={item.status === 'overdue' ? 'expense' : 'text'}
-            style={{ fontVariant: ['tabular-nums'] }}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.6}
-          >
-            {format.money(item.remaining)}
-          </AppText>
-        }
-      />
-      {active ? (
-        <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 12, paddingBottom: 8 }}>
-          <Button
-            title={repayAction(item.direction)}
-            size="sm"
-            variant="secondary"
-            icon="checkmark"
-            onPress={() =>
-              router.push({
-                pathname: '/debt/record',
-                params: { debtId: item.debt.id, type: 'repay' },
-              })
-            }
-          />
-        </View>
-      ) : null}
-    </View>
   );
 }

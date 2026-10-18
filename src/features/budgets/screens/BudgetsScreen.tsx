@@ -83,7 +83,7 @@ export function BudgetsScreen() {
         <Pressable
           key={b.id}
           accessibilityRole="button"
-          onPress={() => router.push({ pathname: '/budget/edit', params: { id: b.id } })}
+          onPress={() => router.push({ pathname: '/budget/[id]', params: { id: b.id } })}
         >
           <Card>
             <BudgetBar item={b} />

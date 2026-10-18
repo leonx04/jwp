@@ -4,7 +4,7 @@ import { createTestDb } from '@/test/testDb';
 import { vnDateToMs } from '@/lib/date';
 
 import { amountsOf, debtStatus, summarize, walletFlow } from './compute';
-import { groupByPerson, listDebtProposals, listDebts } from './queries';
+import { groupByPerson, listDebtProposals, listDebts, personRecords } from './queries';
 import { saveTransaction } from '@/features/transactions/repository';
 import {
   adoptProposal,
@@ -138,6 +138,35 @@ describe('repository', () => {
     const groups = groupByPerson(listDebts(db, TODAY));
     expect(groups).toHaveLength(1);
     expect(groups[0].owed).toBe(300);
+  });
+
+  it('lịch sử của một người gộp lần trả của mọi khoản, mới nhất trước', () => {
+    const { db } = setup();
+    const a = saveDebt(db, {
+      personName: 'a Long',
+      direction: 'borrowed',
+      amount: 142_000,
+      date: at('2026-10-17'),
+    });
+    const b = saveDebt(db, {
+      personName: 'a Long',
+      direction: 'lent',
+      amount: 50_000,
+      date: at('2026-10-10'),
+    });
+    addDebtRecord(db, {
+      debtId: a,
+      type: 'repay',
+      amount: 20_000,
+      date: at('2026-10-18'),
+      note: 'xôi',
+    });
+    addDebtRecord(db, { debtId: b, type: 'repay', amount: 10_000, date: at('2026-10-19') });
+    const [group] = groupByPerson(listDebts(db, TODAY));
+    const history = personRecords(group.items);
+    expect(history.map((h) => h.record.amount)).toEqual([10_000, 20_000]);
+    expect(history[1].item.direction).toBe('borrowed');
+    expect(group.net).toBe(-142_000 + 20_000 + 40_000);
   });
 
   it('sửa khoản nợ: đổi số tiền & ví cập nhật giao dịch gốc, bỏ ví thì xoá giao dịch', () => {

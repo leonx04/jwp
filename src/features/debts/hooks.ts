@@ -22,6 +22,15 @@ export function useDebts() {
   );
 }
 
+/** Mọi khoản nợ của một người (đang mở lẫn đã xong) */
+export function usePersonDebts(personId: string | undefined) {
+  const { loaded, groups } = useDebts();
+  return useMemo(
+    () => ({ loaded, group: groups.find((g) => g.person.id === personId) ?? null }),
+    [loaded, groups, personId],
+  );
+}
+
 export function useDebt(id: string | undefined) {
   return useLiveData(TABLES, () => (id ? getDebtItem(db, id, todayVn()) : null), [id]);
 }

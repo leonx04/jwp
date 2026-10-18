@@ -98,6 +98,15 @@ export function groupByPerson(items: readonly DebtItem[]): PersonGroup[] {
     });
 }
 
+export type PersonRecord = { record: DebtRecord; item: DebtItem };
+
+/** Lịch sử trả / vay thêm / lãi của mọi khoản của một người, mới nhất trước */
+export function personRecords(items: readonly DebtItem[]): PersonRecord[] {
+  return items
+    .flatMap((item) => item.records.map((record) => ({ record, item })))
+    .sort((a, b) => b.record.date - a.record.date);
+}
+
 /** Gợi ý khoản nợ dựng từ giao dịch cũ chưa gắn vào sổ nợ */
 export function listDebtProposals(db: AppDatabase): DebtProposal[] {
   const rows = db

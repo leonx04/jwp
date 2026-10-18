@@ -5,7 +5,7 @@ import { vnDateToMs } from '@/lib/date';
 import { createTestDb } from '@/test/testDb';
 
 import { budgetProgress, parseIdList, serializeIdList } from './compute';
-import { listBudgets } from './queries';
+import { getBudgetDetail, listBudgets } from './queries';
 import { deleteBudget, saveBudget } from './repository';
 
 const base = { periodStart: '2026-10-01', periodEnd: '2026-10-31' };
@@ -128,6 +128,41 @@ describe('listBudgets', () => {
     });
     saveBudget(db, { name: 'Tất cả', amount: 1_000_000 });
     expect(listBudgets(db, opts)[0].spent).toBe(100_000);
+  });
+
+  it('chi tiết ngân sách: giao dịch liệt kê cộng lại đúng bằng số đã chi, có chuyển kỳ', () => {
+    const { db, mb, food, spend } = setup();
+    spend(mb, food, 100_000, '2026-10-03');
+    spend(mb, food, 50_000, '2026-10-08');
+    spend(mb, null, 70_000, '2026-10-09'); // khác danh mục → không tính
+    spend(mb, food, 30_000, '2026-09-20'); // kỳ trước
+    saveTransaction(db, {
+      type: 'expense',
+      amount: 5_000,
+      accountId: mb,
+      categoryId: food,
+      date: vnDateToMs('2026-10-05', '12:00'),
+      isAdjustment: true, // điều chỉnh số dư → không tính
+    });
+    const id = saveBudget(db, { name: 'Ăn uống', amount: 500_000, categoryIds: [food] });
+    const detail = getBudgetDetail(db, { id, today: '2026-10-12', startDayOfMonth: 1 });
+    expect(detail?.isCurrent).toBe(true);
+    expect(detail?.nextAnchor).toBeNull();
+    expect(detail?.transactions.map((t) => t.amount)).toEqual([50_000, 100_000]);
+    expect(detail?.transactions.reduce((sum, t) => sum + t.amount, 0)).toBe(detail?.item.spent);
+
+    const prev = getBudgetDetail(db, {
+      id,
+      today: '2026-10-12',
+      startDayOfMonth: 1,
+      anchor: detail?.prevAnchor,
+    });
+    expect(prev?.isCurrent).toBe(false);
+    expect(prev?.item.periodEnd).toBe('2026-09-30');
+    expect(prev?.item.spent).toBe(30_000);
+    expect(prev?.transactions).toHaveLength(1);
+    expect(prev?.nextAnchor).toBe('2026-10-01');
+    expect(getBudgetDetail(db, { id: 'nope', today: '2026-10-12', startDayOfMonth: 1 })).toBeNull();
   });
 
   it('sửa, xoá và kiểm tra dữ liệu', () => {

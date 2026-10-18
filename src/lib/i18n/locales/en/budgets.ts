@@ -1,5 +1,14 @@
 // Ngân sách
 export const budgets: Record<string, string> = {
+  'Không tìm thấy ngân sách': 'Budget not found',
+  'Kỳ trước': 'Previous cycle',
+  'Kỳ sau': 'Next cycle',
+  'Kỳ này': 'This cycle',
+  'Còn {daysLeft} ngày, tối đa {perDay}/ngày': '{daysLeft} days left, up to {perDay}/day',
+  'GIAO DỊCH TÍNH VÀO NGÂN SÁCH · {count}': 'TRANSACTIONS COUNTED · {count}',
+  'Chưa có khoản chi nào trong kỳ này': 'No spending in this cycle yet',
+  'Chỉ tính khoản chi thuộc danh mục / ví của ngân sách này.':
+    'Only spending in this budget’s categories / wallets is counted.',
   'Vượt ngân sách “{name}” {remaining}': 'Over budget “{name}” by {remaining}',
   'Ngân sách “{name}” đã dùng {ratio}%, còn {remaining}':
     'Budget “{name}” is {ratio}% used, {remaining} left',
