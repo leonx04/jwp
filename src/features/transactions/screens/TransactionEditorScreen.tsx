@@ -150,7 +150,7 @@ export function TransactionEditorScreen() {
       categoryId: params.categoryId ?? null,
       title: params.title ?? '',
       note: '',
-      date: params.date ? Number(params.date) : Date.now(),
+      date: Number(params.date) || Date.now(),
       tagIds: [],
       feeText: '',
       scheduleId: params.scheduleId ?? null,

@@ -8,7 +8,8 @@ export type KeypadKey =
  * Áp một phím vào số đang nhập. Không cho số 0 ở đầu, chặn khi vượt MAX_AMOUNT
  * (phím bị bỏ qua, giữ nguyên giá trị cũ).
  */
-export function applyKeypadKey(current: Money, key: KeypadKey): Money {
+export function applyKeypadKey(raw: Money, key: KeypadKey): Money {
+  const current = Number.isFinite(raw) ? raw : 0; // giá trị hỏng (NaN) coi như 0 để gõ lại được
   if (key === 'backspace') return Math.floor(current / 10);
   const next = key === '000' ? current * 1000 : current * 10 + Number(key);
   return next > MAX_AMOUNT ? current : next;

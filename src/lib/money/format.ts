@@ -13,6 +13,7 @@ export type FormatMoneyOptions = {
 
 /** 1500000 → '1.500.000' (chỉ phần số, dùng cho ô nhập tiền) */
 export function groupThousands(value: number): string {
+  if (!Number.isFinite(value)) return '0'; // NaN / Infinity không bao giờ hiện ra màn hình
   return Math.trunc(Math.abs(value))
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -29,7 +30,7 @@ export function formatMoney(
   amount: Money,
   { symbol = '₫', sign = 'auto' }: FormatMoneyOptions = {},
 ): string {
-  const value = Math.round(amount);
+  const value = Number.isFinite(amount) ? Math.round(amount) : 0;
   return applySign(`${groupThousands(value)}${NBSP}${symbol}`, value, sign);
 }
 
