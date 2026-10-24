@@ -12,6 +12,7 @@ import {
   captureRules,
   categories,
   debtRecords,
+  debtTerms,
   debts,
   goals,
   people,
@@ -52,6 +53,7 @@ const NOUNS: Record<BackupTableKey, string> = {
   scheduleOccurrences: 'kỳ của lịch',
   people: 'người',
   debts: 'khoản nợ',
+  debtTerms: 'điều khoản lãi',
   debtRecords: 'lần trả / vay thêm',
   budgets: 'ngân sách',
   goals: 'quỹ tiết kiệm',
@@ -108,6 +110,13 @@ const REFS: Ref[] = [
   { table: 'debtRecords', column: 'debtId', target: 'debts', onMissing: 'drop' },
   { table: 'debtRecords', column: 'accountId', target: 'accounts', onMissing: 'null' },
   { table: 'debtRecords', column: 'transactionId', target: 'transactions', onMissing: 'null' },
+  {
+    table: 'debtRecords',
+    column: 'interestTransactionId',
+    target: 'transactions',
+    onMissing: 'null',
+  },
+  { table: 'debtTerms', column: 'debtId', target: 'debts', onMissing: 'drop' },
 ];
 
 export type ReferenceCheck = { data: BackupRows; warnings: string[]; errors: string[] };
@@ -220,6 +229,7 @@ function wipeAll(tx: Tx) {
   tx.delete(transactionTags).run();
   tx.delete(scheduleOccurrences).run();
   tx.delete(debtRecords).run();
+  tx.delete(debtTerms).run();
   tx.delete(budgets).run();
   tx.delete(goals).run();
   tx.delete(captureRules).run();

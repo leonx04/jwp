@@ -65,8 +65,11 @@ export function LedgerTimeline<R extends LedgerRecord>({
               const isLast = i === group.items.length - 1;
               const timing = e.kind === 'repay' ? repayTiming(e.date, dueDate) : null;
               const record = e.record;
-              const title =
+              const base =
                 e.kind === 'open' ? DIRECTION_LABEL[direction] : recordLabel(direction, e.kind);
+              const title = record?.period
+                ? `${base} · ${t('kỳ {period}', { period: record.period })}`
+                : base;
               return (
                 <Pressable
                   key={e.key}

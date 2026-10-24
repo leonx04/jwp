@@ -59,6 +59,29 @@ export function ensureFeeCategory(db: AppDatabase): string {
   return FEE_CATEGORY_ID;
 }
 
+/** Danh mục cho tiền lãi + phí của khoản vay (tôi đi vay: chi) và tiền lãi nhận được (tôi cho vay: thu) */
+export const LOAN_INTEREST_CATEGORY_ID = 'jwp-category-loan-interest';
+export const LOAN_INCOME_CATEGORY_ID = 'jwp-category-loan-income';
+
+export function ensureLoanCategory(db: AppDatabase, kind: 'expense' | 'income'): string {
+  const id = kind === 'expense' ? LOAN_INTEREST_CATEGORY_ID : LOAN_INCOME_CATEGORY_ID;
+  db.insert(categories)
+    .values(
+      kind === 'expense'
+        ? {
+            id,
+            name: 'Lãi & phí vay',
+            color: '#B45309',
+            icon: 'trending-down-outline',
+            orderNum: 998,
+          }
+        : { id, name: 'Lãi cho vay', color: '#65A30D', icon: 'trending-up-outline', orderNum: 998 },
+    )
+    .onConflictDoNothing()
+    .run();
+  return id;
+}
+
 /** Đổi thứ tự theo danh sách id */
 export function reorderCategories(db: AppDatabase, orderedIds: string[]): void {
   db.transaction((tx) => {

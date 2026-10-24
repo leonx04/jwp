@@ -1,4 +1,5 @@
 // Thêm / sửa khoản nợ. Có thể điền sẵn qua tham số: personName, amount, direction, title.
+// Bật "Có lãi, trả theo kỳ" để nhập lãi suất, số kỳ, cách tính lãi: app tự lập lịch trả từng tháng.
 import { goBack } from '@/lib/goBack';
 import { useLocalSearchParams } from 'expo-router';
 import { asc } from 'drizzle-orm';
@@ -7,23 +8,40 @@ import { Alert, ScrollView, View } from 'react-native';
 
 import { showSnackbar } from '@/components/feedback/snackbarStore';
 import {
+  AppText,
   Button,
+  Card,
   Chip,
   MoneyField,
   Screen,
   SectionTitle,
   SegmentedControl,
+  SwitchRow,
   TextField,
 } from '@/components/ui';
 import { pickDateTime } from '@/components/ui/pickDateTime';
+import { LOAN_METHODS, LoanInputError, summarizeLoan, type LoanMethod } from '@/core/loans';
 import { db } from '@/db';
 import { people, type DebtDirection } from '@/db/schema';
 import { useLiveData } from '@/db/useLiveData';
+import { useMoneyFormat } from '@/features/settings';
 import { addDays, formatDate, toVnDate, todayVn, vnDateToMs, type DateString } from '@/lib/date';
+import { t } from '@/lib/i18n';
 
 import { WalletChips } from '../components/WalletChips';
 import { useDebt } from '../hooks';
 import { saveDebt } from '../repository';
+
+const TERM_CHIPS = [3, 6, 12, 24, 36] as const;
+
+const METHOD_LABEL: Record<LoanMethod, string> = {
+  annuity: 'Trả đều',
+  equal_principal: 'Gốc đều',
+  flat: 'Lãi phẳng',
+  interest_only: 'Gốc cuối kỳ',
+};
+
+const parseRate = (text: string) => Number(text.trim().replace(',', '.'));
 
 const DIRECTIONS = [
   { value: 'lent', label: 'Tôi cho vay' },
@@ -66,6 +84,36 @@ function Form({
   const [date, setDate] = useState(() => existing?.debt.date ?? Date.now());
   const [dueDate, setDueDate] = useState<DateString | null>(existing?.debt.dueDate ?? null);
   const [note, setNote] = useState(existing?.debt.note ?? '');
+  const format = useMoneyFormat();
+  const terms = existing?.terms ?? null;
+  const [hasTerms, setHasTerms] = useState(terms !== null);
+  const [rateText, setRateText] = useState(terms ? String(terms.annualRate).replace('.', ',') : '');
+  const [months, setMonths] = useState(terms?.months ?? 12);
+  const [monthsText, setMonthsText] = useState(
+    terms && !(TERM_CHIPS as readonly number[]).includes(terms.months) ? String(terms.months) : '',
+  );
+  const [method, setMethod] = useState<LoanMethod>((terms?.method as LoanMethod) ?? 'annuity');
+  const [monthlyFee, setMonthlyFee] = useState(terms?.monthlyFee ?? 0);
+  const annualRate = parseRate(rateText);
+  const startDate = toVnDate(date);
+
+  // Xem trước số trả mỗi kỳ ngay khi gõ
+  let preview: ReturnType<typeof summarizeLoan> | null = null;
+  let previewError: string | null = null;
+  if (hasTerms && amount > 0 && rateText.trim()) {
+    try {
+      preview = summarizeLoan({
+        principal: amount,
+        annualRate,
+        months,
+        method,
+        monthlyFee,
+        startDate,
+      });
+    } catch (error) {
+      previewError = error instanceof LoanInputError ? error.message : String(error);
+    }
+  }
 
   const suggestions = name.trim()
     ? knownPeople.filter(
@@ -82,9 +130,15 @@ function Form({
         amount,
         title,
         date,
-        dueDate,
+        // Khoản có kỳ: hạn cuối là ngày đến hạn của kỳ cuối
+        dueDate: hasTerms && preview ? (preview.rows.at(-1)?.date ?? dueDate) : dueDate,
         note,
         accountId,
+        terms: hasTerms
+          ? { annualRate, months, method, startDate, monthlyFee }
+          : existing?.terms
+            ? null
+            : undefined,
       });
       showSnackbar({ text: 'Đã lưu khoản nợ', tone: 'success' });
       goBack();
@@ -101,7 +155,7 @@ function Form({
           <Button
             title="Lưu"
             icon="checkmark"
-            disabled={!name.trim() || amount <= 0}
+            disabled={!name.trim() || amount <= 0 || (hasTerms && !preview)}
             onPress={save}
           />
         </View>
@@ -151,8 +205,116 @@ function Form({
         />
       </View>
 
-      <SectionTitle>Hạn trả</SectionTitle>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      <SwitchRow
+        icon="calculator-outline"
+        title="Có lãi, trả theo kỳ"
+        subtitle="Vay ngân hàng, công ty tài chính, trả góp: nhập lãi suất và số kỳ"
+        value={hasTerms}
+        onValueChange={setHasTerms}
+      />
+      {hasTerms ? (
+        <>
+          <TextField
+            label="Lãi suất (%/năm)"
+            icon="trending-up-outline"
+            placeholder="vd: 12"
+            keyboardType="decimal-pad"
+            value={rateText}
+            onChangeText={setRateText}
+          />
+          {Number.isFinite(annualRate) && rateText.trim() ? (
+            <AppText variant="caption" color="textMuted">
+              {t('= {rate}%/tháng', {
+                rate: (annualRate / 12).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
+              })}
+            </AppText>
+          ) : null}
+          <SectionTitle>Số kỳ (tháng)</SectionTitle>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+            {TERM_CHIPS.map((n) => (
+              <Chip
+                key={n}
+                label={t('{n} tháng', { n })}
+                selected={months === n && !monthsText}
+                onPress={() => {
+                  setMonths(n);
+                  setMonthsText('');
+                }}
+              />
+            ))}
+            <View style={{ width: 110 }}>
+              <TextField
+                placeholder="Khác"
+                keyboardType="number-pad"
+                value={monthsText}
+                onChangeText={(text) => {
+                  setMonthsText(text);
+                  const n = Number(text);
+                  if (Number.isInteger(n) && n > 0) setMonths(n);
+                }}
+              />
+            </View>
+          </View>
+          <SectionTitle>Cách tính lãi</SectionTitle>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {LOAN_METHODS.map((m) => (
+              <Chip
+                key={m}
+                label={METHOD_LABEL[m]}
+                selected={method === m}
+                onPress={() => setMethod(m)}
+              />
+            ))}
+          </View>
+          <MoneyField
+            label="Phí mỗi kỳ (bảo hiểm, quản lý)"
+            value={monthlyFee}
+            onChange={setMonthlyFee}
+          />
+          {preview ? (
+            <Card style={{ gap: 4 }}>
+              <AppText variant="bodyMedium">
+                {preview.firstPayment === preview.maxPayment
+                  ? t('Mỗi tháng {amount}', { amount: format.money(preview.firstPayment) })
+                  : t('Kỳ đầu {first} → kỳ cuối {last}', {
+                      first: format.money(preview.firstPayment),
+                      last: format.money(preview.lastPayment),
+                    })}
+              </AppText>
+              <AppText variant="caption" color="textMuted">
+                {t('Tổng lãi {interest} · kỳ đầu {date} · kỳ cuối {end}', {
+                  interest: format.money(preview.totalInterest + preview.totalFee),
+                  date: formatDate(preview.rows[0].date!),
+                  end: formatDate(preview.rows.at(-1)!.date!),
+                })}
+              </AppText>
+              {preview.effectiveRate != null && preview.effectiveRate > annualRate + 0.5 ? (
+                <AppText variant="caption" color="warning">
+                  {t('Lãi thực khoảng {real}%/năm', {
+                    real: preview.effectiveRate.toLocaleString('vi-VN', {
+                      maximumFractionDigits: 1,
+                    }),
+                  })}
+                </AppText>
+              ) : null}
+            </Card>
+          ) : previewError ? (
+            <AppText variant="caption" color="expense">
+              {t(previewError)}
+            </AppText>
+          ) : null}
+        </>
+      ) : null}
+
+      {!hasTerms ? <SectionTitle>Hạn trả</SectionTitle> : null}
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: 8,
+          display: hasTerms ? 'none' : 'flex',
+        }}
+      >
         <Chip label="Không hạn" selected={dueDate === null} onPress={() => setDueDate(null)} />
         <Chip label="+1 tháng" onPress={() => setDueDate(addDays(todayVn(), 30))} />
         <Chip

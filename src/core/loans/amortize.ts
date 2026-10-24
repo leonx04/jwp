@@ -268,12 +268,12 @@ export function simulatePrepayment(input: PrepayInput): PrepayResult {
       const oldNext = before.rows[k].payment - before.rows[k].fee;
       months = 1;
       while (months < remaining) {
-        const trial = buildSchedule(shiftTerms(terms, k, left, months));
+        const trial = buildSchedule(remainingTerms(terms, k, left, months));
         if (trial.rows[0].payment - trial.rows[0].fee <= oldNext) break;
         months++;
       }
     }
-    tail = buildSchedule(shiftTerms(terms, k, left, months)).rows.map((r) => ({
+    tail = buildSchedule(remainingTerms(terms, k, left, months)).rows.map((r) => ({
       ...r,
       period: r.period + k,
       date: terms.startDate ? dueDateOf(terms.startDate, r.period + k) : null,
@@ -292,8 +292,13 @@ export function simulatePrepayment(input: PrepayInput): PrepayResult {
   };
 }
 
-/** Điều khoản cho phần còn lại sau kỳ `k`, dư nợ `balance`, còn `months` kỳ */
-function shiftTerms(t: LoanTerms, k: number, balance: number, months: number): LoanTerms {
+/** Điều khoản cho phần còn lại sau kỳ `k` với dư nợ `balance` và còn `months` kỳ (kỳ đánh số lại từ 1) */
+export function remainingTerms(
+  t: LoanTerms,
+  k: number,
+  balance: number,
+  months: number,
+): LoanTerms {
   const rate = rateAt(t, k + 1);
   const steps = (t.rateSteps ?? [])
     .filter((s) => s.fromPeriod > k + 1)

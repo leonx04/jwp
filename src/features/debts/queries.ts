@@ -3,16 +3,19 @@ import { and, asc, eq, isNull, ne } from 'drizzle-orm';
 import {
   categories,
   debtRecords,
+  debtTerms,
   debts,
   people,
   transactions,
   type Debt,
   type DebtRecord,
+  type DebtTerms,
   type Person,
 } from '@/db/schema';
 import type { AppDatabase } from '@/db/types';
 import type { DateString } from '@/lib/date';
 
+import { installmentPlan, loanTermsOf, type InstallmentPlan } from './installments';
 import { suggestDebts, type DebtProposal, type SuggestTx } from './suggest';
 import {
   amountsOf,
@@ -29,14 +32,37 @@ export type DebtItem = DebtAmounts & {
   /** Mới nhất trước */
   records: DebtRecord[];
   status: DebtStatus;
+  /** Số ngày tới hạn: hạn của khoản, hoặc hạn kỳ tiếp theo với khoản có lãi theo kỳ */
   daysToDue: number | null;
   direction: Debt['direction'];
+  /** Điều khoản lãi theo kỳ (null = nợ thường) */
+  terms: DebtTerms | null;
+  plan: InstallmentPlan | null;
 };
 
-function build(debt: Debt, person: Person, records: DebtRecord[], today: DateString): DebtItem {
+function build(
+  debt: Debt,
+  person: Person,
+  records: DebtRecord[],
+  today: DateString,
+  terms: DebtTerms | null = null,
+): DebtItem {
   const amounts = amountsOf(debt.amount, records);
+  let plan: InstallmentPlan | null = null;
+  if (terms) {
+    try {
+      plan = installmentPlan(
+        loanTermsOf(debt.amount, terms),
+        records,
+        amounts.total - amounts.repaid,
+        today,
+      );
+    } catch {
+      plan = null; // điều khoản hỏng (sửa tay / file cũ): hiện như nợ thường
+    }
+  }
   const { status, daysToDue } = debtStatus(
-    { closedAt: debt.closedAt, dueDate: debt.dueDate },
+    { closedAt: debt.closedAt, dueDate: plan?.next?.date ?? debt.dueDate },
     amounts.remaining,
     today,
   );
@@ -49,6 +75,8 @@ function build(debt: Debt, person: Person, records: DebtRecord[], today: DateStr
     status,
     daysToDue,
     direction: debt.direction,
+    terms,
+    plan,
   };
 }
 
@@ -65,7 +93,16 @@ export function listDebts(db: AppDatabase, today: DateString): DebtItem[] {
     if (list) list.push(r);
     else byDebt.set(r.debtId, [r]);
   }
-  return rows.map(({ debt, person }) => build(debt, person, byDebt.get(debt.id) ?? [], today));
+  const termsByDebt = new Map(
+    db
+      .select()
+      .from(debtTerms)
+      .all()
+      .map((t) => [t.debtId, t]),
+  );
+  return rows.map(({ debt, person }) =>
+    build(debt, person, byDebt.get(debt.id) ?? [], today, termsByDebt.get(debt.id) ?? null),
+  );
 }
 
 export function getDebtItem(db: AppDatabase, id: string, today: DateString): DebtItem | null {

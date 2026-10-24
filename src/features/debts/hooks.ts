@@ -7,7 +7,7 @@ import { todayVn } from '@/lib/date';
 import { summarize } from './compute';
 import { getDebtItem, groupByPerson, listDebtProposals, listDebts } from './queries';
 
-const TABLES = ['debts', 'debt_records', 'people'] as const;
+const TABLES = ['debts', 'debt_records', 'debt_terms', 'people'] as const;
 
 export function useDebts() {
   const { data } = useLiveData(TABLES, () => listDebts(db, todayVn()));

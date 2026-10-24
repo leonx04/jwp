@@ -43,7 +43,17 @@ export function DebtRow({ item, showPerson = false }: { item: DebtItem; showPers
       />
       {open ? (
         <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 12, paddingBottom: 8 }}>
-          {owing ? (
+          {owing && item.plan?.next ? (
+            <Button
+              title={t('Trả kỳ {period}', { period: item.plan.next.period })}
+              size="sm"
+              variant={item.plan.next.status === 'upcoming' ? 'secondary' : 'primary'}
+              icon="checkmark"
+              onPress={() =>
+                router.push({ pathname: '/debt/installment', params: { debtId: item.debt.id } })
+              }
+            />
+          ) : owing ? (
             <Button
               title={repayAction(item.direction)}
               size="sm"
