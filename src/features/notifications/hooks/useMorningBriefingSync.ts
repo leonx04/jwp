@@ -5,21 +5,14 @@ import { useEffect } from 'react';
 import { AppState, Platform } from 'react-native';
 
 import { db } from '@/db';
+import { SNAPSHOT_TABLES } from '@/features/forecast/snapshot';
 import { useSettings } from '@/features/settings/store';
 
 import { notificationsSupported } from '../module';
 import { requestMorningBriefingRefresh } from '../morningBriefing';
 import { requestReminderRefresh } from '../reminderSync';
 
-const WATCHED = new Set([
-  'transactions',
-  'accounts',
-  'schedules',
-  'schedule_occurrences',
-  'debts',
-  'debt_records',
-  'debt_terms',
-]);
+const WATCHED = new Set<string>(SNAPSHOT_TABLES);
 
 export function useMorningBriefingSync() {
   useEffect(() => {

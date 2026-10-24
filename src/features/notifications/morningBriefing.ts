@@ -6,13 +6,9 @@ import { t } from '@/lib/i18n';
 import { Platform } from 'react-native';
 
 import type { AppDatabase } from '@/db/types';
-import { getAccountBalances, totalBalance } from '@/features/accounts/queries';
-import { creditBillOccurrences, isCreditBill } from '@/features/credit/bills';
-import { getCreditSummaries } from '@/features/credit/queries';
+import { isCreditBill } from '@/features/credit/bills';
 import { listDebts } from '@/features/debts/queries';
-import { computeForecast } from '@/features/forecast/forecast';
-import { expandOccurrences } from '@/features/schedules/occurrences';
-import { listOverrides, listSchedules } from '@/features/schedules/repository';
+import { loadFinancialSnapshot } from '@/features/forecast/snapshot';
 import { getSettings } from '@/features/settings/store';
 import { computeToday, projectAllowances } from '@/features/today/compute';
 import { getDaySpending } from '@/features/today/queries';
@@ -43,30 +39,15 @@ export function loadBriefingInput(
 ): BriefingInput | null {
   const settings = getSettings();
   const today = todayVn(now);
-  const balances = getAccountBalances(db);
-  if (!balances.length) return null;
-
-  // Giống useScheduleOverview (schedules/hooks.ts) nhưng chạy ngoài React
-  const credit = getCreditSummaries(db, today);
-  const creditIds = new Set(credit.map((c) => c.account.id));
-  const fallbackPayer =
-    balances
-      .filter((b) => b.includeInBalance && !creditIds.has(b.id))
-      .sort((a, b) => b.balance - a.balance)[0]?.id ?? null;
-  const to = addDays(today, FORECAST_DAYS);
-  const occurrences = [
-    ...expandOccurrences(listSchedules(db), listOverrides(db), { from: today, to, today }),
-    ...creditBillOccurrences(credit, { today, to, fallbackPayer }),
-  ].sort((a, b) => a.date.localeCompare(b.date) || a.scheduleId.localeCompare(b.scheduleId));
-  const forecast = computeForecast({
+  // Cùng ảnh chụp với Tổng quan / widget → báo cáo ra đúng con số trong app
+  const { balances, credit, occurrences, forecast } = loadFinancialSnapshot(db, {
     today,
     days: FORECAST_DAYS,
-    startBalance: totalBalance(balances),
-    accountBalances: new Map(balances.map((b) => [b.id, b.balance])),
-    includedAccounts: new Set(balances.filter((b) => b.includeInBalance).map((b) => b.id)),
-    occurrences,
     safetyThreshold: settings.safetyThreshold,
   });
+  if (!balances.length) return null;
+  const creditIds = new Set(credit.map((c) => c.account.id));
+  const to = addDays(today, FORECAST_DAYS);
 
   const status = computeToday({
     today,
@@ -104,10 +85,12 @@ export function loadBriefingInput(
     }
   }
 
-  // Khoản nợ tới hạn (đòi / trả) trong thời gian tới → coi như khoản theo lịch trong báo cáo
+  // Khoản nợ tới hạn (đòi / trả) trong thời gian tới → coi như khoản theo lịch trong báo cáo.
+  // Khoản có lãi theo kỳ đã nằm trong `occurrences` (từng kỳ) nên bỏ ở đây.
   const debtItems = listDebts(db, today)
     .filter(
       (d) =>
+        !d.plan &&
         (d.status === 'overdue' || d.status === 'due-soon' || d.status === 'open') &&
         d.debt.dueDate &&
         d.debt.dueDate <= to,

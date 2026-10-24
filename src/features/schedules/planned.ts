@@ -1,8 +1,10 @@
-// Các khoản dự kiến trong một khoảng ngày: kỳ của lịch thu chi + kỳ bill ví trả sau.
+// Các khoản dự kiến trong một khoảng ngày: kỳ của lịch thu chi + kỳ bill ví trả sau + kỳ trả nợ có lãi.
 // Dùng chung cho dự trù dòng tiền (hooks.ts) và lịch tháng (calendar.ts).
 import { getAccountBalances, type AccountBalance } from '@/features/accounts/queries';
 import { creditBillOccurrences, dropCoveredBills } from '@/features/credit/bills';
 import { getCreditSummaries, type CreditSummary } from '@/features/credit/queries';
+import { loanInstallmentOccurrences } from '@/features/debts/loanOccurrences';
+import { listDebts } from '@/features/debts/queries';
 import type { AppDatabase } from '@/db/types';
 import type { DateString } from '@/lib/date';
 
@@ -28,7 +30,7 @@ export const byOccurrenceDate = (a: Occurrence, b: Occurrence) =>
   a.date.localeCompare(b.date) || a.scheduleId.localeCompare(b.scheduleId);
 
 /**
- * Kỳ lịch + kỳ bill trong [from, to] (kỳ quá hạn chưa xử lý luôn kèm theo, kể cả trước `from`).
+ * Kỳ lịch + kỳ bill + kỳ trả nợ có lãi trong [from, to] (kỳ quá hạn chưa xử lý luôn kèm theo, kể cả trước `from`).
  * `includeResolved`: kèm kỳ đã trả / bỏ qua trong khoảng.
  */
 export function loadPlanned(
@@ -44,15 +46,23 @@ export function loadPlanned(
   const overrides = listOverrides(db);
   const balances = getAccountBalances(db);
   const credit = getCreditSummaries(db, today);
+  const fallbackPayer = fallbackBillPayer(balances, credit);
   const real = expandOccurrences(schedules, overrides, { from, to, today, includeResolved });
   const bills = dropCoveredBills(
     real,
     creditBillOccurrences(credit, {
       today,
       to,
-      fallbackPayer: fallbackBillPayer(balances, credit),
+      fallbackPayer,
     }),
   );
-  const occurrences = [...real, ...bills].sort(byOccurrenceDate);
+  const loans = loanInstallmentOccurrences(listDebts(db, today), {
+    from,
+    to,
+    today,
+    fallbackPayer,
+    includeResolved,
+  });
+  const occurrences = [...real, ...bills, ...loans].sort(byOccurrenceDate);
   return { schedules, balances, credit, occurrences };
 }
