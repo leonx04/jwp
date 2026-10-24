@@ -6,6 +6,7 @@ import { sql, type SQL } from 'drizzle-orm';
 import { categories, transactions } from '@/db/schema';
 import type { AppDatabase } from '@/db/types';
 import { VN_OFFSET_MS, type Period } from '@/lib/date';
+import { NEUTRAL_MARK } from '@/theme/swatches';
 
 import {
   TRANSFER_KEY,
@@ -24,7 +25,7 @@ export type StatsOptions = {
 };
 
 const UNCATEGORIZED_NAME = 'Chưa phân loại';
-const UNCATEGORIZED_COLOR = '#8A8FA0';
+const UNCATEGORIZED_COLOR = NEUTRAL_MARK;
 const TRANSFER_NAME = 'Chuyển khoản';
 const TRANSFER_COLOR = '#64748B';
 

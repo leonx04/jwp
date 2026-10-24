@@ -20,12 +20,13 @@ import { bankFromIcon } from '@/lib/banks';
 import { DEFAULT_CATEGORY_ICON, toAppIcon, type AppIcon } from '@/lib/icons';
 
 import { deleteCategory, listCategories, saveCategory } from '../repository';
+import { SWATCH } from '@/theme';
 
 export function CategoryEditScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const existing = id ? listCategories(db).find((c) => c.id === id) : undefined;
   const [name, setName] = useState(existing?.name ?? '');
-  const [color, setColor] = useState(existing?.color ?? '#F97316');
+  const [color, setColor] = useState(existing?.color ?? SWATCH.orange);
   // Icon: tên Ionicons hoặc logo ngân hàng / ví ('bank:<CODE>'), lưu dạng chuỗi
   const [icon, setIcon] = useState<AppIcon>(toAppIcon(existing?.icon, DEFAULT_CATEGORY_ICON));
 

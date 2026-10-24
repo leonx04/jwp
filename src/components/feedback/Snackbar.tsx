@@ -53,13 +53,13 @@ export function Snackbar() {
         style={[
           styles.bar,
           {
-            backgroundColor: colors.dark ? 'rgba(36,38,48,0.96)' : 'rgba(22,24,32,0.94)',
+            backgroundColor: colors.toast,
             boxShadow: `0 6px 16px ${colors.shadow}`,
           },
         ]}
       >
         <Ionicons name={icon} size={20} color={iconColor} />
-        <AppText style={styles.text} numberOfLines={2}>
+        <AppText style={[styles.text, { color: colors.onToast }]} numberOfLines={2}>
           {current.text}
         </AppText>
         {current.actionLabel ? (
@@ -70,10 +70,7 @@ export function Snackbar() {
               hide();
             }}
           >
-            <AppText
-              variant="bodyMedium"
-              style={{ color: colors.dark ? colors.primary : '#A5B4FC' }}
-            >
+            <AppText variant="bodyMedium" style={{ color: colors.toastAction }}>
               {current.actionLabel}
             </AppText>
           </Pressable>
@@ -99,6 +96,5 @@ const styles = StyleSheet.create({
   },
   text: {
     flex: 1,
-    color: '#F3F4F8',
   },
 });

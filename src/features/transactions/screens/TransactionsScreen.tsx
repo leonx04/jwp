@@ -349,8 +349,8 @@ function DeleteAction({
         onPress={onPress}
         style={styles.deletePress}
       >
-        <Ionicons name="trash-outline" size={22} color="#FFFFFF" />
-        <AppText variant="label" style={{ color: '#FFFFFF' }}>
+        <Ionicons name="trash-outline" size={22} color={colors.onDanger} />
+        <AppText variant="label" style={{ color: colors.onDanger }}>
           Xoá
         </AppText>
       </Pressable>

@@ -279,6 +279,7 @@ function Biggest({ report: r }: { report: MonthlyReport }) {
 }
 
 function Budgets({ report: r }: { report: MonthlyReport }) {
+  const { colors } = useTheme();
   const format = useMoneyFormat();
   if (!r.budgets.length) return null;
   return (
@@ -290,7 +291,7 @@ function Budgets({ report: r }: { report: MonthlyReport }) {
             <Ionicons
               name={b.over ? 'close-circle' : 'checkmark-circle'}
               size={20}
-              color={b.over ? '#C9372C' : '#13803F'}
+              color={b.over ? colors.expense : colors.income}
             />
             <AppText style={{ flex: 1 }} numberOfLines={1}>
               {b.name}

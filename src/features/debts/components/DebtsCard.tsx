@@ -5,6 +5,7 @@ import { Pressable, View } from 'react-native';
 
 import { AppText, Card, ListRow } from '@/components/ui';
 import { useMoneyFormat, useSettings } from '@/features/settings';
+import { useTheme } from '@/theme';
 
 import { useDebts } from '../hooks';
 import { statusText } from './display';
@@ -12,6 +13,7 @@ import { statusText } from './display';
 const URGENT = { overdue: 0, 'due-soon': 1, open: 2, settled: 3, closed: 4 } as const;
 
 export function DebtsCard() {
+  const { colors } = useTheme();
   const format = useMoneyFormat();
   const hide = useSettings((s) => s.hideBalance);
   const { items, summary } = useDebts();
@@ -75,7 +77,7 @@ export function DebtsCard() {
           <ListRow
             key={d.debt.id}
             icon={d.direction === 'lent' ? 'arrow-up-circle-outline' : 'arrow-down-circle-outline'}
-            iconColor={d.direction === 'lent' ? '#16A34A' : '#DC2626'}
+            iconColor={d.direction === 'lent' ? colors.income : colors.expense}
             title={d.person.name}
             subtitle={`${t(d.direction === 'lent' ? 'Họ nợ bạn' : 'Bạn nợ họ')} · ${statusText(d)}`}
             onPress={() => router.push({ pathname: '/debt/[id]', params: { id: d.debt.id } })}

@@ -14,7 +14,7 @@ import { useMoneyFormat, useSettings } from '@/features/settings';
 import { ProgressBar } from '@/features/today/components/ProgressBar';
 import { addDays, todayVn, vnDateToMs } from '@/lib/date';
 import { toAppIcon } from '@/lib/icons';
-import { rgba, useTheme } from '@/theme';
+import { NEUTRAL_MARK, rgba, useTheme } from '@/theme';
 
 import {
   averagePer,
@@ -135,7 +135,7 @@ export function StatsScreen() {
       format: format.compact,
       limit: 5,
     });
-    const slices = foldSlices(deltas, 6, { name: 'Khác', color: '#8A8FA0' });
+    const slices = foldSlices(deltas, 6, { name: 'Khác', color: NEUTRAL_MARK });
     const buckets = bucketByPeriods(
       data.daily,
       mode === 'year' ? monthsEnding({ start: period.end, end: period.end }, 12, startDay) : bars,

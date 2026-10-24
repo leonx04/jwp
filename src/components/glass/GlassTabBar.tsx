@@ -47,8 +47,8 @@ export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
   const plusStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${spin.get() * 90}deg` }] }));
 
   // Dock đảo màu: nền sáng → dock tối; nền tối → dock sáng
-  const dockBg = colors.dark ? '#E9EDF5' : '#0E1320';
-  const idle = colors.dark ? '#5F687C' : '#8C97AD';
+  const dockBg = colors.inverseSurface;
+  const idle = colors.inverseMuted;
 
   return (
     <View
@@ -58,7 +58,7 @@ export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
       <View
         style={[
           styles.dock,
-          { backgroundColor: dockBg, boxShadow: `0 10px 30px ${rgba('#000000', 0.28)}` },
+          { backgroundColor: dockBg, boxShadow: `0 10px 30px rgba(0,0,0,0.28)` },
         ]}
       >
         {items.map((item) => {

@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
 import { AppText, Card, IconBadge } from '@/components/ui';
+import { SWATCH } from '@/theme';
 
 import { useRecurringSuggestions } from '../hooks';
 
@@ -16,7 +17,7 @@ export function RecurringBanner() {
   return (
     <Pressable accessibilityRole="button" onPress={() => router.push('/recurring')}>
       <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <IconBadge icon="repeat-outline" color="#0EA5E9" size={40} />
+        <IconBadge icon="repeat-outline" color={SWATCH.sky} size={40} />
         <View style={{ flex: 1 }}>
           <AppText variant="bodyMedium">{data.length} khoản có vẻ lặp hằng tháng</AppText>
           <AppText variant="caption" color="textMuted" numberOfLines={1}>
