@@ -4,22 +4,18 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Alert, View } from 'react-native';
 
 import { showSnackbar } from '@/components/feedback/snackbarStore';
-import { AppText, Button, Card, EmptyState, IconBadge, ListRow, Screen } from '@/components/ui';
+import { AppText, Button, Card, EmptyState, IconBadge, Screen } from '@/components/ui';
 import { db } from '@/db';
 import { useMoneyFormat } from '@/features/settings';
 import { ProgressBar } from '@/features/today/components/ProgressBar';
 import { formatDate, toVnDate } from '@/lib/date';
 import { useTheme } from '@/theme';
 
+import { buildLedger } from '../compute';
 import { DIRECTION_LABEL, recordLabel, repayAction, statusText } from '../components/display';
+import { LedgerTimeline } from '../components/LedgerTimeline';
 import { useDebt } from '../hooks';
-import { deleteDebt, deleteDebtRecord, setDebtClosed } from '../repository';
-
-const RECORD_ICON = {
-  repay: 'checkmark-circle-outline',
-  increase: 'add-circle-outline',
-  interest: 'trending-up-outline',
-} as const;
+import { deleteDebt, setDebtClosed } from '../repository';
 
 export function DebtDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -65,11 +61,8 @@ export function DebtDetailScreen() {
       ],
     );
 
-  const confirmDeleteRecord = (recordId: string) =>
-    Alert.alert('Xoá lần ghi này?', 'Giao dịch ví tương ứng (nếu có) cũng bị xoá.', [
-      { text: 'Huỷ', style: 'cancel' },
-      { text: 'Xoá', style: 'destructive', onPress: () => deleteDebtRecord(db, recordId) },
-    ]);
+  const editRecord = (recordId: string) =>
+    router.push({ pathname: '/debt/record', params: { debtId: debt.id, recordId } });
 
   return (
     <Screen title={person.name}>
@@ -136,71 +129,49 @@ export function DebtDetailScreen() {
         </Card>
       ) : null}
 
-      {open && !settled ? (
+      {/* Trả bớt / vay thêm luôn ở tay khi khoản còn mở; vay thêm vẫn bấm được khi đã trả hết */}
+      {open ? (
         <View style={{ gap: 8 }}>
-          <Button
-            title={repayAction(item.direction)}
-            icon="checkmark"
-            onPress={() => record('repay')}
-          />
           <View style={{ flexDirection: 'row', gap: 8 }}>
+            {!settled ? (
+              <View style={{ flex: 1 }}>
+                <Button
+                  title={repayAction(item.direction)}
+                  icon="checkmark"
+                  onPress={() => record('repay')}
+                />
+              </View>
+            ) : null}
             <View style={{ flex: 1 }}>
               <Button
                 title={recordLabel(item.direction, 'increase')}
-                variant="secondary"
-                size="sm"
+                variant={settled ? 'primary' : 'secondary'}
                 icon="add"
                 onPress={() => record('increase')}
               />
             </View>
-            <View style={{ flex: 1 }}>
-              <Button
-                title="Tính lãi"
-                variant="secondary"
-                size="sm"
-                icon="trending-up-outline"
-                onPress={() => record('interest')}
-              />
-            </View>
           </View>
+          {!settled ? (
+            <Button
+              title="Tính lãi"
+              variant="secondary"
+              size="sm"
+              icon="trending-up-outline"
+              onPress={() => record('interest')}
+            />
+          ) : null}
         </View>
       ) : null}
 
-      <Card style={{ gap: 0, paddingVertical: 6 }}>
-        <AppText variant="label" color="textMuted" style={{ padding: 12 }}>
-          LỊCH SỬ
+      <Card style={{ gap: 12 }}>
+        <AppText variant="label" color="textMuted">
+          LỊCH SỬ · MỚI NHẤT TRƯỚC
         </AppText>
-        {item.records.map((r) => (
-          <ListRow
-            key={r.id}
-            icon={RECORD_ICON[r.type]}
-            iconColor={r.type === 'repay' ? colors.income : colors.primary}
-            title={recordLabel(item.direction, r.type)}
-            subtitle={`${formatDate(toVnDate(r.date))}${r.note ? ` · ${r.note}` : ''}`}
-            onPress={() => confirmDeleteRecord(r.id)}
-            right={
-              <AppText variant="bodyMedium" style={{ fontVariant: ['tabular-nums'] }}>
-                {r.type === 'repay' ? '−' : '+'}
-                {format.money(r.amount)}
-              </AppText>
-            }
-          />
-        ))}
-        <ListRow
-          icon="flag-outline"
-          title="Khoản gốc"
-          subtitle={formatDate(toVnDate(debt.date))}
-          right={
-            <AppText
-              variant="bodyMedium"
-              style={{ fontVariant: ['tabular-nums'] }}
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.6}
-            >
-              {format.money(debt.amount)}
-            </AppText>
-          }
+        <LedgerTimeline
+          entries={buildLedger(debt, item.records)}
+          direction={item.direction}
+          dueDate={debt.dueDate}
+          onPressRecord={(r) => editRecord(r.id)}
         />
       </Card>
 

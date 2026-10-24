@@ -12,6 +12,8 @@ export type NotificationData = {
   channel?: ChannelId;
   /** Số giây hẹn lại khi bấm "Nhắc lại sau" */
   snoozeSeconds?: number;
+  /** Đường dẫn riêng cho nút hành động chính (vd sổ nợ: mở màn ghi lần trả) */
+  actionUrl?: string;
 };
 
 type ReminderInput = {

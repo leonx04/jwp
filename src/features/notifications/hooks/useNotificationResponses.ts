@@ -63,6 +63,10 @@ async function handleResponse(
     return;
   }
 
+  if (actionIdentifier === ACTIONS.markPaid && data.actionUrl) {
+    router.push(data.actionUrl as Href);
+    return;
+  }
   if (data.url) router.push(data.url as Href);
 }
 

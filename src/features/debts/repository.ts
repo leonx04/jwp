@@ -136,38 +136,86 @@ export type DebtRecordInput = {
 
 export function addDebtRecord(db: AppDatabase, input: DebtRecordInput): string {
   checkAmount(input.amount);
-  return db.transaction((tx) => {
-    const debt = tx.select().from(debts).where(eq(debts.id, input.debtId)).get();
-    if (!debt) throw new DebtValidationError('Không tìm thấy khoản nợ.');
-    const person = tx.select().from(people).where(eq(people.id, debt.personId)).get();
-    const flow = walletFlow(debt.direction, input.type);
-    let transactionId: string | null = null;
-    if (input.accountId && flow) {
-      transactionId = saveTransaction(tx, {
-        type: flow,
-        amount: input.amount,
-        accountId: input.accountId,
-        title: titleFor(debt.direction, input.type, person?.name ?? ''),
-        note: input.note ?? null,
-        date: input.date,
-        debtId: debt.id,
-      });
-    }
-    const id = createId();
-    tx.insert(debtRecords)
-      .values({
-        id,
-        debtId: debt.id,
-        type: input.type,
-        amount: input.amount,
-        date: input.date,
-        note: input.note?.trim() || null,
-        accountId: transactionId ? input.accountId! : null,
-        transactionId,
-      })
-      .run();
-    return id;
+  return db.transaction((tx) => writeRecord(tx, input));
+}
+
+/** Sửa một lần trả / vay thêm / lãi; giao dịch ví đi kèm được sửa, tạo hoặc xoá theo ví mới */
+export function updateDebtRecord(
+  db: AppDatabase,
+  recordId: string,
+  input: Omit<DebtRecordInput, 'debtId' | 'type'>,
+): void {
+  checkAmount(input.amount);
+  db.transaction((tx) => {
+    const record = tx.select().from(debtRecords).where(eq(debtRecords.id, recordId)).get();
+    if (!record) throw new DebtValidationError('Không tìm thấy lần ghi này.');
+    writeRecord(tx, { ...input, debtId: record.debtId, type: record.type }, record);
   });
+}
+
+/**
+ * Trả một lần cho nhiều khoản của cùng một người (đã chia sẵn bằng `allocateRepayment`).
+ * Mỗi khoản nhận một bản ghi trả riêng, tất cả trong một transaction.
+ */
+export function repayMany(
+  db: AppDatabase,
+  parts: readonly { debtId: string; amount: number }[],
+  input: Omit<DebtRecordInput, 'debtId' | 'type' | 'amount'>,
+): string[] {
+  if (!parts.length) throw new DebtValidationError('Không có khoản nào để trả.');
+  for (const p of parts) checkAmount(p.amount);
+  return db.transaction((tx) =>
+    parts.map((p) =>
+      writeRecord(tx, { ...input, debtId: p.debtId, amount: p.amount, type: 'repay' }),
+    ),
+  );
+}
+
+/** Ghi (hoặc ghi đè `existing`) một bản ghi nợ cùng giao dịch ví của nó. Gọi trong transaction. */
+function writeRecord(
+  tx: AppDatabase,
+  input: DebtRecordInput,
+  existing?: typeof debtRecords.$inferSelect,
+): string {
+  const debt = tx.select().from(debts).where(eq(debts.id, input.debtId)).get();
+  if (!debt) throw new DebtValidationError('Không tìm thấy khoản nợ.');
+  const person = tx.select().from(people).where(eq(people.id, debt.personId)).get();
+  const flow = walletFlow(debt.direction, input.type);
+  let transactionId = existing?.transactionId ?? null;
+  if (input.accountId && flow) {
+    transactionId = saveTransaction(tx, {
+      id: transactionId ?? undefined,
+      type: flow,
+      amount: input.amount,
+      accountId: input.accountId,
+      title: titleFor(debt.direction, input.type, person?.name ?? ''),
+      note: input.note ?? null,
+      date: input.date,
+      debtId: debt.id,
+    });
+  } else if (transactionId) {
+    deleteTransactions(tx, [transactionId]);
+    transactionId = null;
+  }
+  const values = {
+    amount: input.amount,
+    date: input.date,
+    note: input.note?.trim() || null,
+    accountId: transactionId ? input.accountId! : null,
+    transactionId,
+  };
+  if (existing) {
+    tx.update(debtRecords)
+      .set({ ...values, updatedAt: Date.now() })
+      .where(eq(debtRecords.id, existing.id))
+      .run();
+    return existing.id;
+  }
+  const id = createId();
+  tx.insert(debtRecords)
+    .values({ id, debtId: debt.id, type: input.type, ...values })
+    .run();
+  return id;
 }
 
 export function deleteDebtRecord(db: AppDatabase, recordId: string): void {

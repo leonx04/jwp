@@ -14,6 +14,8 @@ export type ChannelId = keyof typeof CHANNELS;
 
 /** Nhóm nút hành động hiển thị dưới thông báo khoản phải trả */
 export const PAYMENT_CATEGORY = 'payment-due';
+/** Nhóm nút dưới thông báo hạn trả nợ: nút đầu mở màn ghi lần trả */
+export const DEBT_CATEGORY = 'debt-due';
 
 export const ACTIONS = {
   markPaid: 'mark-paid',
@@ -52,6 +54,19 @@ export async function setupChannelsAndCategories(N: NotificationsModule): Promis
       identifier: ACTIONS.open,
       buttonTitle: 'Mở',
       options: { opensAppToForeground: true },
+    },
+  ]);
+
+  await N.setNotificationCategoryAsync(DEBT_CATEGORY, [
+    {
+      identifier: ACTIONS.markPaid,
+      buttonTitle: 'Ghi lần trả',
+      options: { opensAppToForeground: true },
+    },
+    {
+      identifier: ACTIONS.snooze,
+      buttonTitle: 'Nhắc lại sau',
+      options: { opensAppToForeground: false },
     },
   ]);
 }

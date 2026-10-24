@@ -22,6 +22,8 @@ export type ReminderItem = {
   time: string;
   /** Mở đường dẫn này khi bấm thông báo */
   url: string;
+  /** Mở đường dẫn này khi bấm nút "Ghi lần trả" (sổ nợ) */
+  actionUrl?: string;
 };
 
 export type ReminderFlags = {
@@ -52,8 +54,9 @@ export type Reminder = {
   body: string;
   url: string;
   channel: ChannelId;
-  /** Có nút Đã thanh toán / Nhắc lại sau / Mở */
+  /** Có nút hành động: Đã thanh toán (khoản phải trả) hoặc Ghi lần trả (sổ nợ) / Nhắc lại sau / Mở */
   withActions: boolean;
+  actionUrl?: string;
 };
 
 export const REMINDER_PREFIX = 'reminder:';
@@ -113,7 +116,8 @@ export function buildReminders(input: ReminderInput): Reminder[] {
     const icon = ICON[item.kind];
     const channel = CHANNEL[item.kind];
     const url = item.url;
-    const withActions = item.kind === 'payment';
+    const withActions = item.kind === 'payment' || item.kind === 'debt';
+    const actionUrl = item.actionUrl;
     const body = `${money(item.amount)} · ${formatDate(item.date, false)}`;
 
     // Nhắc trước hạn
@@ -129,6 +133,7 @@ export function buildReminders(input: ReminderInput): Reminder[] {
           url,
           channel,
           withActions,
+          ...(actionUrl ? { actionUrl } : {}),
         });
       }
     }
@@ -143,6 +148,7 @@ export function buildReminders(input: ReminderInput): Reminder[] {
         url,
         channel,
         withActions,
+        ...(actionUrl ? { actionUrl } : {}),
       });
     }
   }

@@ -14,7 +14,14 @@ import type { AppDatabase } from '@/db/types';
 import type { DateString } from '@/lib/date';
 
 import { suggestDebts, type DebtProposal, type SuggestTx } from './suggest';
-import { amountsOf, debtStatus, summarize, type DebtAmounts, type DebtStatus } from './compute';
+import {
+  amountsOf,
+  debtStatus,
+  newestFirst,
+  summarize,
+  type DebtAmounts,
+  type DebtStatus,
+} from './compute';
 
 export type DebtItem = DebtAmounts & {
   debt: Debt;
@@ -33,7 +40,7 @@ function build(debt: Debt, person: Person, records: DebtRecord[], today: DateStr
     amounts.remaining,
     today,
   );
-  const sorted = [...records].sort((a, b) => b.date - a.date);
+  const sorted = [...records].sort(newestFirst);
   return {
     ...amounts,
     debt,
@@ -104,7 +111,7 @@ export type PersonRecord = { record: DebtRecord; item: DebtItem };
 export function personRecords(items: readonly DebtItem[]): PersonRecord[] {
   return items
     .flatMap((item) => item.records.map((record) => ({ record, item })))
-    .sort((a, b) => b.record.date - a.record.date);
+    .sort((a, b) => newestFirst(a.record, b.record));
 }
 
 /** Gợi ý khoản nợ dựng từ giao dịch cũ chưa gắn vào sổ nợ */
