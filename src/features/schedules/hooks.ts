@@ -2,50 +2,34 @@ import { useMemo } from 'react';
 
 import { db } from '@/db';
 import { useLiveData } from '@/db/useLiveData';
-import { totalBalance } from '@/features/accounts/queries';
 import { listAccounts } from '@/features/accounts/repository';
 import { listCategories } from '@/features/categories/repository';
-import { computeForecast } from '@/features/forecast/forecast';
+import { loadFinancialSnapshot, SNAPSHOT_TABLES } from '@/features/forecast/snapshot';
 import { useSettings } from '@/features/settings';
 import { listTransactions } from '@/features/transactions/queries';
 import { addDays, todayVn, vnDateToMs, type DateString } from '@/lib/date';
 
 import { loadCalendarMonth } from './calendar';
 import type { OccurrenceLookup } from './components/OccurrenceRow';
-import { loadPlanned } from './planned';
 
-const TABLES = ['schedules', 'schedule_occurrences', 'transactions', 'accounts'] as const;
-
-/** Lịch + các kỳ còn phải xử lý (gồm bill ví trả sau) + dự trù dòng tiền N ngày tới, tự cập nhật */
+/**
+ * Lịch + các kỳ còn phải xử lý (gồm bill ví trả sau, kỳ trả nợ có lãi) + dự trù dòng tiền N ngày tới,
+ * tự cập nhật
+ */
 export function useScheduleOverview(days: number) {
   const safetyThreshold = useSettings((s) => s.safetyThreshold);
-  return useLiveData(TABLES, () => {
-    const today = todayVn();
-    const to = addDays(today, days);
-    const { schedules, balances, credit, occurrences } = loadPlanned(db, {
-      from: today,
-      to,
-      today,
-    });
-
-    const forecast = computeForecast({
-      today,
-      days,
-      startBalance: totalBalance(balances),
-      accountBalances: new Map(balances.map((b) => [b.id, b.balance])),
-      includedAccounts: new Set(balances.filter((b) => b.includeInBalance).map((b) => b.id)),
-      occurrences,
-      safetyThreshold,
-    });
-    return { today, schedules, occurrences, forecast, balances, credit };
-  }, [days, safetyThreshold]);
+  return useLiveData(
+    SNAPSHOT_TABLES,
+    () => loadFinancialSnapshot(db, { today: todayVn(), days, safetyThreshold }),
+    [days, safetyThreshold],
+  );
 }
 
 /** Số liệu lịch tháng (ngày 1 của tháng `month`), tự cập nhật khi có giao dịch / lịch thay đổi */
 export function useCalendarMonth(month: DateString) {
   const transfersAsIncomeExpense = useSettings((s) => s.transfersAsIncomeExpense);
   return useLiveData(
-    TABLES,
+    SNAPSHOT_TABLES,
     () => loadCalendarMonth(db, month, { today: todayVn(), transfersAsIncomeExpense }),
     [month, transfersAsIncomeExpense],
   );

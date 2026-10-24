@@ -1,14 +1,12 @@
 // Dữ liệu cho widget màn hình chính: "Hôm nay được tiêu" + các ngân sách sát hạn mức nhất.
 // Chạy được cả khi app đang đóng (tác vụ nền của widget) nên không dùng hook / React.
 import type { AppDatabase } from '@/db/types';
-import { totalBalance } from '@/features/accounts/queries';
 import { listBudgets } from '@/features/budgets/queries';
-import { computeForecast } from '@/features/forecast/forecast';
-import { loadPlanned } from '@/features/schedules/planned';
+import { loadFinancialSnapshot } from '@/features/forecast/snapshot';
 import { getSettings } from '@/features/settings/store';
 import { computeToday, incomeLabel } from '@/features/today/compute';
 import { getDaySpending } from '@/features/today/queries';
-import { addDays, diffDays, todayVn } from '@/lib/date';
+import { diffDays, todayVn } from '@/lib/date';
 import { formatCompact, formatMoney } from '@/lib/money';
 
 export type WidgetToday = {
@@ -47,18 +45,9 @@ export function loadWidgetData(db: AppDatabase, now: number = Date.now()): Widge
   // ── Hôm nay được tiêu ─────────────────────────────────────────────────────
   let todayData: WidgetToday | null = null;
   try {
-    const { balances, occurrences } = loadPlanned(db, {
-      from: today,
-      to: addDays(today, FORECAST_DAYS),
-      today,
-    });
-    const forecast = computeForecast({
+    const { forecast } = loadFinancialSnapshot(db, {
       today,
       days: FORECAST_DAYS,
-      startBalance: totalBalance(balances),
-      accountBalances: new Map(balances.map((b) => [b.id, b.balance])),
-      includedAccounts: new Set(balances.filter((b) => b.includeInBalance).map((b) => b.id)),
-      occurrences,
       safetyThreshold: settings.safetyThreshold,
     });
     const status = computeToday({
@@ -119,14 +108,9 @@ export function loadUpcoming(db: AppDatabase, now: number = Date.now(), count = 
   const settings = getSettings();
   const today = todayVn(now);
   try {
-    const { balances, occurrences } = loadPlanned(db, { from: today, to: addDays(today, FORECAST_DAYS), today });
-    const forecast = computeForecast({
+    const { forecast } = loadFinancialSnapshot(db, {
       today,
       days: FORECAST_DAYS,
-      startBalance: totalBalance(balances),
-      accountBalances: new Map(balances.map((b) => [b.id, b.balance])),
-      includedAccounts: new Set(balances.filter((b) => b.includeInBalance).map((b) => b.id)),
-      occurrences,
       safetyThreshold: settings.safetyThreshold,
     });
     return forecast.events

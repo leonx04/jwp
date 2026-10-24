@@ -5,11 +5,12 @@ import { Platform } from 'react-native';
 import { requestWidgetUpdate } from 'react-native-android-widget';
 
 import { db } from '@/db';
+import { SNAPSHOT_TABLES } from '@/features/forecast/snapshot';
 
 import { renderWidgetForInfo } from './render';
 import { WIDGET_NAMES } from './widgets';
 
-const WATCHED = new Set(['transactions', 'accounts', 'schedules', 'schedule_occurrences', 'budgets']);
+const WATCHED = new Set<string>([...SNAPSHOT_TABLES, 'budgets']);
 const DEBOUNCE_MS = 1500;
 
 function refreshWidgets() {

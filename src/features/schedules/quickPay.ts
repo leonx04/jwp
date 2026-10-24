@@ -7,6 +7,7 @@ import { showSnackbar } from '@/components/feedback/snackbarStore';
 import { accounts } from '@/db/schema';
 import type { AppDatabase } from '@/db/types';
 import { isCreditBill } from '@/features/credit/bills';
+import { isLoanInstallment } from '@/features/debts/loanOccurrences';
 import { listAccounts } from '@/features/accounts/repository';
 import { deleteTransaction, saveTransaction } from '@/features/transactions/repository';
 import { todayVn, vnDateToMs } from '@/lib/date';
@@ -33,7 +34,8 @@ export function quickPay(
   today = todayVn(),
   now = Date.now(),
 ): QuickPayResult {
-  if (o.schedule.isEstimate) return { kind: 'needs-form' };
+  // Kỳ trả nợ có lãi cần tách gốc / lãi → màn trả kỳ của sổ nợ lo
+  if (o.schedule.isEstimate || isLoanInstallment(o.scheduleId)) return { kind: 'needs-form' };
   // Ghi đúng thời điểm bấm: giao dịch mới nằm trên cùng trong "Gần đây" thay vì lọt xuống dưới
   const when = now;
   const bill = isCreditBill(o.scheduleId);

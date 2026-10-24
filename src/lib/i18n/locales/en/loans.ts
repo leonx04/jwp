@@ -114,4 +114,6 @@ export const loans: Record<string, string> = {
   'Số tiền gốc không hợp lệ.': 'Invalid principal amount.',
   'Số tiền lãi không hợp lệ.': 'Invalid interest amount.',
   'Lãi suất & kỳ hạn của khoản nợ': 'Debt rates & terms',
+  '{name} trả kỳ {period}': '{name} pays #{period}',
+  'Trả kỳ {period} · {name}': 'Pay #{period} · {name}',
 };
