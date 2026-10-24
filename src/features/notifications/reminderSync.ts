@@ -14,9 +14,9 @@ import { getSettings } from '@/features/settings/store';
 import { addDays, todayVn } from '@/lib/date';
 import { formatCompact } from '@/lib/money';
 
-import { PAYMENT_CATEGORY } from './config';
+import { DEBT_CATEGORY, PAYMENT_CATEGORY } from './config';
 import { loadNotifications, notificationsSupported } from './module';
-import { REMINDER_PREFIX, buildReminders, type ReminderItem } from './reminders';
+import { REMINDER_PREFIX, buildReminders, type Reminder, type ReminderItem } from './reminders';
 import type { NotificationData } from './scheduling';
 import { initNotifications } from './setup';
 
@@ -82,10 +82,15 @@ export function loadReminderItems(db: AppDatabase, now = Date.now()): ReminderIt
       daysBefore: prefs.daysBefore,
       time: prefs.time,
       url: `/debt/${d.debt.id}`,
+      actionUrl: `/debt/record?debtId=${encodeURIComponent(d.debt.id)}&type=repay`,
     });
   }
   return items;
 }
+
+/** Nhóm nút hành động của một nhắc (null = không có nút) */
+const categoryOf = (r: Reminder): string | null =>
+  r.withActions ? (r.channel === 'debts' ? DEBT_CATEGORY : PAYMENT_CATEGORY) : null;
 
 async function syncReminders(db: AppDatabase): Promise<number> {
   if (Platform.OS === 'web') return 0;
@@ -124,7 +129,12 @@ async function syncReminders(db: AppDatabase): Promise<number> {
   const keep = new Set<string>();
   for (const request of existing) {
     const next = wanted.get(request.identifier);
-    if (next && request.content.title === next.title && request.content.body === next.body) {
+    if (
+      next &&
+      request.content.title === next.title &&
+      request.content.body === next.body &&
+      (request.content.categoryIdentifier ?? null) === categoryOf(next)
+    ) {
       keep.add(request.identifier);
     } else {
       await N.cancelScheduledNotificationAsync(request.identifier);
@@ -139,6 +149,7 @@ async function syncReminders(db: AppDatabase): Promise<number> {
       url: r.url,
       channel: r.channel,
       snoozeSeconds: SNOOZE_SECONDS,
+      ...(r.actionUrl ? { actionUrl: r.actionUrl } : {}),
     };
     await N.scheduleNotificationAsync({
       identifier,
@@ -147,7 +158,7 @@ async function syncReminders(db: AppDatabase): Promise<number> {
         body: r.body,
         sound: 'default',
         data,
-        ...(r.withActions ? { categoryIdentifier: PAYMENT_CATEGORY } : {}),
+        ...(categoryOf(r) ? { categoryIdentifier: categoryOf(r)! } : {}),
       },
       trigger: {
         type: N.SchedulableTriggerInputTypes.DATE,

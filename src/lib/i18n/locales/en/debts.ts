@@ -82,4 +82,23 @@ export const debts: Record<string, string> = {
   '↳ trả': '↳ repaid',
   '↳ vay thêm': '↳ borrowed more',
   'Tạo khoản nợ': 'Create debt',
+  // Sổ phụ, nhập nhanh, trả theo người
+  trả: 'paid',
+  thêm: 'added',
+  'Sửa lần ghi này': 'Edit this entry',
+  'dư {amount}': '{amount} over',
+  'còn {amount}': '{amount} left',
+  'đúng hạn': 'on time',
+  'trả sớm {days} ngày': '{days} days early',
+  'trễ {days} ngày': '{days} days late',
+  'LỊCH SỬ · MỚI NHẤT TRƯỚC': 'HISTORY · NEWEST FIRST',
+  'Đã sửa lần ghi': 'Entry updated',
+  'Giao dịch ví đi kèm (nếu có) cũng bị xoá.':
+    'The linked wallet transaction (if any) is deleted too.',
+  Sửa: 'Edit',
+  'Chia vào {count} khoản (hạn gần nhất trước)': 'Split across {count} debts (nearest due first)',
+  'Hết {amount}': 'All {amount}',
+  'Một nửa {amount}': 'Half {amount}',
+  'Còn nợ': 'Owed',
+  'Xoá lần ghi này': 'Delete this entry',
 };

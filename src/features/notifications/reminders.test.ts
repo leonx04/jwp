@@ -66,6 +66,18 @@ describe('buildReminders', () => {
     expect(r.every((x) => x.withActions && x.channel === 'payments')).toBe(true);
   });
 
+  it('hạn trả nợ có nút "Ghi lần trả" mở thẳng màn ghi', () => {
+    const r = run([
+      item({ key: 'd1', kind: 'debt', title: 'Trả nợ An', actionUrl: '/debt/record?debtId=d1' }),
+    ]);
+    expect(r).toHaveLength(2);
+    expect(
+      r.every(
+        (x) => x.withActions && x.channel === 'debts' && x.actionUrl === '/debt/record?debtId=d1',
+      ),
+    ).toBe(true);
+  });
+
   it('nhắc trước nhiều ngày; "N ngày nữa"', () => {
     const r = run([item({ daysBefore: 3 })]);
     expect(r[0].title).toContain('3 ngày nữa');

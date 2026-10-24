@@ -1,6 +1,6 @@
 // Ô nhập tiền: bấm mở bảng bàn phím số của app (có sẵn máy tính + − × ÷), KHÔNG mở bàn phím hệ thống.
 // Giá trị do màn hình cha quản lý (controlled) nên đổi từ bên ngoài (vd nút "+10%") là hiện ngay.
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Modal, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -19,6 +19,10 @@ type MoneyFieldProps = {
   placeholder?: string;
   /** Giữ để tương thích; không còn dùng vì ô dùng bàn phím số của app */
   keyboardType?: 'default' | 'numeric';
+  /** Mở bàn phím số ngay khi hiện (màn nhập nhanh) */
+  autoOpen?: boolean;
+  /** Hiện thêm trong bảng phím số, dưới con số (chip gợi ý, xem trước kết quả) */
+  accessory?: ReactNode;
 };
 
 export function MoneyField({
@@ -26,11 +30,13 @@ export function MoneyField({
   value,
   onChange,
   placeholder = 'vd: 1.500.000',
+  autoOpen = false,
+  accessory,
 }: MoneyFieldProps) {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const format = useMoneyFormat();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(autoOpen);
   const title = label ?? 'Số tiền';
 
   return (
@@ -64,6 +70,7 @@ export function MoneyField({
             >
               {format.money(value)}
             </AppText>
+            {accessory}
             <AmountKeypad value={value} onChange={onChange} />
             <Button title="Xong" icon="checkmark" onPress={() => setOpen(false)} />
           </View>

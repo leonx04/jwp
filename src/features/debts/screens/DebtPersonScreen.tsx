@@ -1,4 +1,5 @@
-// Chi tiết một người trong Sổ nợ: tổng nợ hai chiều, các khoản đang mở, lịch sử trả gộp, khoản đã xong.
+// Chi tiết một người trong Sổ nợ: tổng nợ hai chiều, nút trả bớt / vay thêm cho cả người,
+// các khoản đang mở, lịch sử gộp theo tháng (mới nhất trước), khoản đã xong.
 import { t } from '@/lib/i18n';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -6,11 +7,14 @@ import { Pressable, View } from 'react-native';
 
 import { AppText, Button, Card, EmptyState, ListRow, Screen } from '@/components/ui';
 import { useMoneyFormat } from '@/features/settings';
-import { formatDate, toVnDate } from '@/lib/date';
+import { formatDate, formatMonth, toVnDate } from '@/lib/date';
 import { useTheme } from '@/theme';
 
+import type { DebtDirection } from '@/db/schema';
+
+import { groupByMonth } from '../compute';
 import { DebtRow } from '../components/DebtRow';
-import { recordLabel } from '../components/display';
+import { recordLabel, repayAction } from '../components/display';
 import { usePersonDebts } from '../hooks';
 import { personRecords, type DebtItem } from '../queries';
 
@@ -43,6 +47,25 @@ export function DebtPersonScreen() {
   const addDebt = () =>
     router.push({ pathname: '/debt/edit', params: { personName: person.name } });
 
+  // Trả bớt: chia vào các khoản còn nợ của chiều đó. Vay thêm: cộng vào khoản gần nhất chưa đóng
+  // (kể cả khoản đã trả hết), chưa có thì mở khoản mới cho người này.
+  const repay = (direction: DebtDirection) =>
+    router.push({ pathname: '/debt/record', params: { personId: person.id, direction } });
+  const more = (direction: DebtDirection) => {
+    const target = items
+      .filter((d) => d.direction === direction && d.status !== 'closed')
+      .sort((a, b) => b.debt.date - a.debt.date)[0];
+    if (target) {
+      router.push({
+        pathname: '/debt/record',
+        params: { debtId: target.debt.id, type: 'increase' },
+      });
+    } else {
+      router.push({ pathname: '/debt/edit', params: { personName: person.name, direction } });
+    }
+  };
+  const owing: DebtDirection | null = net < 0 ? 'borrowed' : net > 0 ? 'lent' : null;
+
   return (
     <Screen title={person.name}>
       <Card style={{ gap: 12 }}>
@@ -73,7 +96,41 @@ export function DebtPersonScreen() {
         ) : null}
       </Card>
 
-      <Button title="Thêm khoản nợ" icon="add" variant="secondary" onPress={addDebt} />
+      {owing ? (
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={{ flex: 1 }}>
+            <Button title={repayAction(owing)} icon="checkmark" onPress={() => repay(owing)} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button
+              title={recordLabel(owing, 'increase')}
+              icon="add"
+              variant="secondary"
+              onPress={() => more(owing)}
+            />
+          </View>
+        </View>
+      ) : (
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={{ flex: 1 }}>
+            <Button
+              title={recordLabel('borrowed', 'increase')}
+              icon="add"
+              variant="secondary"
+              onPress={() => more('borrowed')}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button
+              title={recordLabel('lent', 'increase')}
+              icon="add"
+              variant="secondary"
+              onPress={() => more('lent')}
+            />
+          </View>
+        </View>
+      )}
+      <Button title="Thêm khoản nợ" icon="add" variant="ghost" size="sm" onPress={addDebt} />
 
       {active.length ? (
         <Card style={{ gap: 0, paddingVertical: 6 }}>
@@ -89,23 +146,47 @@ export function DebtPersonScreen() {
       {history.length ? (
         <Card style={{ gap: 0, paddingVertical: 6 }}>
           <AppText variant="label" color="textMuted" style={{ padding: 12 }}>
-            LỊCH SỬ
+            LỊCH SỬ · MỚI NHẤT TRƯỚC
           </AppText>
-          {history.map(({ record, item }) => (
-            <ListRow
-              key={record.id}
-              icon={record.type === 'repay' ? 'checkmark-circle-outline' : 'add-circle-outline'}
-              iconColor={record.type === 'repay' ? colors.income : colors.primary}
-              title={recordLabel(item.direction, record.type)}
-              subtitle={`${formatDate(toVnDate(record.date))}${record.note ? ` · ${record.note}` : ''}`}
-              onPress={() => router.push({ pathname: '/debt/[id]', params: { id: item.debt.id } })}
-              right={
-                <AppText variant="bodyMedium" style={{ fontVariant: ['tabular-nums'] }}>
-                  {record.type === 'repay' ? '−' : '+'}
-                  {format.money(record.amount)}
-                </AppText>
-              }
-            />
+          {groupByMonth(history.map((h) => ({ ...h, date: h.record.date }))).map((g) => (
+            <View key={g.month}>
+              <AppText
+                variant="label"
+                color="textMuted"
+                style={{ paddingHorizontal: 12, paddingTop: 8 }}
+              >
+                {formatMonth(`${g.month}-01`).toUpperCase()}
+              </AppText>
+              {g.items.map(({ record, item }) => (
+                <ListRow
+                  key={record.id}
+                  icon={record.type === 'repay' ? 'checkmark-circle-outline' : 'add-circle-outline'}
+                  iconColor={record.type === 'repay' ? colors.income : colors.primary}
+                  title={recordLabel(item.direction, record.type)}
+                  subtitle={[formatDate(toVnDate(record.date)), item.debt.title, record.note]
+                    .filter(Boolean)
+                    .join(' · ')}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/debt/record',
+                      params: { debtId: item.debt.id, recordId: record.id },
+                    })
+                  }
+                  right={
+                    <AppText
+                      variant="bodyMedium"
+                      style={{
+                        fontVariant: ['tabular-nums'],
+                        color: record.type === 'repay' ? colors.income : colors.text,
+                      }}
+                    >
+                      {record.type === 'repay' ? '−' : '+'}
+                      {format.money(record.amount)}
+                    </AppText>
+                  }
+                />
+              ))}
+            </View>
           ))}
         </Card>
       ) : null}
