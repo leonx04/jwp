@@ -26,8 +26,6 @@ module.exports = defineConfig([
       'src/features/widget/**',
       // Thẻ "Wrapped" dạng story: chữ trắng cố định trên gradient
       'src/features/wrapped/**',
-      // Màn Thêm sẽ được thay khi đổi điều hướng (bước 5 của kế hoạch refactor)
-      'src/features/more/screens/MoreScreen.tsx',
     ],
     rules: {
       'no-restricted-syntax': [

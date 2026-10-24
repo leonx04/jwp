@@ -1,5 +1,5 @@
 // Dock nổi "Bento Float": viên thuốc màu mực đậm (đảo màu so với nền — sáng ↔ tối) tách khỏi mép màn hình.
-// Mục đang chọn mở rộng thành viên màu chủ đạo kèm nhãn; mục khác chỉ còn icon. Nút ＋ tròn gradient bên phải.
+// Mục đang chọn mở rộng thành viên màu chủ đạo kèm nhãn; mục khác chỉ còn icon. Nút ＋ tròn gradient ở giữa dock.
 import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from '@/lib/haptics';
@@ -50,6 +50,57 @@ export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
   const dockBg = colors.inverseSurface;
   const idle = colors.inverseMuted;
 
+  // Nút ＋ nằm giữa dock: ngón cái với tới dễ nhất
+  const half = Math.ceil(items.length / 2);
+  const renderTab = (item: TabItem) => {
+    const selected = item.path === pathname;
+    return (
+      // Bọc ngoài để dock tự trượt mượt khi mục chọn đổi (rộng ra / thu gọn) thay vì nhảy
+      <Animated.View
+        key={item.path}
+        layout={LinearTransition.springify().damping(17).stiffness(190)}
+      >
+        <PressScale
+          accessibilityRole="tab"
+          accessibilityState={{ selected }}
+          accessibilityLabel={t(item.label)}
+          scaleTo={0.9}
+          style={[
+            styles.item,
+            selected
+              ? { backgroundColor: colors.primary, paddingHorizontal: 12 }
+              : { width: 40 },
+          ]}
+          onPress={() => {
+            if (selected) return;
+            Haptics.selectionAsync().catch(() => {});
+            router.navigate(item.href);
+          }}
+        >
+          <Ionicons
+            name={selected ? item.iconActive : item.icon}
+            size={21}
+            color={selected ? colors.onPrimary : idle}
+          />
+          {selected ? (
+            <Animated.View
+              entering={FadeIn.duration(180).delay(70)}
+              exiting={FadeOut.duration(80)}
+            >
+              <AppText
+                variant="label"
+                style={{ color: colors.onPrimary, fontSize: 12 }}
+                numberOfLines={1}
+              >
+                {item.label}
+              </AppText>
+            </Animated.View>
+          ) : null}
+        </PressScale>
+      </Animated.View>
+    );
+  };
+
   return (
     <View
       pointerEvents="box-none"
@@ -61,81 +112,34 @@ export function GlassTabBar({ items, onAdd }: GlassTabBarProps) {
           { backgroundColor: dockBg, boxShadow: `0 10px 30px rgba(0,0,0,0.28)` },
         ]}
       >
-        {items.map((item) => {
-          const selected = item.path === pathname;
-          return (
-            // Bọc ngoài để dock tự trượt mượt khi mục chọn đổi (rộng ra / thu gọn) thay vì nhảy
-            <Animated.View
-              key={item.path}
-              layout={LinearTransition.springify().damping(17).stiffness(190)}
-            >
-              <PressScale
-                accessibilityRole="tab"
-                accessibilityState={{ selected }}
-                accessibilityLabel={t(item.label)}
-                scaleTo={0.9}
-                style={[
-                  styles.item,
-                  selected
-                    ? { backgroundColor: colors.primary, paddingHorizontal: 12 }
-                    : { width: 40 },
-                ]}
-                onPress={() => {
-                  if (selected) return;
-                  Haptics.selectionAsync().catch(() => {});
-                  router.navigate(item.href);
-                }}
-              >
-                <Ionicons
-                  name={selected ? item.iconActive : item.icon}
-                  size={21}
-                  color={selected ? colors.onPrimary : idle}
-                />
-                {selected ? (
-                  <Animated.View
-                    entering={FadeIn.duration(180).delay(70)}
-                    exiting={FadeOut.duration(80)}
-                  >
-                    <AppText
-                      variant="label"
-                      style={{ color: colors.onPrimary, fontSize: 12 }}
-                      numberOfLines={1}
-                    >
-                      {item.label}
-                    </AppText>
-                  </Animated.View>
-                ) : null}
-              </PressScale>
-            </Animated.View>
-          );
-        })}
+        {items.slice(0, half).map(renderTab)}
+        <PressScale
+          accessibilityRole="button"
+          accessibilityLabel={t('Thêm giao dịch')}
+          scaleTo={0.9}
+          onPressIn={() => spin.set(withSpring(1, { damping: 14, stiffness: 260 }))}
+          onPressOut={() => spin.set(withSpring(0, { damping: 9, stiffness: 180 }))}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+            onAdd();
+          }}
+          style={[
+            styles.fab,
+            { boxShadow: `0 6px 16px ${rgba(colors.gradient[0], colors.dark ? 0.55 : 0.45)}` },
+          ]}
+        >
+          <LinearGradient
+            colors={colors.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <Animated.View style={plusStyle}>
+            <Ionicons name="add" size={32} color={colors.onGradient} />
+          </Animated.View>
+        </PressScale>
+        {items.slice(half).map(renderTab)}
       </View>
-
-      <PressScale
-        accessibilityRole="button"
-        accessibilityLabel={t('Thêm giao dịch')}
-        scaleTo={0.9}
-        onPressIn={() => spin.set(withSpring(1, { damping: 14, stiffness: 260 }))}
-        onPressOut={() => spin.set(withSpring(0, { damping: 9, stiffness: 180 }))}
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-          onAdd();
-        }}
-        style={[
-          styles.fab,
-          { boxShadow: `0 10px 26px ${rgba(colors.gradient[0], colors.dark ? 0.55 : 0.45)}` },
-        ]}
-      >
-        <LinearGradient
-          colors={colors.gradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-        <Animated.View style={plusStyle}>
-          <Ionicons name="add" size={32} color={colors.onGradient} />
-        </Animated.View>
-      </PressScale>
     </View>
   );
 }
@@ -168,9 +172,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: TAB_BAR_HEIGHT - 12,
+    height: TAB_BAR_HEIGHT - 12,
+    borderRadius: (TAB_BAR_HEIGHT - 12) / 2,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',

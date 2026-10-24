@@ -94,7 +94,7 @@ export function ScheduleScreen() {
 
   if (!data)
     return (
-      <Screen tabBar largeTitle title="Lịch thu chi" headerRight={headerRight}>
+      <Screen title="Lịch thu chi" headerRight={headerRight}>
         {null}
       </Screen>
     );
@@ -102,7 +102,7 @@ export function ScheduleScreen() {
   const accountName = lookup.accountName;
 
   return (
-    <Screen tabBar largeTitle title="Lịch thu chi" headerRight={headerRight}>
+    <Screen title="Lịch thu chi" headerRight={headerRight}>
       <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={setView} />
       {view === 'month' ? <MonthCalendar lookup={lookup} /> : <RecurringBanner />}
       {view === 'month' ? null : (
