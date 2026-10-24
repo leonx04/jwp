@@ -24,6 +24,8 @@ npx expo run:android      # build bản cài riêng (dev build) — cần cho th
 
 App tự nhận biết đang chạy trong Expo Go và tắt phần thông báo (xem `src/features/notifications/module.ts`), các phần khác vẫn chạy.
 
+Không có điện thoại? Chạy máy ảo nhẹ `JWP_Lite` bằng `.\scripts\emulator.ps1`, xem [docs/EMULATOR.md](docs/EMULATOR.md).
+
 ## Cấu trúc
 
 ```

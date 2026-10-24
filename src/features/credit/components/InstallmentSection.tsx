@@ -2,7 +2,7 @@
 // Màn editor giữ `value` trong draft; khi lưu: ghi CHI tổng tiền (giá + phí) rồi saveInstallmentPlan
 // (xem installmentDraft.ts → installmentToSave).
 import { t } from '@/lib/i18n';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
 import { AppText, Card, Chip, MoneyField, SwitchRow } from '@/components/ui';
@@ -43,6 +43,8 @@ export function InstallmentSection({
     [accountId],
   );
   const isCredit = !!account?.isCredit;
+  // Mốc "hôm nay" khi giao dịch chưa có ngày; giữ cố định trong một lần mở màn
+  const [openedAt] = useState(() => Date.now());
 
   // Đổi sang ví thường → bỏ trả góp để editor không lưu nhầm kế hoạch
   useEffect(() => {
@@ -60,7 +62,7 @@ export function InstallmentSection({
   const plan =
     value && amount > 0 ? installmentAmounts(amount, value.months, value.monthlyFee) : null;
   const firstDue = firstInstallmentDue(
-    toVnDate(date ?? Date.now()),
+    toVnDate(date ?? openedAt),
     account.statementDay,
     account.dueDay,
   );
