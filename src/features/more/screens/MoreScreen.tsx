@@ -56,6 +56,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
         color: '#EF4444',
       },
       {
+        icon: 'calculator-outline',
+        title: 'Tính khoản vay',
+        subtitle: 'Nhập lãi suất, số kỳ: ra số trả mỗi tháng, tổng lãi, lãi thực',
+        href: '/loan-calculator',
+        color: '#7C3AED',
+      },
+      {
         icon: 'trending-up-outline',
         title: 'Mô phỏng tăng lương',
         subtitle: 'Lương tăng thì tiền dư, tiết kiệm và các quỹ thay đổi ra sao',

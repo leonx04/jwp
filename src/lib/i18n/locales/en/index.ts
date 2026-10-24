@@ -6,6 +6,7 @@ import { goals } from './goals';
 import { recurring } from './recurring';
 import { tags } from './tags';
 import { debts } from './debts';
+import { loans } from './loans';
 import { schedules } from './schedules';
 import { stats } from './stats';
 import { credit } from './credit';
@@ -48,6 +49,7 @@ export const en: Record<string, string> = {
   ...recurring,
   ...tags,
   ...debts,
+  ...loans,
   ...schedules,
   ...stats,
   ...credit,

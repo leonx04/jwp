@@ -85,6 +85,17 @@ export function DebtsScreen() {
         </AppText>
       ) : null}
 
+      <Pressable accessibilityRole="button" onPress={() => router.push('/loan-calculator')}>
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <AppText style={{ flex: 1 }} variant="bodyMedium">
+            Vay có lãi theo kỳ? Tính số trả mỗi tháng
+          </AppText>
+          <AppText variant="label" color="primary">
+            Tính ›
+          </AppText>
+        </Card>
+      </Pressable>
+
       {proposals?.length ? (
         <Pressable accessibilityRole="button" onPress={() => router.push('/debts/suggest')}>
           <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
