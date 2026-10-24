@@ -39,8 +39,14 @@ const EXPECTED_BALANCES: Record<string, number> = {
 
 describeReal('backup Ivy thật', () => {
   const NOW = Date.UTC(2026, 9, 11, 3, 0);
-  const read = readIvyBackup(new Uint8Array(fs.readFileSync(file!)));
-  const plan = mapIvyBackup(read.backup, NOW);
+  // Đọc trong beforeAll: thân describe.skip vẫn chạy lúc gom test, nên đọc ở đây sẽ
+  // ném lỗi khi máy không có file backup.
+  let read: ReturnType<typeof readIvyBackup>;
+  let plan: ReturnType<typeof mapIvyBackup>;
+  beforeAll(() => {
+    read = readIvyBackup(new Uint8Array(fs.readFileSync(file!)));
+    plan = mapIvyBackup(read.backup, NOW);
+  });
 
   it('mã hoá UTF-16BE, đủ số lượng', () => {
     expect(read.encoding).toBe('utf-16be');

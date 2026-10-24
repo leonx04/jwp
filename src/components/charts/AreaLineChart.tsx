@@ -199,21 +199,21 @@ export function AreaLineChart({
       .onStart((e) => {
         'worklet';
         const index = indexAt(e.x);
-        lastIndex.value = index;
+        lastIndex.set(index);
         scheduleOnRN(select, index);
       })
       .onUpdate((e) => {
         'worklet';
         const index = indexAt(e.x);
-        if (index !== lastIndex.value) {
-          lastIndex.value = index;
+        if (index !== lastIndex.get()) {
+          lastIndex.set(index);
           scheduleOnRN(select, index);
         }
       })
       .onFinalize(() => {
         'worklet';
-        if (lastIndex.value !== -1) {
-          lastIndex.value = -1;
+        if (lastIndex.get() !== -1) {
+          lastIndex.set(-1);
           scheduleOnRN(select, null);
         }
       });
