@@ -20,6 +20,7 @@ import { useMemo } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { AppIntro } from '@/components/brand/AppIntro';
+import { DialogHost } from '@/components/feedback/DialogHost';
 import { Snackbar } from '@/components/feedback/Snackbar';
 import { DatabaseProvider } from '@/db';
 import { useNotificationResponses } from '@/features/notifications';
@@ -118,6 +119,7 @@ function RootNavigator() {
         />
       </Stack>
       <Snackbar />
+      <DialogHost />
       <StatusBar style={theme.dark ? 'light' : 'dark'} />
     </NavigationThemeProvider>
   );

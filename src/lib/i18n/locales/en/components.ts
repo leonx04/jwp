@@ -14,4 +14,5 @@ export const components: Record<string, string> = {
   'Logo hiện ở mọi nơi dùng danh mục / ví này':
     'The logo shows wherever this category / wallet is used',
   'Chọn nhóm hoặc gõ để tìm, không cần dấu': 'Pick a group or type to search, no accents needed',
+  'Đồng ý': 'OK',
 };
