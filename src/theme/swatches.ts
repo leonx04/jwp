@@ -3,9 +3,15 @@
 export const SWATCH = {
   indigo: '#5B5BD6',
   violet: '#7C3AED',
+  blue: '#2563EB',
   sky: '#0EA5E9',
+  teal: '#0D9488',
+  green: '#16A34A',
+  amber: '#F59E0B',
   orange: '#F97316',
   red: '#EF4444',
+  rose: '#E11D48',
+  pink: '#DB2777',
   gray: '#8A8FA0',
 } as const;
 

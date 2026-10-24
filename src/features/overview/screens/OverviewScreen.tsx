@@ -127,14 +127,21 @@ export function OverviewScreen() {
     <Screen
       tabBar
       largeTitle
-      title={userName ? t('Chào {name}', { name: userName }) : 'Tổng quan'}
+      title={userName ? t('Chào {name}', { name: userName }) : 'Hôm nay'}
       subtitle={`${t(greeting())} · ${t(WEEKDAY_NAMES[weekdayOf(todayVn()) - 1])}, ${formatDate(todayVn(), false)}`}
       headerRight={
-        <IconButton
-          icon={hideBalance ? 'eye-off-outline' : 'eye-outline'}
-          accessibilityLabel={t(hideBalance ? 'Hiện số dư' : 'Ẩn số dư')}
-          onPress={() => update({ hideBalance: !hideBalance })}
-        />
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <IconButton
+            icon={hideBalance ? 'eye-off-outline' : 'eye-outline'}
+            accessibilityLabel={t(hideBalance ? 'Hiện số dư' : 'Ẩn số dư')}
+            onPress={() => update({ hideBalance: !hideBalance })}
+          />
+          <IconButton
+            icon="settings-outline"
+            accessibilityLabel={t('Cài đặt')}
+            onPress={() => router.push('/settings')}
+          />
+        </View>
       }
     >
       {/* Thẻ số dư */}

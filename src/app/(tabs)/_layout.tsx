@@ -9,23 +9,30 @@ import { StyleSheet, View, type View as RNView } from 'react-native';
 import { BlurTarget } from '@/components/glass/BlurTarget';
 import { GlassTabBar, type TabItem } from '@/components/glass/GlassTabBar';
 
+// Hôm nay · Sổ · ＋ (giữa dock) · Kế hoạch · Phân tích. Cài đặt mở từ nút bánh răng ở Hôm nay.
 const TABS: TabItem[] = [
-  { href: '/', path: '/', label: 'Tổng quan', icon: 'home-outline', iconActive: 'home' },
+  { href: '/', path: '/', label: 'Hôm nay', icon: 'sunny-outline', iconActive: 'sunny' },
   {
     href: '/transactions',
     path: '/transactions',
-    label: 'Giao dịch',
+    label: 'Sổ',
     icon: 'receipt-outline',
     iconActive: 'receipt',
   },
   {
-    href: '/schedule',
-    path: '/schedule',
-    label: 'Lịch',
+    href: '/plan',
+    path: '/plan',
+    label: 'Kế hoạch',
     icon: 'calendar-outline',
     iconActive: 'calendar',
   },
-  { href: '/more', path: '/more', label: 'Thêm', icon: 'grid-outline', iconActive: 'grid' },
+  {
+    href: '/insights',
+    path: '/insights',
+    label: 'Phân tích',
+    icon: 'pie-chart-outline',
+    iconActive: 'pie-chart',
+  },
 ];
 
 export default function TabsLayout() {
@@ -44,8 +51,8 @@ export default function TabsLayout() {
         >
           <Tabs.Screen name="index" />
           <Tabs.Screen name="transactions" />
-          <Tabs.Screen name="schedule" />
-          <Tabs.Screen name="more" />
+          <Tabs.Screen name="plan" />
+          <Tabs.Screen name="insights" />
         </Tabs>
       </BlurTarget>
       <GlassTabBar
