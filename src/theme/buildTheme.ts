@@ -11,6 +11,7 @@ import {
   type GlassPalette,
   type NeutralPalette,
 } from './palettes';
+import { NEUTRAL_MARK } from './swatches';
 import { fonts, radius, spacing, typography } from './tokens';
 
 export type ThemeColors = NeutralPalette &
@@ -24,6 +25,20 @@ export type ThemeColors = NeutralPalette &
     onGradient: string;
     /** Chuyển khoản hiển thị trung tính */
     transfer: string;
+    /** Chữ / icon trên nền màu chi (nút xoá, vuốt xoá) */
+    onDanger: string;
+    /** Lớp đảo màu so với nền: dock thanh tab (nền sáng → dock tối và ngược lại) */
+    inverseSurface: string;
+    onInverseSurface: string;
+    /** Icon chưa chọn trên lớp đảo màu */
+    inverseMuted: string;
+    /** Thông báo ngắn (snackbar): luôn tối, chữ sáng */
+    toast: string;
+    onToast: string;
+    /** Nút hành động trên snackbar */
+    toastAction: string;
+    /** Màu trung tính cho mục chưa phân loại / nhóm "Khác" trên biểu đồ */
+    neutralMark: string;
     /** Bảng màu tối (tiện cho các quyết định màu trong component) */
     dark: boolean;
   };
@@ -72,6 +87,15 @@ export function buildTheme({ dark, amoled = false, accent }: ThemeOptions): Them
       gradient,
       onGradient: readableOn(mix(gradient[0], gradient[1], 0.5)),
       transfer: neutral.text,
+      onDanger: '#FFFFFF',
+      inverseSurface: dark ? '#E9EDF5' : '#0E1320',
+      onInverseSurface: dark ? '#0E1320' : '#F3F4F8',
+      inverseMuted: dark ? '#5F687C' : '#8C97AD',
+      toast: dark ? 'rgba(36,38,48,0.96)' : 'rgba(22,24,32,0.94)',
+      onToast: '#F3F4F8',
+      // Nền snackbar luôn tối → dùng bản sáng của màu chủ đạo cho dễ đọc
+      toastAction: ACCENTS[accent].dark,
+      neutralMark: NEUTRAL_MARK,
       dark,
     },
     spacing,

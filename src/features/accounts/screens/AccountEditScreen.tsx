@@ -24,7 +24,7 @@ import { db } from '@/db';
 import { bankFromIcon, bankIcon } from '@/lib/banks';
 import { DEFAULT_ACCOUNT_ICON, toAppIcon, type AppIcon } from '@/lib/icons';
 import { suggestedBank } from '@/lib/icons/search';
-import { createStyles } from '@/theme';
+import { createStyles, SWATCH } from '@/theme';
 
 import {
   accountTransactionCount,
@@ -40,7 +40,7 @@ export function AccountEditScreen() {
     ? listAccounts(db, { includeArchived: true }).find((a) => a.id === id)
     : undefined;
   const [name, setName] = useState(existing?.name ?? '');
-  const [color, setColor] = useState(existing?.color ?? '#5B5BD6');
+  const [color, setColor] = useState(existing?.color ?? SWATCH.indigo);
   const [icon, setIcon] = useState<AppIcon>(toAppIcon(existing?.icon, DEFAULT_ACCOUNT_ICON));
   const [includeInBalance, setIncludeInBalance] = useState(existing?.includeInBalance ?? true);
   const [archived, setArchived] = useState(existing?.archived ?? false);

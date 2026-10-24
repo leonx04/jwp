@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
 import { AppText, Card, IconBadge } from '@/components/ui';
+import { SWATCH } from '@/theme';
 
 import { usePendingCaptureCount } from '../hooks';
 
@@ -12,7 +13,7 @@ export function InboxBanner() {
   return (
     <Pressable accessibilityRole="button" onPress={() => router.push('/inbox')}>
       <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <IconBadge icon="mail-unread-outline" color="#7C3AED" size={40} />
+        <IconBadge icon="mail-unread-outline" color={SWATCH.violet} size={40} />
         <View style={{ flex: 1 }}>
           <AppText variant="bodyMedium">{count} giao dịch chờ xác nhận</AppText>
           <AppText variant="caption" color="textMuted">

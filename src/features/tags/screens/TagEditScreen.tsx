@@ -9,12 +9,13 @@ import { Button, Screen, SectionTitle, TextField, ColorPicker } from '@/componen
 import { db } from '@/db';
 
 import { deleteTag, listTags, saveTag } from '../repository';
+import { SWATCH } from '@/theme';
 
 export function TagEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const existing = listTags(db).find((t) => t.id === id);
   const [name, setName] = useState(existing?.name ?? '');
-  const [color, setColor] = useState(existing?.color ?? '#5B5BD6');
+  const [color, setColor] = useState(existing?.color ?? SWATCH.indigo);
 
   const save = () => {
     try {

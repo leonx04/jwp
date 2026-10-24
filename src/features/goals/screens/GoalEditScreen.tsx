@@ -23,6 +23,7 @@ import { addDays, formatDate, toVnDate, todayVn, vnDateToMs, type DateString } f
 import { toAppIcon } from '@/lib/icons';
 
 import { deleteGoal, listGoalRows, saveGoal } from '../repository';
+import { SWATCH } from '@/theme';
 
 export function GoalEditScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -34,7 +35,7 @@ export function GoalEditScreen() {
   const [accountId, setAccountId] = useState<string | null>(existing?.accountId ?? null);
   const [saved, setSaved] = useState(existing?.savedAmount ?? 0);
   const [deadline, setDeadline] = useState<DateString | null>(existing?.deadline ?? null);
-  const [color, setColor] = useState(existing?.color ?? '#7C3AED');
+  const [color, setColor] = useState(existing?.color ?? SWATCH.violet);
   const [note, setNote] = useState(existing?.note ?? '');
 
   const save = () => {

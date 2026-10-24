@@ -8,6 +8,7 @@ import { AppText, Card, IconBadge } from '@/components/ui';
 import { useSettings } from '@/features/settings';
 import { elapsedDays, periodTitle } from '@/features/stats/periods';
 import { periodContaining, todayVn } from '@/lib/date';
+import { SWATCH } from '@/theme';
 
 import { useMonthlyReport } from '../hooks';
 
@@ -50,7 +51,7 @@ function Ready() {
   return (
     <Pressable accessibilityRole="button" onPress={open}>
       <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <IconBadge icon="document-text-outline" color="#7C3AED" size={40} />
+        <IconBadge icon="document-text-outline" color={SWATCH.violet} size={40} />
         <View style={{ flex: 1 }}>
           <AppText variant="bodyMedium">
             Báo cáo {periodTitle('month', period).toLowerCase()} đã sẵn sàng

@@ -34,6 +34,7 @@ import { toAppIcon } from '@/lib/icons';
 
 import { ocrAvailable, recognizeText } from '../../../../modules/jwp-ocr';
 import { parseReceipt } from '../parse';
+import { SWATCH } from '@/theme';
 
 type Draft = {
   /** Ảnh gốc để đối chiếu */
@@ -381,7 +382,7 @@ export function ReceiptScanScreen() {
                 onCreate={(name) => {
                   const id = saveCategory(db, {
                     name,
-                    color: '#7C3AED',
+                    color: SWATCH.violet,
                     icon: 'pricetag-outline',
                   });
                   setCategories(listCategories(db));

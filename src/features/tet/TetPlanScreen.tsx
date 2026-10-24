@@ -15,7 +15,7 @@ import { listTransactions } from '@/features/transactions/queries';
 import { addDays, formatDate, lunarYearName, toLunar, todayVn, vnDateToMs } from '@/lib/date';
 import { t } from '@/lib/i18n';
 import { normalizeForSearch } from '@/lib/text';
-import { createStyles, rgba, useTheme } from '@/theme';
+import { createStyles, rgba, SWATCH, useTheme } from '@/theme';
 
 import { estimateTetExtraSpend, nextTet, planTet, tetDateOfYear } from './plan';
 
@@ -83,7 +83,7 @@ export function TetPlanScreen() {
         accountId: tetGoal?.goal.accountId ?? null,
         savedAmount: tetGoal?.goal.savedAmount ?? 0,
         deadline: plan.deadline,
-        color: tetGoal?.goal.color ?? '#EF4444',
+        color: tetGoal?.goal.color ?? SWATCH.red,
         note: tetGoal?.goal.note ?? null,
       });
       showSnackbar({ text: tetGoal ? t('Đã cập nhật quỹ Tết.') : t('Đã tạo quỹ Tết.'), tone: 'success' });
@@ -95,7 +95,7 @@ export function TetPlanScreen() {
 
   return (
     <Screen title="Quỹ Tết & thưởng" scroll>
-      <View style={[styles.hero, { backgroundColor: rgba('#EF4444', colors.dark ? 0.22 : 0.12) }]}>
+      <View style={[styles.hero, { backgroundColor: rgba(SWATCH.red, colors.dark ? 0.22 : 0.12) }]}>
         <AppText variant="label" color="textMuted">
           {t('Tết {year}', { year: lunarYearName(toLunar(tet).year) })}
         </AppText>

@@ -6,7 +6,7 @@ import { AmountText, AppText, IconBadge } from '@/components/ui';
 import { toVnTime } from '@/lib/date';
 import { t } from '@/lib/i18n';
 import { DEFAULT_CATEGORY_ICON, UNCATEGORIZED_ICON, toAppIcon, type AppIcon } from '@/lib/icons';
-import { createStyles, useTheme } from '@/theme';
+import { createStyles, NEUTRAL_MARK, useTheme } from '@/theme';
 
 import type { TransactionListItem } from '../queries';
 
@@ -20,7 +20,7 @@ export function transactionTitle(item: TransactionListItem): string {
 function iconOf(item: TransactionListItem): { icon: AppIcon; color?: string } {
   if (item.type === 'transfer') return { icon: 'swap-horizontal-outline' };
   if (item.isAdjustment) return { icon: 'options-outline' };
-  if (!item.categoryId) return { icon: UNCATEGORIZED_ICON, color: '#8A8FA0' };
+  if (!item.categoryId) return { icon: UNCATEGORIZED_ICON, color: NEUTRAL_MARK };
   return {
     icon: toAppIcon(item.categoryIcon, DEFAULT_CATEGORY_ICON),
     color: item.categoryColor ?? undefined,

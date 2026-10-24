@@ -37,6 +37,20 @@ describe('buildTheme', () => {
       expect(contrastRatio(colors.income, colors.surface)).toBeGreaterThanOrEqual(4.5);
       expect(contrastRatio(colors.expense, colors.surface)).toBeGreaterThanOrEqual(4.5);
     });
+
+    it('dock đảo màu và snackbar đọc được', () => {
+      const { colors } = buildTheme({ dark, amoled, accent: 'indigo' });
+      expect(contrastRatio(colors.onInverseSurface, colors.inverseSurface)).toBeGreaterThanOrEqual(
+        7,
+      );
+      expect(contrastRatio(colors.inverseMuted, colors.inverseSurface)).toBeGreaterThanOrEqual(3);
+      // Nền snackbar gần #16181F ở mọi chế độ
+      expect(contrastRatio(colors.onToast, '#16181F')).toBeGreaterThanOrEqual(7);
+      for (const accent of ACCENT_KEYS) {
+        const action = buildTheme({ dark, amoled, accent }).colors.toastAction;
+        expect(contrastRatio(action, '#16181F')).toBeGreaterThanOrEqual(3);
+      }
+    });
   });
 });
 

@@ -1,7 +1,3 @@
-jest.mock('@expo/vector-icons/Ionicons', () => () => null);
-jest.mock('expo-linear-gradient', () => ({ LinearGradient: () => null }));
-jest.mock('expo-system-ui', () => ({ setBackgroundColorAsync: () => Promise.resolve() }));
-
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -9,6 +5,11 @@ import { ThemeProvider } from '@/theme';
 
 import { DialogHost } from './DialogHost';
 import { showDialog, useDialogs } from './dialogStore';
+
+// jest.mock được đưa lên trước các import khi chạy test
+jest.mock('@expo/vector-icons/Ionicons', () => () => null);
+jest.mock('expo-linear-gradient', () => ({ LinearGradient: () => null }));
+jest.mock('expo-system-ui', () => ({ setBackgroundColorAsync: () => Promise.resolve() }));
 
 const metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
