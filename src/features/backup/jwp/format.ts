@@ -1,7 +1,7 @@
 // Định dạng file sao lưu JWP (JSON, UTF-8):
 //   { app: 'JWP', schemaVersion, exportedAt, appVersion?, data: { accounts, categories, tags,
-//     transactions, transactionTags, schedules, scheduleOccurrences, people, debts, debtRecords,
-//     budgets, settings } }
+//     transactions, transactionTags, schedules, scheduleOccurrences, people, debts, debtTerms,
+//     debtRecords, budgets, goals, captureRules, settings } }
 // Mỗi bảng là mảng các dòng y nguyên trong DB (tên trường camelCase như Drizzle, boolean thật,
 // tiền là số nguyên đồng, thời điểm là mili giây UTC) → khôi phục không mất dữ liệu.
 //
@@ -16,6 +16,7 @@ import {
   captureRules,
   categories,
   debtRecords,
+  debtTerms,
   debts,
   goals,
   people,
@@ -39,6 +40,7 @@ export const BACKUP_TABLES = {
   people,
   schedules,
   debts,
+  debtTerms,
   transactions,
   transactionTags,
   scheduleOccurrences,
@@ -62,6 +64,7 @@ export const DATA_KEYS: BackupTableKey[] = [
   'scheduleOccurrences',
   'people',
   'debts',
+  'debtTerms',
   'debtRecords',
   'budgets',
   'goals',
@@ -78,6 +81,7 @@ export const TABLE_LABELS: Record<BackupTableKey, string> = {
   scheduleOccurrences: 'Kỳ của lịch',
   people: 'Người',
   debts: 'Khoản nợ',
+  debtTerms: 'Lãi suất & kỳ hạn của khoản nợ',
   debtRecords: 'Lần trả / vay thêm',
   budgets: 'Ngân sách',
   goals: 'Quỹ tiết kiệm',

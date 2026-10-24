@@ -80,7 +80,13 @@ export function newestFirst(a: Dated, b: Dated): number {
   return b.date - a.date || b.createdAt - a.createdAt || b.id.localeCompare(a.id);
 }
 
-export type LedgerRecord = Dated & { type: DebtRecordType; amount: number; note: string | null };
+export type LedgerRecord = Dated & {
+  type: DebtRecordType;
+  amount: number;
+  note: string | null;
+  /** Kỳ thứ mấy (khoản có lãi theo kỳ) */
+  period?: number | null;
+};
 
 export type LedgerEntry<R extends LedgerRecord = LedgerRecord> = {
   key: string;

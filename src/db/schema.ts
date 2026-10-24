@@ -293,11 +293,52 @@ export const debtRecords = sqliteTable(
     transactionId: text('transaction_id').references(() => transactions.id, {
       onDelete: 'set null',
     }),
+    /** Khoản vay có kỳ hạn: lần trả này là kỳ thứ mấy (null = trả tự do / trả trước) */
+    period: integer('period'),
+    /** Giao dịch lãi + phí của kỳ (tính là chi tiêu / thu nhập, khác phần gốc) */
+    interestTransactionId: text('interest_transaction_id').references(() => transactions.id, {
+      onDelete: 'set null',
+    }),
     ...timestamps,
   },
   (t) => [
     index('debt_records_debt_idx').on(t.debtId),
     check('debt_records_amount_non_negative', sql`${t.amount} >= 0`),
+  ],
+);
+
+/**
+ * Điều khoản của khoản nợ có lãi theo kỳ (vay ngân hàng, công ty tài chính, trả góp, người quen có lãi).
+ * Một khoản nợ có tối đa một dòng. Lịch các kỳ tính ra khi cần (src/core/loans), không lưu sẵn.
+ */
+export const LOAN_METHODS = ['annuity', 'equal_principal', 'flat', 'interest_only'] as const;
+export const DAY_COUNTS = ['monthly', 'actual_365'] as const;
+
+export const debtTerms = sqliteTable(
+  'debt_terms',
+  {
+    id: text('id').primaryKey(),
+    debtId: text('debt_id')
+      .notNull()
+      .references(() => debts.id, { onDelete: 'cascade' }),
+    /** %/năm danh nghĩa, vd 12 */
+    annualRate: real('annual_rate').notNull(),
+    months: integer('months').notNull(),
+    method: text('method', { enum: LOAN_METHODS }).notNull(),
+    dayCount: text('day_count', { enum: DAY_COUNTS }).notNull().default('monthly'),
+    /** Ngày giải ngân 'YYYY-MM-DD'; kỳ k đến hạn cùng ngày của tháng thứ k sau đó */
+    startDate: text('start_date').notNull(),
+    graceMonths: integer('grace_months').notNull().default(0),
+    /** Phí cộng vào mỗi kỳ (bảo hiểm, phí quản lý) */
+    monthlyFee: integer('monthly_fee').notNull().default(0),
+    /** Lãi suất các giai đoạn sau (ưu đãi → thả nổi): JSON [{fromPeriod, annualRate}] */
+    rateSteps: text('rate_steps'),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex('debt_terms_debt_unique').on(t.debtId),
+    check('debt_terms_months_positive', sql`${t.months} > 0`),
+    check('debt_terms_rate_non_negative', sql`${t.annualRate} >= 0`),
   ],
 );
 
@@ -432,6 +473,7 @@ export type TransactionTag = typeof transactionTags.$inferSelect;
 export type Person = typeof people.$inferSelect;
 export type NewPerson = typeof people.$inferInsert;
 export type Debt = typeof debts.$inferSelect;
+export type DebtTerms = typeof debtTerms.$inferSelect;
 export type NewDebt = typeof debts.$inferInsert;
 export type DebtRecord = typeof debtRecords.$inferSelect;
 export type NewDebtRecord = typeof debtRecords.$inferInsert;

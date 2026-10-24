@@ -4,13 +4,16 @@ import { eq, inArray } from 'drizzle-orm';
 
 import {
   debtRecords,
+  debtTerms,
   debts,
   people,
   transactions,
   type DebtDirection,
   type DebtRecordType,
 } from '@/db/schema';
+import { buildSchedule, type LoanMethod, type RateStep } from '@/core/loans';
 import type { AppDatabase } from '@/db/types';
+import { ensureLoanCategory } from '@/features/categories/repository';
 import { deleteTransactions, saveTransaction } from '@/features/transactions/repository';
 import type { DateString } from '@/lib/date';
 import { createId } from '@/lib/id';
@@ -68,6 +71,8 @@ export type DebtInput = {
   note?: string | null;
   /** Ví cho vay đi ra / vay về vào. Trống = không động vào ví */
   accountId?: string | null;
+  /** Lãi suất & kỳ hạn: undefined = giữ nguyên, null = bỏ (nợ thường) */
+  terms?: DebtTermsInput | null;
 };
 
 /** Thêm khoản nợ mới (không có id) hoặc sửa. Trả về id khoản nợ. */
@@ -120,6 +125,7 @@ export function saveDebt(db: AppDatabase, input: DebtInput): string {
       transactionId = null;
     }
     tx.update(debts).set({ transactionId }).where(eq(debts.id, id)).run();
+    if (input.terms !== undefined) writeTerms(tx, id, input.terms);
     return id;
   });
 }
@@ -222,7 +228,10 @@ export function deleteDebtRecord(db: AppDatabase, recordId: string): void {
   db.transaction((tx) => {
     const record = tx.select().from(debtRecords).where(eq(debtRecords.id, recordId)).get();
     if (!record) return;
-    if (record.transactionId) deleteTransactions(tx, [record.transactionId]);
+    const linked = [record.transactionId, record.interestTransactionId].filter(
+      (id): id is string => !!id,
+    );
+    if (linked.length) deleteTransactions(tx, linked);
     tx.delete(debtRecords).where(eq(debtRecords.id, recordId)).run();
   });
 }
@@ -244,6 +253,10 @@ export function deleteDebt(db: AppDatabase, debtId: string): void {
       .where(eq(transactions.debtId, debtId))
       .all()
       .map((r) => r.id);
+    // Giao dịch lãi của các kỳ không gắn debt_id (để được tính là chi tiêu) → lấy qua bản ghi
+    for (const r of tx.select().from(debtRecords).where(eq(debtRecords.debtId, debtId)).all()) {
+      if (r.interestTransactionId) txIds.push(r.interestTransactionId);
+    }
     if (txIds.length) deleteTransactions(tx, txIds);
     tx.delete(debtRecords).where(eq(debtRecords.debtId, debtId)).run();
     tx.delete(debts).where(eq(debts.id, debtId)).run();
@@ -298,6 +311,135 @@ export function adoptProposal(db: AppDatabase, p: DebtProposal): string {
         .run();
       tx.update(transactions).set({ debtId: id }).where(eq(transactions.id, r.txId)).run();
     }
+    return id;
+  });
+}
+
+// ── Khoản nợ có lãi theo kỳ ──────────────────────────────────────────────────
+
+export type DebtTermsInput = {
+  annualRate: number;
+  months: number;
+  method: LoanMethod;
+  /** Ngày giải ngân 'YYYY-MM-DD' */
+  startDate: DateString;
+  graceMonths?: number;
+  monthlyFee?: number;
+  dayCount?: 'monthly' | 'actual_365';
+  rateSteps?: readonly RateStep[];
+};
+
+/** Gắn / sửa điều khoản lãi theo kỳ cho một khoản nợ; null = bỏ, thành nợ thường */
+export function saveDebtTerms(db: AppDatabase, debtId: string, input: DebtTermsInput | null): void {
+  db.transaction((tx) => writeTerms(tx, debtId, input));
+}
+
+function writeTerms(tx: AppDatabase, debtId: string, input: DebtTermsInput | null): void {
+  const debt = tx.select().from(debts).where(eq(debts.id, debtId)).get();
+  if (!debt) throw new DebtValidationError('Không tìm thấy khoản nợ.');
+  if (!input) {
+    tx.delete(debtTerms).where(eq(debtTerms.debtId, debtId)).run();
+    return;
+  }
+  // Kiểm tra bằng chính bộ tính lịch: lãi suất, số kỳ, ân hạn hợp lệ
+  buildSchedule({ ...input, principal: Math.max(1, debt.amount) });
+  const values = {
+    annualRate: input.annualRate,
+    months: input.months,
+    method: input.method,
+    startDate: input.startDate,
+    graceMonths: input.graceMonths ?? 0,
+    monthlyFee: Math.round(input.monthlyFee ?? 0),
+    dayCount: input.dayCount ?? 'monthly',
+    rateSteps: input.rateSteps?.length ? JSON.stringify(input.rateSteps) : null,
+  };
+  const existing = tx.select().from(debtTerms).where(eq(debtTerms.debtId, debtId)).get();
+  if (existing) {
+    tx.update(debtTerms)
+      .set({ ...values, updatedAt: Date.now() })
+      .where(eq(debtTerms.id, existing.id))
+      .run();
+  } else {
+    tx.insert(debtTerms)
+      .values({ id: createId(), debtId, ...values })
+      .run();
+  }
+}
+
+export type InstallmentInput = {
+  debtId: string;
+  period: number;
+  /** Phần gốc: trừ vào dư nợ, không tính chi tiêu */
+  principal: number;
+  /** Lãi + phí của kỳ: tính là chi tiêu (đi vay) hoặc thu nhập (cho vay) */
+  interest: number;
+  date: number;
+  accountId?: string | null;
+  note?: string | null;
+};
+
+/**
+ * Ghi trả một kỳ: bản ghi trả gốc (kèm giao dịch ví gắn khoản nợ, không tính thống kê) và
+ * một giao dịch lãi riêng thuộc danh mục "Lãi & phí vay" / "Lãi cho vay" (có tính thống kê).
+ * Không chọn ví thì chỉ ghi sổ phần gốc.
+ */
+export function payInstallment(db: AppDatabase, input: InstallmentInput): string {
+  if (!Number.isInteger(input.principal) || input.principal < 0) {
+    throw new DebtValidationError('Số tiền gốc không hợp lệ.');
+  }
+  if (!Number.isInteger(input.interest) || input.interest < 0) {
+    throw new DebtValidationError('Số tiền lãi không hợp lệ.');
+  }
+  if (input.principal + input.interest <= 0) {
+    throw new DebtValidationError('Số tiền phải lớn hơn 0.');
+  }
+  return db.transaction((tx) => {
+    const debt = tx.select().from(debts).where(eq(debts.id, input.debtId)).get();
+    if (!debt) throw new DebtValidationError('Không tìm thấy khoản nợ.');
+    const person = tx.select().from(people).where(eq(people.id, debt.personId)).get();
+    const name = debt.title || person?.name || '';
+
+    let interestTransactionId: string | null = null;
+    if (input.accountId && input.interest > 0) {
+      const kind = debt.direction === 'borrowed' ? 'expense' : 'income';
+      interestTransactionId = saveTransaction(tx, {
+        type: kind,
+        amount: input.interest,
+        accountId: input.accountId,
+        categoryId: ensureLoanCategory(tx, kind),
+        title: `Lãi kỳ ${input.period} · ${name}`,
+        note: input.note ?? null,
+        date: input.date,
+      });
+    }
+    let id: string;
+    if (input.principal > 0) {
+      id = writeRecord(tx, {
+        debtId: debt.id,
+        type: 'repay',
+        amount: input.principal,
+        date: input.date,
+        note: input.note,
+        accountId: input.accountId,
+      });
+    } else {
+      // Kỳ chỉ trả lãi (ân hạn / gốc cuối kỳ): vẫn cần một bản ghi để đánh dấu kỳ đã trả
+      id = createId();
+      tx.insert(debtRecords)
+        .values({
+          id,
+          debtId: debt.id,
+          type: 'repay',
+          amount: 0,
+          date: input.date,
+          note: input.note?.trim() || null,
+        })
+        .run();
+    }
+    tx.update(debtRecords)
+      .set({ period: input.period, interestTransactionId })
+      .where(eq(debtRecords.id, id))
+      .run();
     return id;
   });
 }

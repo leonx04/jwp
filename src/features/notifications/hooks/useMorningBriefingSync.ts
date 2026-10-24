@@ -18,6 +18,7 @@ const WATCHED = new Set([
   'schedule_occurrences',
   'debts',
   'debt_records',
+  'debt_terms',
 ]);
 
 export function useMorningBriefingSync() {

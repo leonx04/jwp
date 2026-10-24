@@ -57,6 +57,13 @@
       "when": 1792164621392,
       "tag": "0007_budget_weekend_rule",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1792865270118,
+      "tag": "0008_debt_terms",
+      "breakpoints": true
     }
   ]
 }

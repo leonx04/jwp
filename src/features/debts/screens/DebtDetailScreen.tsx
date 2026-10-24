@@ -13,6 +13,7 @@ import { useTheme } from '@/theme';
 
 import { buildLedger } from '../compute';
 import { DIRECTION_LABEL, recordLabel, repayAction, statusText } from '../components/display';
+import { InstallmentCard } from '../components/InstallmentCard';
 import { LedgerTimeline } from '../components/LedgerTimeline';
 import { useDebt } from '../hooks';
 import { deleteDebt, setDebtClosed } from '../repository';
@@ -117,6 +118,8 @@ export function DebtDetailScreen() {
         ) : null}
       </Card>
 
+      {open && item.plan ? <InstallmentCard item={item} /> : null}
+
       {/* Đã trả hết: một nút to để đóng sổ */}
       {open && settled ? (
         <Card style={{ gap: 10 }}>
@@ -151,7 +154,7 @@ export function DebtDetailScreen() {
               />
             </View>
           </View>
-          {!settled ? (
+          {!settled && !item.plan ? (
             <Button
               title="Tính lãi"
               variant="secondary"

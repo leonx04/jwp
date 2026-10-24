@@ -68,7 +68,29 @@ export function loadReminderItems(db: AppDatabase, now = Date.now()): ReminderIt
   }
 
   for (const d of listDebts(db, today)) {
-    if (d.status === 'closed' || d.status === 'settled' || !d.debt.dueDate) continue;
+    if (d.status === 'closed' || d.status === 'settled') continue;
+    const next = d.plan?.next;
+    if (next?.date) {
+      // Khoản có lãi theo kỳ: nhắc kỳ kế tiếp, nút chính mở màn trả kỳ
+      items.push({
+        key: `${d.debt.id}~${next.period}`,
+        kind: 'debt',
+        date: next.date,
+        title: t('Kỳ {period}/{months} {name}', {
+          period: next.period,
+          months: d.plan!.months,
+          name: d.debt.title || d.person.name,
+        }),
+        amount: next.payment,
+        overdue: next.status === 'overdue',
+        daysBefore: prefs.daysBefore,
+        time: prefs.time,
+        url: `/debt/${d.debt.id}`,
+        actionUrl: `/debt/installment?debtId=${encodeURIComponent(d.debt.id)}`,
+      });
+      continue;
+    }
+    if (!d.debt.dueDate) continue;
     items.push({
       key: d.debt.id,
       kind: 'debt',
