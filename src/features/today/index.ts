@@ -9,6 +9,6 @@ export {
   type TodayStatus,
 } from './compute';
 export { ProgressBar } from './components/ProgressBar';
-export { TodayCard } from './components/TodayCard';
+export { shortfallText, TodayCard } from './components/TodayCard';
 export { useDaySpending, useTodayStatus } from './hooks';
 export { getDaySpending } from './queries';

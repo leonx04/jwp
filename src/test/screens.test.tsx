@@ -131,6 +131,13 @@ describe('có dữ liệu', () => {
     expect(screen.toJSON()).toBeTruthy();
   });
 
+  it('Hôm nay: thẻ chính hiện số còn tiêu được, kèm số dư và thu chi tháng', async () => {
+    await mount(<OverviewScreen />);
+    expect(screen.getByText('CÒN TIÊU ĐƯỢC HÔM NAY')).toBeTruthy();
+    expect(screen.getByText('Số dư')).toBeTruthy();
+    expect(screen.getByText('Chi tháng')).toBeTruthy();
+  });
+
   it('Sổ hiện giao dịch vừa ghi', async () => {
     await mount(<TransactionsScreen />);
     expect(screen.getAllByText('Cơm trưa').length).toBeGreaterThan(0);

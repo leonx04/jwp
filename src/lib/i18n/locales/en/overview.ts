@@ -33,4 +33,9 @@ export const overview: Record<string, string> = {
   '{name} · dư nợ': '{name} · owed',
   'Gần đây': 'Recent',
   'Tiền mặt': 'Cash',
+  'CÒN TIÊU ĐƯỢC HÔM NAY': 'LEFT TO SPEND TODAY',
+  'ĐÃ TIÊU VƯỢT HÔM NAY': 'OVERSPENT TODAY',
+  'Đã tiêu {spent} / {budget}': 'Spent {spent} / {budget}',
+  'Thu tháng': 'Income',
+  'Chi tháng': 'Spending',
 };
