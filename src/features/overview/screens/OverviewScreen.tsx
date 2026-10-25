@@ -21,17 +21,15 @@ import { useCountUp } from '@/components/motion/useCountUp';
 import { db } from '@/db';
 import { totalBalance, useAccountBalances } from '@/features/accounts';
 import { createDefaultData } from '@/features/onboarding/defaults';
-import { UpcomingCard } from '@/features/schedules/components/UpcomingCard';
 import { useScheduleOverview } from '@/features/schedules/hooks';
 import { BackupNudge } from '@/features/backup/components/BackupNudge';
 import { BudgetsCard } from '@/features/budgets/components/BudgetsCard';
-import { InboxBanner } from '@/features/capture/components/InboxBanner';
 import { DebtsCard } from '@/features/debts/components/DebtsCard';
-import { ReportBanner } from '@/features/report/components/ReportBanner';
 import { GoalsCard } from '@/features/goals/components/GoalsCard';
 import { useTodayStatus } from '@/features/today';
 import { CreditSection, hasCreditActivity } from '../components/CreditSection';
 import { MoneyHero } from '../components/MoneyHero';
+import { TodoSection } from '../components/TodoSection';
 import { bnplLoad } from '../bnpl';
 import { getAverageMonthlyIncome } from '../queries';
 import { useLiveData } from '@/db/useLiveData';
@@ -184,10 +182,8 @@ export function OverviewScreen() {
       ) : null}
 
       {/* Việc cần làm: những gì cần bạn bấm, lên trên cùng */}
-      <InboxBanner />
-      <UpcomingCard />
+      <TodoSection />
       {activeCredit.length ? <CreditSection credit={activeCredit} load={load} /> : null}
-      <ReportBanner />
       <BackupNudge />
 
       {/* Gõ nhanh: một câu → giao dịch */}

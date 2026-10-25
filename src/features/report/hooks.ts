@@ -9,7 +9,8 @@ import { loadReportInput, reportPeriod } from './queries';
 import { buildMonthlyReport } from './report';
 
 /** Báo cáo của tháng `offset` (0 = tháng này, −1 = tháng trước…). `undefined` khi đang tải. */
-export function useMonthlyReport(offset: number) {
+/** `enabled = false` → không truy vấn (report luôn undefined) */
+export function useMonthlyReport(offset: number, enabled = true) {
   const format = useMoneyFormat();
   const startDayOfMonth = useSettings((s) => s.startDayOfMonth);
   const transfersAsIncomeExpense = useSettings((s) => s.transfersAsIncomeExpense);
@@ -18,8 +19,11 @@ export function useMonthlyReport(offset: number) {
 
   const { data: input } = useLiveData(
     ['transactions', 'categories', 'budgets'],
-    () => loadReportInput(db, { period, today, transfersAsIncomeExpense, startDayOfMonth }),
-    [period.start, period.end, today, transfersAsIncomeExpense, startDayOfMonth],
+    () =>
+      enabled
+        ? loadReportInput(db, { period, today, transfersAsIncomeExpense, startDayOfMonth })
+        : null,
+    [enabled, period.start, period.end, today, transfersAsIncomeExpense, startDayOfMonth],
   );
   const report = useMemo(
     () => (input ? buildMonthlyReport({ ...input, format: format.money }) : undefined),

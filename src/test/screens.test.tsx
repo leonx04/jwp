@@ -29,8 +29,8 @@ jest.mock('@expo/vector-icons', () => ({
   Ionicons: () => null,
   MaterialCommunityIcons: () => null,
 }));
-jest.mock('react-native-worklets', () => require('react-native-worklets/src/mock'));
-jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
+jest.mock('react-native-worklets', () => jest.requireActual('react-native-worklets/src/mock'));
+jest.mock('react-native-reanimated', () => jest.requireActual('react-native-reanimated/mock'));
 jest.mock('expo-linear-gradient', () => ({ LinearGradient: () => null }));
 jest.mock('expo-system-ui', () => ({ setBackgroundColorAsync: () => Promise.resolve() }));
 
@@ -124,6 +124,15 @@ describe('có dữ liệu', () => {
       accountId: wallet,
     });
     saveDebtTerms(db, loan, { annualRate: 12, months: 12, method: 'annuity', startDate: today });
+    // Hạn hôm nay → hiện trong Việc cần làm
+    saveDebt(db, {
+      personName: 'chị Lan',
+      direction: 'lent',
+      amount: 300_000,
+      date: at,
+      dueDate: today,
+      accountId: wallet,
+    });
   });
 
   it.each(SCREENS)('màn %s dựng được', async (_name, Screen) => {
@@ -136,6 +145,12 @@ describe('có dữ liệu', () => {
     expect(screen.getByText('CÒN TIÊU ĐƯỢC HÔM NAY')).toBeTruthy();
     expect(screen.getByText('Số dư')).toBeTruthy();
     expect(screen.getByText('Chi tháng')).toBeTruthy();
+  });
+
+  it('Hôm nay: Việc cần làm hiện khoản nợ đến hạn', async () => {
+    await mount(<OverviewScreen />);
+    expect(screen.getByText(/^Việc cần làm · \d+$/)).toBeTruthy();
+    expect(screen.getAllByText('chị Lan').length).toBeGreaterThan(0);
   });
 
   it('Sổ hiện giao dịch vừa ghi', async () => {
