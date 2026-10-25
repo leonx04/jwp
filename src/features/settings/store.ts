@@ -53,6 +53,8 @@ export type SettingsState = {
   /** Tính chuyển khoản như thu/chi trong thống kê (tuỳ chọn giống Ivy) */
   transfersAsIncomeExpense: boolean;
   hideBalance: boolean;
+  /** Mở app phải mở khoá bằng vân tay / khuôn mặt / mã PIN của máy */
+  appLock: boolean;
   /** Rung nhẹ khi chạm nút, chọn mục, báo kết quả */
   haptics: boolean;
   /** Ngôn ngữ giao diện: theo hệ thống hoặc chọn tay */
@@ -100,6 +102,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   startDayOfMonth: 1,
   transfersAsIncomeExpense: false,
   hideBalance: false,
+  appLock: false,
   haptics: true,
   language: 'system',
   suggestionsEnabled: true,
