@@ -81,4 +81,16 @@ export const backup: Record<string, string> = {
     'Importing again never creates duplicates. Your data stays on this device only.',
   'Chọn file backup': 'Choose a backup file',
   Lưu: 'Save',
+  // Màn lỗi an toàn + lỗi nâng cấp DB
+  'Có lỗi khi hiển thị': 'Something went wrong on this screen',
+  'Dữ liệu của bạn vẫn nằm nguyên trong máy. Bấm Thử lại; nếu vẫn lỗi, hãy xuất một bản sao lưu trước khi cập nhật hoặc cài lại app.':
+    'Your data is still safe on this device. Tap Try again; if it keeps failing, export a backup before updating or reinstalling the app.',
+  'Thử lại': 'Try again',
+  'Xuất bản sao lưu': 'Export a backup',
+  'Đang sao lưu…': 'Backing up…',
+  'Đã tạo bản sao lưu.': 'Backup created.',
+  'Chưa sao lưu được:': 'Could not back up:',
+  'Chi tiết lỗi (gửi cho người phát triển)': 'Error details (send to the developer)',
+  'Gửi bản chụp dữ liệu': 'Send the data snapshot',
+  'Bản chụp dữ liệu JWP': 'JWP data snapshot',
 };

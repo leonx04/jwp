@@ -35,6 +35,9 @@ const TABS: TabItem[] = [
   },
 ];
 
+// Màn bị lỗi khi hiển thị → màn lỗi an toàn (thử lại, xuất sao lưu) thay vì trắng app
+export { SafeModeBoundary as ErrorBoundary } from '@/features/startup/SafeModeScreen';
+
 export default function TabsLayout() {
   const blurTarget = useRef<RNView>(null);
 
