@@ -24,6 +24,7 @@ import { totalBalance, useAccountBalances } from '@/features/accounts';
 import { createDefaultData } from '@/features/onboarding/defaults';
 import { UpcomingCard } from '@/features/schedules/components/UpcomingCard';
 import { useScheduleOverview } from '@/features/schedules/hooks';
+import { BackupNudge } from '@/features/backup/components/BackupNudge';
 import { BudgetsCard } from '@/features/budgets/components/BudgetsCard';
 import { InboxBanner } from '@/features/capture/components/InboxBanner';
 import { DebtsCard } from '@/features/debts/components/DebtsCard';
@@ -232,6 +233,7 @@ export function OverviewScreen() {
 
       <InboxBanner />
       <ReportBanner />
+      <BackupNudge />
 
       {/* Gõ nhanh: một câu → giao dịch */}
       <Reveal index={2}>

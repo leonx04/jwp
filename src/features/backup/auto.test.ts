@@ -1,6 +1,12 @@
 import { vnDateToMs } from '@/lib/date';
 
-import { autoBackupName, isBackupDue, namesToPrune } from './auto';
+import {
+  autoBackupName,
+  backupNudge,
+  DEFAULT_AUTO_BACKUP,
+  isBackupDue,
+  namesToPrune,
+} from './auto';
 
 const DAY = 86_400_000;
 
@@ -43,5 +49,26 @@ describe('namesToPrune', () => {
   });
   it('luôn giữ ít nhất một bản', () => {
     expect(namesToPrune(names, 0)).toHaveLength(3);
+  });
+});
+
+describe('backupNudge', () => {
+  const now = 1_800_000_000_000;
+  const off = { ...DEFAULT_AUTO_BACKUP };
+  const on = { ...DEFAULT_AUTO_BACKUP, enabled: true, lastAt: now - DAY };
+
+  it('chưa bật: chỉ nhắc khi đã có đủ giao dịch và không đang hoãn', () => {
+    expect(backupNudge(off, { transactions: 3, now, snoozedUntil: null })).toBeNull();
+    expect(backupNudge(off, { transactions: 10, now, snoozedUntil: null })).toBe('enable');
+    expect(backupNudge(off, { transactions: 50, now, snoozedUntil: now + DAY })).toBeNull();
+    expect(backupNudge(off, { transactions: 50, now, snoozedUntil: now - 1 })).toBe('enable');
+  });
+
+  it('đã bật: báo lỗi lần trước, hoặc quá lâu chưa sao lưu được', () => {
+    const args = { transactions: 50, now, snoozedUntil: null };
+    expect(backupNudge(on, args)).toBeNull();
+    expect(backupNudge({ ...on, lastError: 'hết chỗ' }, args)).toBe('failing');
+    expect(backupNudge({ ...on, lastAt: now - 10 * DAY }, args)).toBe('stale');
+    expect(backupNudge({ ...on, lastAt: null }, args)).toBeNull();
   });
 });
