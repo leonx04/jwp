@@ -156,3 +156,31 @@ export async function pickBackupFolder(): Promise<AutoBackupConfig | null> {
     return null;
   }
 }
+
+/** Có ngần này giao dịch thì dữ liệu đã đáng giữ → nhắc bật sao lưu */
+export const NUDGE_MIN_TRANSACTIONS = 10;
+/** Bấm "Để sau" thì im ngần này ngày */
+export const NUDGE_SNOOZE_DAYS = 14;
+
+export type BackupNudge = 'enable' | 'failing' | 'stale' | null;
+
+/**
+ * Thẻ nhắc ở Hôm nay: chưa bật mà đã có dữ liệu → 'enable'; đã bật mà lần cuối lỗi → 'failing';
+ * đã bật mà quá 3 kỳ chưa sao lưu được (app không được mở, lỗi ngầm) → 'stale'.
+ */
+export function backupNudge(
+  config: AutoBackupConfig,
+  {
+    transactions,
+    now,
+    snoozedUntil,
+  }: { transactions: number; now: number; snoozedUntil: number | null },
+): BackupNudge {
+  if (!config.enabled) {
+    if (transactions < NUDGE_MIN_TRANSACTIONS) return null;
+    return snoozedUntil != null && now < snoozedUntil ? null : 'enable';
+  }
+  if (config.lastError) return 'failing';
+  if (config.lastAt != null && now - config.lastAt > 3 * config.everyDays * DAY_MS) return 'stale';
+  return null;
+}

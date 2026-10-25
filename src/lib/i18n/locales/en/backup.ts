@@ -93,4 +93,18 @@ export const backup: Record<string, string> = {
   'Chi tiết lỗi (gửi cho người phát triển)': 'Error details (send to the developer)',
   'Gửi bản chụp dữ liệu': 'Send the data snapshot',
   'Bản chụp dữ liệu JWP': 'JWP data snapshot',
+  // Thẻ nhắc sao lưu ở Hôm nay
+  'Bật sao lưu tự động': 'Turn on automatic backup',
+  'Dữ liệu chỉ nằm trong máy này. Bật để app tự lưu bản sao vài ngày một lần.':
+    'Your data lives only on this phone. Turn this on and the app saves a copy every few days.',
+  'Sao lưu tự động đang lỗi': 'Automatic backup is failing',
+  'Lần sao lưu gần nhất chưa thành công. Mở để xem lỗi và chọn lại thư mục.':
+    'The last backup did not succeed. Open to see the error and choose the folder again.',
+  'Lâu rồi chưa sao lưu': 'No backup in a while',
+  'Đã quá hạn sao lưu nhiều lần. Mở để sao lưu ngay.':
+    'Several backups have been missed. Open to back up now.',
+  'Bật ngay': 'Turn on',
+  'Mở sao lưu': 'Open backup',
+  'Đã bật sao lưu tự động': 'Automatic backup is on',
+  'Chọn thư mục': 'Choose folder',
 };
