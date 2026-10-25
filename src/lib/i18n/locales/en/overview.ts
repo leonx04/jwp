@@ -38,4 +38,12 @@ export const overview: Record<string, string> = {
   'Đã tiêu {spent} / {budget}': 'Spent {spent} / {budget}',
   'Thu tháng': 'Income',
   'Chi tháng': 'Spending',
+  // Việc cần làm
+  'Việc cần làm': 'To do',
+  'Việc cần làm · {count}': 'To do · {count}',
+  '{count} giao dịch chờ xác nhận': '{count} transactions to confirm',
+  'Đọc từ thông báo ngân hàng': 'Read from bank notifications',
+  'Ghi ›': 'Record ›',
+  'Thêm {count} khoản trong 7 ngày tới ›': '{count} more in the next 7 days ›',
+  'Báo cáo {month} đã sẵn sàng': 'Report for {month} is ready',
 };
