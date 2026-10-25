@@ -37,6 +37,9 @@ import { useTheme } from '@/theme';
 // Giữ màn hình chờ đến khi font sẵn sàng → không bị nháy font mặc định
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
+// Màn bị lỗi khi hiển thị → màn lỗi an toàn (thử lại, xuất sao lưu) thay vì trắng app
+export { SafeModeBoundary as ErrorBoundary } from '@/features/startup/SafeModeScreen';
+
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     BeVietnamPro_400Regular,
