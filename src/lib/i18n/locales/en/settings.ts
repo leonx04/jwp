@@ -33,4 +33,21 @@ export const settings: Record<string, string> = {
   'Hồng đỏ': 'Rose',
   Hồng: 'Pink',
   'Xám than': 'Slate',
+  // Khoá app
+  'Khoá app': 'App lock',
+  'Mở app bằng vân tay, khuôn mặt hoặc mã PIN của máy':
+    "Open the app with your phone's fingerprint, face or PIN",
+  'Máy chưa hỗ trợ — chạm để xem cách bật': 'Not available on this phone — tap to see how',
+  'Chưa bật được khoá app': 'Could not turn on app lock',
+  'Máy chưa cài vân tay, khuôn mặt hay mã PIN. Cài trong Cài đặt của máy rồi bật lại.':
+    "This phone has no fingerprint, face or PIN set up. Set one up in the phone's Settings and try again.",
+  'Bản cài này chưa có khoá app. Cập nhật app lên bản mới rồi bật lại.':
+    'This install does not include app lock yet. Update the app and try again.',
+  'Xác nhận bật khoá app': 'Confirm to turn on app lock',
+  'Xác nhận tắt khoá app': 'Confirm to turn off app lock',
+  'Mở khoá JWP': 'Unlock JWP',
+  'JWP đang khoá': 'JWP is locked',
+  'Dùng vân tay, khuôn mặt hoặc mã PIN của máy để mở.':
+    "Use your phone's fingerprint, face or PIN to open it.",
+  'Mở khoá': 'Unlock',
 };

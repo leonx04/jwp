@@ -3,6 +3,7 @@ import Constants from 'expo-constants';
 import { router, type Href } from 'expo-router';
 
 import { AppText, Card, ListRow, Screen, SectionTitle } from '@/components/ui';
+import { AppLockRow } from '@/features/security/AppLockRow';
 import type { AppIcon } from '@/lib/icons';
 import { SWATCH } from '@/theme';
 
@@ -113,9 +114,10 @@ const SECTIONS: { title: string; items: Item[] }[] = [
 export function SettingsScreen() {
   return (
     <Screen title="Cài đặt">
-      {SECTIONS.map((section) => (
+      {SECTIONS.map((section, index) => (
         <Card key={section.title} style={{ gap: 0, paddingVertical: 8 }}>
           <SectionTitle>{section.title}</SectionTitle>
+          {index === 0 ? <AppLockRow /> : null}
           {section.items.map((item) => (
             <ListRow
               key={item.title}

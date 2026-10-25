@@ -23,6 +23,7 @@ import { AppIntro } from '@/components/brand/AppIntro';
 import { DialogHost } from '@/components/feedback/DialogHost';
 import { Snackbar } from '@/components/feedback/Snackbar';
 import { DatabaseProvider } from '@/db';
+import { LockGate } from '@/features/security/LockGate';
 import { useNotificationResponses } from '@/features/notifications';
 import { AppThemeProvider } from '@/features/settings';
 import { useAutoBackup } from '@/features/backup/hooks';
@@ -56,9 +57,11 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView key={language} style={{ flex: 1 }}>
       <AppThemeProvider>
-        <DatabaseProvider>
-          <RootNavigator />
-        </DatabaseProvider>
+        <LockGate>
+          <DatabaseProvider>
+            <RootNavigator />
+          </DatabaseProvider>
+        </LockGate>
         {/* Logo phủ lên đúng lúc ẩn màn chờ native → nối liền, không nháy */}
         <AppIntro onShown={() => SplashScreen.hideAsync().catch(() => {})} />
       </AppThemeProvider>
