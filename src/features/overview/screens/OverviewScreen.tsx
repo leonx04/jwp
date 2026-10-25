@@ -1,9 +1,8 @@
 import { t } from '@/lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router, type Href } from 'expo-router';
 import { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { GlassSurface } from '@/components/glass/GlassSurface';
 import { IconButton } from '@/components/glass/IconButton';
@@ -30,8 +29,9 @@ import { InboxBanner } from '@/features/capture/components/InboxBanner';
 import { DebtsCard } from '@/features/debts/components/DebtsCard';
 import { ReportBanner } from '@/features/report/components/ReportBanner';
 import { GoalsCard } from '@/features/goals/components/GoalsCard';
-import { TodayCard, useTodayStatus } from '@/features/today';
+import { useTodayStatus } from '@/features/today';
 import { CreditSection, hasCreditActivity } from '../components/CreditSection';
+import { MoneyHero } from '../components/MoneyHero';
 import { bnplLoad } from '../bnpl';
 import { getAverageMonthlyIncome } from '../queries';
 import { useLiveData } from '@/db/useLiveData';
@@ -145,62 +145,14 @@ export function OverviewScreen() {
         </View>
       }
     >
-      {/* Thẻ số dư */}
       <Reveal index={0}>
-        <GlassSurface
-          contentStyle={styles.hero}
-          background={colors.gradient[1]}
-          shadow={false}
-          style={{ boxShadow: `0 10px 28px ${rgba(colors.gradient[0], colors.dark ? 0.4 : 0.32)}` }}
-        >
-          <LinearGradient
-            colors={colors.gradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
-            pointerEvents="none"
-          />
-          <AppText variant="label" style={{ color: rgba(colors.onGradient, 0.75) }}>
-            TỔNG SỐ DƯ
-          </AppText>
-          <AppText
-            variant="hero"
-            style={{ fontVariant: ['tabular-nums'], color: colors.onGradient }}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.6}
-          >
-            {mask(format.money(Math.round(shownTotal)))}
-          </AppText>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.push('/stats')}
-            hitSlop={8}
-            style={{ alignSelf: 'flex-end', marginTop: 4 }}
-          >
-            <AppText variant="label" style={{ color: colors.onGradient }}>
-              Xem thống kê ›
-            </AppText>
-          </Pressable>
-        </GlassSurface>
-      </Reveal>
-
-      {/* Ô bento: thu / chi tháng này */}
-      <Reveal index={1}>
-        <View style={styles.tiles}>
-          <StatTile
-            icon="arrow-down"
-            tone={colors.income}
-            label="Thu tháng này"
-            value={mask(format.compact(Math.round(shownIncome)))}
-          />
-          <StatTile
-            icon="arrow-up"
-            tone={colors.expense}
-            label="Chi tháng này"
-            value={mask(format.compact(Math.round(shownExpense)))}
-          />
-        </View>
+        <MoneyHero
+          status={hasAccounts ? todayStatus : null}
+          total={Math.round(shownTotal)}
+          income={Math.round(shownIncome)}
+          expense={Math.round(shownExpense)}
+          mask={mask}
+        />
       </Reveal>
 
       {!hasAccounts && balances ? (
@@ -231,12 +183,15 @@ export function OverviewScreen() {
         </Card>
       ) : null}
 
+      {/* Việc cần làm: những gì cần bạn bấm, lên trên cùng */}
       <InboxBanner />
+      <UpcomingCard />
+      {activeCredit.length ? <CreditSection credit={activeCredit} load={load} /> : null}
       <ReportBanner />
       <BackupNudge />
 
       {/* Gõ nhanh: một câu → giao dịch */}
-      <Reveal index={2}>
+      <Reveal index={1}>
         <PressScale
           accessibilityRole="button"
           onPress={() => router.push('/quick-add')}
@@ -255,7 +210,7 @@ export function OverviewScreen() {
       </Reveal>
 
       {/* Thao tác nhanh: một thẻ, bốn nút tròn màu */}
-      <Reveal index={3}>
+      <Reveal index={2}>
         <Card style={styles.actions}>
           {QUICK_ACTIONS.map((action) => {
             const tone = colors[action.tone];
@@ -341,9 +296,6 @@ export function OverviewScreen() {
         </>
       ) : null}
 
-      {todayStatus ? <TodayCard status={todayStatus} /> : null}
-      {activeCredit.length ? <CreditSection credit={activeCredit} load={load} /> : null}
-      <UpcomingCard />
       <BudgetsCard />
       <DebtsCard />
       <GoalsCard />
@@ -370,63 +322,7 @@ export function OverviewScreen() {
   );
 }
 
-function StatTile({
-  icon,
-  tone,
-  label,
-  value,
-}: {
-  icon: IconName;
-  tone: string;
-  label: string;
-  value: string;
-}) {
-  const styles = useStyles();
-  const { colors } = useTheme();
-  return (
-    <View style={[styles.tile, { backgroundColor: rgba(tone, colors.dark ? 0.16 : 0.1) }]}>
-      <View style={[styles.statIcon, { backgroundColor: rgba(tone, colors.dark ? 0.3 : 0.18) }]}>
-        <Ionicons name={icon} size={16} color={tone} />
-      </View>
-      <AppText variant="label" color="textMuted">
-        {label}
-      </AppText>
-      <AppText
-        variant="title"
-        style={{ color: tone, fontVariant: ['tabular-nums'] }}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        minimumFontScale={0.6}
-      >
-        {value}
-      </AppText>
-    </View>
-  );
-}
-
 const useStyles = createStyles((t) => ({
-  hero: {
-    padding: t.spacing.xl,
-    gap: t.spacing.xs,
-  },
-  tiles: {
-    flexDirection: 'row',
-    gap: t.spacing.md,
-  },
-  tile: {
-    flex: 1,
-    padding: t.spacing.lg,
-    borderRadius: t.radius.xl,
-    gap: t.spacing.xs,
-  },
-  statIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 12,
-    marginBottom: t.spacing.xs,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   quickBar: {
     flexDirection: 'row',
     alignItems: 'center',
